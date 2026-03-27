@@ -19,3 +19,17 @@ body {
     radial-gradient(circle at top, rgba(66, 153, 225, 0.16), transparent 28%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 30%);
 }
+
+@layer components {
+  .panel-card {
+    @apply rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur;
+  }
+
+  .eyebrow {
+    @apply text-[11px] uppercase tracking-[0.24em] text-white/45;
+  }
+
+  .screen-title {
+    @apply text-3xl font-semibold tracking-tight md:text-4xl;
+  }
+}

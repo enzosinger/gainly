@@ -10,20 +10,21 @@ export default function WorkoutPage() {
 
   if (!workoutRoutine) {
     return (
-      <section>
-        <h1 className="text-3xl font-semibold tracking-tight">Workout</h1>
+      <section className="space-y-4">
+        <h1 className="screen-title">Workout</h1>
         <p className="mt-4 text-sm text-white/60">No workout available.</p>
       </section>
     );
   }
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 md:space-y-8">
       <header className="space-y-2">
-        <p className="text-[11px] uppercase tracking-[0.22em] text-white/45">{workoutRoutine.weekday}</p>
-        <h1 className="text-3xl font-semibold tracking-tight">{workoutRoutine.name} workout</h1>
+        <p className="eyebrow">{workoutRoutine.weekday}</p>
+        <h1 className="screen-title">{workoutRoutine.name} workout</h1>
+        <p className="text-sm text-white/60">Track each set with consistent form quality and progressive overload.</p>
       </header>
-      <div className="space-y-3">
+      <div className="panel-card space-y-3 p-4 md:p-5">
         {workoutRoutine.exercises.map((item) => (
           <ExerciseAccordion
             key={item.id}

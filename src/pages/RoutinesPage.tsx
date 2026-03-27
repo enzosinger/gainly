@@ -9,21 +9,24 @@ export default function RoutinesPage() {
 
   if (!routine) {
     return (
-      <section>
-        <h1 className="text-3xl font-semibold tracking-tight">Routines</h1>
+      <section className="space-y-4">
+        <h1 className="screen-title">Routines</h1>
         <p className="mt-4 text-sm text-white/60">No routines available.</p>
       </section>
     );
   }
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 md:space-y-8">
       <header className="space-y-2">
-        <p className="text-[11px] uppercase tracking-[0.22em] text-white/45">{routine.weekday}</p>
-        <h1 className="text-3xl font-semibold tracking-tight">{routine.name} builder</h1>
+        <p className="eyebrow">{routine.weekday}</p>
+        <h1 className="screen-title">{routine.name} builder</h1>
+        <p className="text-sm text-white/60">Dial in weekly structure, then layer advanced techniques with intent.</p>
       </header>
-      <ExercisePicker routineId={routine.id} />
-      <div className="space-y-3">
+      <div className="panel-card p-4 md:p-5">
+        <ExercisePicker routineId={routine.id} />
+      </div>
+      <div className="panel-card space-y-3 p-4 md:p-5">
         {routine.exercises.map((item) => {
           const exercise = exercisesById.get(item.exerciseId);
           if (!exercise) {

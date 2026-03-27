@@ -5,7 +5,7 @@ import DashboardPage from "../pages/DashboardPage";
 import WorkoutPage from "../pages/WorkoutPage";
 import RoutinesPage from "../pages/RoutinesPage";
 import ExercisesPage from "../pages/ExercisesPage";
-import { ProfilePage } from "./pages/placeholders";
+import ProfilePage from "../pages/ProfilePage";
 
 export const appRoutes: RouteObject[] = [
   {

@@ -1,4 +1,6 @@
-import { screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import App from "./App";
+import { GainlyStoreProvider } from "../state/gainly-store";
 import { renderWithAppRouter } from "../test/test-utils";
 
 describe("App shell", () => {
@@ -30,5 +32,24 @@ describe("App shell", () => {
       "href",
       "/workout/routine-upper-a",
     );
+  });
+
+  it("renders the full profile analytics page content", async () => {
+    renderWithAppRouter(["/profile"]);
+    expect(await screen.findByText(/athlete profile/i)).toBeInTheDocument();
+    expect(screen.getByText(/weekly sets/i)).toBeInTheDocument();
+  });
+});
+
+describe("visual shell", () => {
+  it("renders the mobile navigation and premium heading treatment", () => {
+    render(
+      <GainlyStoreProvider>
+        <App />
+      </GainlyStoreProvider>,
+    );
+
+    expect(screen.getAllByRole("link", { name: /dashboard/i }).length).toBeGreaterThan(0);
+    expect(screen.getByText(/your training week/i)).toBeInTheDocument();
   });
 });
