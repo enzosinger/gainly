@@ -1,15 +1,18 @@
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
 import App from "./App";
+import { GainlyStoreProvider } from "../state/gainly-store";
 
-describe("App", () => {
-  it("renders the dashboard navigation entry", () => {
+describe("App shell", () => {
+  it("shows the primary destinations", () => {
     render(
-      <MemoryRouter>
+      <GainlyStoreProvider>
         <App />
-      </MemoryRouter>,
+      </GainlyStoreProvider>,
     );
 
     expect(screen.getByRole("link", { name: /dashboard/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /routines/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /exercises/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /profile/i })).toBeInTheDocument();
   });
 });
