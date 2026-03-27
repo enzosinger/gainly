@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 218 42% 8%;
+  --foreground: 210 40% 96%;
+  --panel: 220 32% 15%;
+  --panel-2: 217 33% 19%;
+  --muted: 216 19% 65%;
+  --accent: 154 64% 57%;
+  --warning: 43 96% 61%;
+  --outline: 215 33% 31%;
+}
+
+body {
+  @apply min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] antialiased;
+  background-image:
+    radial-gradient(circle at top, rgba(66, 153, 225, 0.16), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 30%);
+}
