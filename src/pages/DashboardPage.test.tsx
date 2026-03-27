@@ -1,7 +1,37 @@
+import type { ReactNode } from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import DashboardPage from "./DashboardPage";
-import { GainlyStoreProvider, useGainlyStore } from "../state/gainly-store";
+import { GainlyStoreProvider } from "../state/gainly-store";
+
+vi.mock("@dnd-kit/core", async () => {
+  const actual = await vi.importActual<typeof import("@dnd-kit/core")>("@dnd-kit/core");
+  return {
+    ...actual,
+    DndContext: ({
+      children,
+      onDragEnd,
+    }: {
+      children: ReactNode;
+      onDragEnd?: (event: { active: { id: string }; over: { id: string } | null }) => void;
+    }) => (
+      <div>
+        {children}
+        <button
+          type="button"
+          onClick={() =>
+            onDragEnd?.({
+              active: { id: "routine-upper-b" },
+              over: { id: "routine-upper-a" },
+            })
+          }
+        >
+          Trigger reorder
+        </button>
+      </div>
+    ),
+  };
+});
 
 describe("DashboardPage", () => {
   it("shows all weekly routines with icon-based states", () => {
@@ -19,39 +49,27 @@ describe("DashboardPage", () => {
     expect(screen.getAllByTestId("status-glyph-completed")).toHaveLength(1);
   });
 
-  it("reorders routines when the store reorder action is triggered", async () => {
+  it("reorders routines when weekly list drag ends with a new target", async () => {
     const user = userEvent.setup();
-
-    function ReorderProbe() {
-      const { routines, reorderRoutines } = useGainlyStore();
-
-      return (
-        <div>
-          <button
-            type="button"
-            onClick={() => reorderRoutines(["routine-upper-b", "routine-upper-a", "routine-lower-a"])}
-          >
-            Reorder
-          </button>
-          <ol>
-            {routines.map((routine) => (
-              <li key={routine.id}>{routine.name}</li>
-            ))}
-          </ol>
-        </div>
-      );
-    }
 
     render(
       <GainlyStoreProvider>
-        <ReorderProbe />
+        <DashboardPage />
       </GainlyStoreProvider>,
     );
 
-    expect(screen.getAllByRole("listitem").map((item) => item.textContent)).toEqual(["Push", "Pull", "Legs"]);
+    expect(screen.getAllByRole("heading", { level: 3 }).map((item) => item.textContent)).toEqual([
+      "Push",
+      "Pull",
+      "Legs",
+    ]);
 
-    await user.click(screen.getByRole("button", { name: /reorder/i }));
+    await user.click(screen.getByRole("button", { name: /trigger reorder/i }));
 
-    expect(screen.getAllByRole("listitem").map((item) => item.textContent)).toEqual(["Legs", "Push", "Pull"]);
+    expect(screen.getAllByRole("heading", { level: 3 }).map((item) => item.textContent)).toEqual([
+      "Legs",
+      "Push",
+      "Pull",
+    ]);
   });
 });
