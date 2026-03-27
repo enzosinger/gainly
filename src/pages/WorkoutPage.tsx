@@ -1,9 +1,11 @@
+import { useParams } from "react-router-dom";
 import ExerciseAccordion from "../components/organisms/logger/ExerciseAccordion";
 import { useGainlyStore } from "../state/gainly-store";
 
 export default function WorkoutPage() {
-  const { routines, exercises, workoutRoutineId } = useGainlyStore();
-  const workoutRoutine = routines.find((routine) => routine.id === workoutRoutineId) ?? routines[0];
+  const { routines, exercises } = useGainlyStore();
+  const { routineId } = useParams();
+  const workoutRoutine = routines.find((routine) => routine.id === routineId) ?? routines[0];
   const exerciseNamesById = Object.fromEntries(exercises.map((exercise) => [exercise.id, exercise.name]));
 
   if (!workoutRoutine) {

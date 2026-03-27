@@ -18,5 +18,17 @@ describe("App shell", () => {
     const profile = renderWithAppRouter(["/profile"]);
     expect(await screen.findByRole("heading", { name: /profile/i })).toBeInTheDocument();
     profile.unmount();
+
+    const workout = renderWithAppRouter(["/workout"]);
+    expect(await screen.findByRole("heading", { name: /push workout/i })).toBeInTheDocument();
+    workout.unmount();
+  });
+
+  it("exposes a dashboard link to the workout logger", async () => {
+    renderWithAppRouter(["/"]);
+    expect(await screen.findByRole("link", { name: /^log push workout$/i })).toHaveAttribute(
+      "href",
+      "/workout/routine-upper-a",
+    );
   });
 });

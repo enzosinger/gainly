@@ -1,11 +1,13 @@
+import { Link } from "react-router-dom";
 import type { Routine } from "../../types/domain";
 import StatusGlyph from "../atoms/StatusGlyph";
 
 type RoutineWeekCardProps = {
   routine: Routine;
+  workoutHref?: string;
 };
 
-export default function RoutineWeekCard({ routine }: RoutineWeekCardProps) {
+export default function RoutineWeekCard({ routine, workoutHref }: RoutineWeekCardProps) {
   return (
     <article className="rounded-[28px] border border-white/10 bg-white/5 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.24)]">
       <div className="flex items-start justify-between">
@@ -22,6 +24,18 @@ export default function RoutineWeekCard({ routine }: RoutineWeekCardProps) {
           {routine.deltaPercent.toFixed(1)}%
         </span>
       </div>
+      {workoutHref ? (
+        <Link
+          to={workoutHref}
+          className="mt-4 w-full rounded-2xl bg-white/10 px-3 py-2 text-sm font-medium text-white/85 hover:bg-white/15"
+          onPointerDown={(event) => {
+            event.stopPropagation();
+          }}
+          onClick={(event) => event.stopPropagation()}
+        >
+          Log {routine.name} workout
+        </Link>
+      ) : null}
     </article>
   );
 }

@@ -11,7 +11,7 @@ export const appRoutes: RouteObject[] = [
     element: <AppShell />,
     children: [
       { index: true, element: <DashboardPage /> },
-      { path: "workout", element: <WorkoutPage /> },
+      { path: "workout/:routineId?", element: <WorkoutPage /> },
       { path: "routines", element: <RoutinesPage /> },
       { path: "exercises", element: <ExercisesPage /> },
       { path: "profile", element: <ProfilePage /> },

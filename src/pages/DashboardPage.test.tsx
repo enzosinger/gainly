@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import DashboardPage from "./DashboardPage";
 import { GainlyStoreProvider } from "../state/gainly-store";
 
@@ -36,26 +37,34 @@ vi.mock("@dnd-kit/core", async () => {
 describe("DashboardPage", () => {
   it("shows all weekly routines with icon-based states", () => {
     render(
-      <GainlyStoreProvider>
-        <DashboardPage />
-      </GainlyStoreProvider>,
+      <MemoryRouter>
+        <GainlyStoreProvider>
+          <DashboardPage />
+        </GainlyStoreProvider>
+      </MemoryRouter>,
     );
 
-    expect(screen.getByText(/push/i)).toBeInTheDocument();
-    expect(screen.getByText(/pull/i)).toBeInTheDocument();
-    expect(screen.getByText(/legs/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^push$/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^pull$/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^legs$/i })).toBeInTheDocument();
     expect(screen.getAllByTestId("status-glyph")).toHaveLength(3);
     expect(screen.getAllByTestId("status-glyph-upcoming")).toHaveLength(2);
     expect(screen.getAllByTestId("status-glyph-completed")).toHaveLength(1);
+    expect(screen.getByRole("link", { name: /^log push workout$/i })).toHaveAttribute(
+      "href",
+      "/workout/routine-upper-a",
+    );
   });
 
   it("reorders routines when weekly list drag ends with a new target", async () => {
     const user = userEvent.setup();
 
     render(
-      <GainlyStoreProvider>
-        <DashboardPage />
-      </GainlyStoreProvider>,
+      <MemoryRouter>
+        <GainlyStoreProvider>
+          <DashboardPage />
+        </GainlyStoreProvider>
+      </MemoryRouter>,
     );
 
     expect(screen.getAllByRole("heading", { level: 3 }).map((item) => item.textContent)).toEqual([

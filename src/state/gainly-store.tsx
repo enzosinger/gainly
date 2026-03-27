@@ -6,8 +6,6 @@ import type { Exercise, Routine } from "../types/domain";
 type GainlyStoreValue = {
   exercises: Exercise[];
   routines: Routine[];
-  workoutRoutineId: string | null;
-  setWorkoutRoutineId: (id: string | null) => void;
   expandedExerciseId: string | null;
   setExpandedExerciseId: (id: string | null) => void;
   reorderRoutines: (nextIds: string[]) => void;
@@ -17,18 +15,12 @@ const GainlyStoreContext = createContext<GainlyStoreValue | null>(null);
 
 export function GainlyStoreProvider({ children }: { children: React.ReactNode }) {
   const [routines, setRoutines] = useState(mockRoutines);
-  const [workoutRoutineId, setWorkoutRoutineIdState] = useState<string | null>(mockRoutines[0]?.id ?? null);
   const [expandedExerciseId, setExpandedExerciseId] = useState<string | null>(null);
 
   const value = useMemo(
     () => ({
       exercises: mockExercises,
       routines,
-      workoutRoutineId,
-      setWorkoutRoutineId: (id: string | null) => {
-        setExpandedExerciseId(null);
-        setWorkoutRoutineIdState(id);
-      },
       expandedExerciseId,
       setExpandedExerciseId,
       reorderRoutines: (nextIds: string[]) => {
@@ -48,7 +40,7 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
         });
       },
     }),
-    [expandedExerciseId, routines, workoutRoutineId],
+    [expandedExerciseId, routines],
   );
 
   return <GainlyStoreContext.Provider value={value}>{children}</GainlyStoreContext.Provider>;

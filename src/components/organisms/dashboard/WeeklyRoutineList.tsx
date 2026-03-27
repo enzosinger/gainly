@@ -26,7 +26,7 @@ function SortableRoutineCard({ routine }: SortableRoutineCardProps) {
       {...attributes}
       {...listeners}
     >
-      <RoutineWeekCard routine={routine} />
+      <RoutineWeekCard routine={routine} workoutHref={`/workout/${routine.id}`} />
     </div>
   );
 }
