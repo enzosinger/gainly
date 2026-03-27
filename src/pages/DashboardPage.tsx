@@ -11,12 +11,8 @@ export default function DashboardPage() {
           Keep momentum across every lift with a single analytical view of readiness and load progression.
         </p>
       </header>
-      <div className="panel-card p-4 md:p-5">
-        <WeekStrip />
-      </div>
-      <div className="panel-card p-4 md:p-6">
-        <WeeklyRoutineList />
-      </div>
+      <WeekStrip />
+      <WeeklyRoutineList />
     </section>
   );
 }

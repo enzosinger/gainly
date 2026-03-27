@@ -1,6 +1,5 @@
 import { render, screen } from "@testing-library/react";
 import App from "./App";
-import { GainlyStoreProvider } from "../state/gainly-store";
 import { renderWithAppRouter } from "../test/test-utils";
 
 describe("App shell", () => {
@@ -43,14 +42,16 @@ describe("App shell", () => {
 
 describe("visual shell", () => {
   it("renders the mobile navigation and premium heading treatment", () => {
-    render(
-      <GainlyStoreProvider>
-        <App />
-      </GainlyStoreProvider>,
-    );
+    render(<App />);
 
-    expect(screen.getByRole("navigation", { name: /primary navigation/i })).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: /primary mobile navigation/i })).toBeInTheDocument();
+    const desktopNavigation = screen.getByRole("navigation", { name: /primary navigation/i });
+    const mobileNavigation = screen.getByRole("navigation", { name: /primary mobile navigation/i });
+    const mainRegion = screen.getByRole("main");
+
+    expect(desktopNavigation).toBeInTheDocument();
+    expect(desktopNavigation.closest(".panel-card")).toBeInTheDocument();
+    expect(mobileNavigation).toHaveClass("fixed", "inset-x-4", "bottom-4");
+    expect(mainRegion).toHaveClass("flex-1", "px-4", "pb-28");
     expect(screen.getAllByRole("link", { name: /dashboard/i }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("link", { name: /profile/i }).length).toBeGreaterThan(0);
     expect(screen.getByText(/performance console/i)).toBeInTheDocument();

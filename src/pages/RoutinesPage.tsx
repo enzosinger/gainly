@@ -23,10 +23,8 @@ export default function RoutinesPage() {
         <h1 className="screen-title">{routine.name} builder</h1>
         <p className="text-sm text-white/60">Dial in weekly structure, then layer advanced techniques with intent.</p>
       </header>
-      <div className="panel-card p-4 md:p-5">
-        <ExercisePicker routineId={routine.id} />
-      </div>
-      <div className="panel-card space-y-3 p-4 md:p-5">
+      <ExercisePicker routineId={routine.id} />
+      <div className="space-y-3">
         {routine.exercises.map((item) => {
           const exercise = exercisesById.get(item.exerciseId);
           if (!exercise) {
