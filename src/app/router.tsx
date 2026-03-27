@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import type { RouteObject } from "react-router-dom";
 import AppShell from "./layouts/AppShell";
 import DashboardPage from "../pages/DashboardPage";
+import WorkoutPage from "../pages/WorkoutPage";
 import { ExercisesPage, ProfilePage, RoutinesPage } from "./pages/placeholders";
 
 export const appRoutes: RouteObject[] = [
@@ -10,6 +11,7 @@ export const appRoutes: RouteObject[] = [
     element: <AppShell />,
     children: [
       { index: true, element: <DashboardPage /> },
+      { path: "workout", element: <WorkoutPage /> },
       { path: "routines", element: <RoutinesPage /> },
       { path: "exercises", element: <ExercisesPage /> },
       { path: "profile", element: <ProfilePage /> },
