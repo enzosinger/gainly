@@ -1,7 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
 import type { RouteObject } from "react-router-dom";
 import AppShell from "./layouts/AppShell";
-import { DashboardPage, ExercisesPage, ProfilePage, RoutinesPage } from "./pages/placeholders";
+import DashboardPage from "../pages/DashboardPage";
+import { ExercisesPage, ProfilePage, RoutinesPage } from "./pages/placeholders";
 
 export const appRoutes: RouteObject[] = [
   {
