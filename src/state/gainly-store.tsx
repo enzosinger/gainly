@@ -26,9 +26,17 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
       reorderRoutines: (nextIds: string[]) => {
         setRoutines((current) => {
           const routinesById = new Map(current.map((routine) => [routine.id, routine]));
-          return nextIds
+          const seenIds = new Set<string>();
+          const reordered = nextIds
             .map((id) => routinesById.get(id))
-            .filter((routine): routine is Routine => routine !== undefined);
+            .filter((routine): routine is Routine => routine !== undefined)
+            .map((routine) => {
+              seenIds.add(routine.id);
+              return routine;
+            });
+
+          const untouched = current.filter((routine) => !seenIds.has(routine.id));
+          return [...reordered, ...untouched];
         });
       },
     }),

@@ -1,11 +1,12 @@
 import { render } from "@testing-library/react";
-import type { ReactElement, ReactNode } from "react";
-import { GainlyStoreProvider } from "../state/gainly-store";
+import { createMemoryRouter } from "react-router-dom";
+import App from "../app/App";
+import { appRoutes } from "../app/router";
 
-function Providers({ children }: { children: ReactNode }) {
-  return <GainlyStoreProvider>{children}</GainlyStoreProvider>;
-}
-
-export function renderWithProviders(ui: ReactElement) {
-  return render(ui, { wrapper: Providers });
+export function renderWithAppRouter(initialEntries: string[] = ["/"]) {
+  const router = createMemoryRouter(appRoutes, { initialEntries });
+  return {
+    router,
+    ...render(<App router={router} />),
+  };
 }

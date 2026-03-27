@@ -1,11 +1,16 @@
 import { RouterProvider } from "react-router-dom";
+import type { ComponentProps } from "react";
 import { GainlyStoreProvider } from "../state/gainly-store";
 import { appRouter } from "./router";
 
-export default function App() {
+type AppProps = {
+  router?: ComponentProps<typeof RouterProvider>["router"];
+};
+
+export default function App({ router = appRouter }: AppProps) {
   return (
     <GainlyStoreProvider>
-      <RouterProvider router={appRouter} />
+      <RouterProvider router={router} />
     </GainlyStoreProvider>
   );
 }

@@ -1,18 +1,22 @@
-import { render, screen } from "@testing-library/react";
-import App from "./App";
-import { GainlyStoreProvider } from "../state/gainly-store";
+import { screen } from "@testing-library/react";
+import { renderWithAppRouter } from "../test/test-utils";
 
 describe("App shell", () => {
-  it("shows the primary destinations", () => {
-    render(
-      <GainlyStoreProvider>
-        <App />
-      </GainlyStoreProvider>,
-    );
+  it("renders each primary destination route", async () => {
+    const dashboard = renderWithAppRouter(["/"]);
+    expect(await screen.findByRole("heading", { name: /dashboard/i })).toBeInTheDocument();
+    dashboard.unmount();
 
-    expect(screen.getByRole("link", { name: /dashboard/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /routines/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /exercises/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /profile/i })).toBeInTheDocument();
+    const routines = renderWithAppRouter(["/routines"]);
+    expect(await screen.findByRole("heading", { name: /routines/i })).toBeInTheDocument();
+    routines.unmount();
+
+    const exercises = renderWithAppRouter(["/exercises"]);
+    expect(await screen.findByRole("heading", { name: /exercises/i })).toBeInTheDocument();
+    exercises.unmount();
+
+    const profile = renderWithAppRouter(["/profile"]);
+    expect(await screen.findByRole("heading", { name: /profile/i })).toBeInTheDocument();
+    profile.unmount();
   });
 });

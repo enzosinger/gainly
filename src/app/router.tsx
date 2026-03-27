@@ -1,8 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
+import type { RouteObject } from "react-router-dom";
 import AppShell from "./layouts/AppShell";
 import { DashboardPage, ExercisesPage, ProfilePage, RoutinesPage } from "./pages/placeholders";
 
-export const appRouter = createBrowserRouter([
+export const appRoutes: RouteObject[] = [
   {
     path: "/",
     element: <AppShell />,
@@ -13,4 +14,6 @@ export const appRouter = createBrowserRouter([
       { path: "profile", element: <ProfilePage /> },
     ],
   },
-]);
+];
+
+export const appRouter = createBrowserRouter(appRoutes);
