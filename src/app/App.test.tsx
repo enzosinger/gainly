@@ -49,7 +49,11 @@ describe("visual shell", () => {
       </GainlyStoreProvider>,
     );
 
+    expect(screen.getByRole("navigation", { name: /primary navigation/i })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: /primary mobile navigation/i })).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /dashboard/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: /profile/i }).length).toBeGreaterThan(0);
+    expect(screen.getByText(/performance console/i)).toBeInTheDocument();
     expect(screen.getByText(/your training week/i)).toBeInTheDocument();
   });
 });
