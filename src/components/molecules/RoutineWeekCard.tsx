@@ -13,7 +13,7 @@ export default function RoutineWeekCard({ routine }: RoutineWeekCardProps) {
           <p className="text-[11px] uppercase tracking-[0.22em] text-white/45">{routine.weekday}</p>
           <h3 className="mt-2 text-xl font-semibold">{routine.name}</h3>
         </div>
-        <StatusGlyph completed={routine.completed} upcoming={!routine.completed} />
+        <StatusGlyph completed={routine.completed} />
       </div>
       <div className="mt-5 flex items-center justify-between rounded-2xl bg-white/[0.03] px-3 py-2 text-sm text-white/70">
         <span>Previous delta</span>

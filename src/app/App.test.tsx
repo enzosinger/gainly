@@ -4,7 +4,7 @@ import { renderWithAppRouter } from "../test/test-utils";
 describe("App shell", () => {
   it("renders each primary destination route", async () => {
     const dashboard = renderWithAppRouter(["/"]);
-    expect(await screen.findByRole("heading", { name: /dashboard/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /your training week/i })).toBeInTheDocument();
     dashboard.unmount();
 
     const routines = renderWithAppRouter(["/routines"]);
