@@ -10,9 +10,11 @@ describe("DashboardPage", () => {
       </GainlyStoreProvider>,
     );
 
-    expect(screen.getByText(/upper a/i)).toBeInTheDocument();
-    expect(screen.getByText(/lower a/i)).toBeInTheDocument();
-    expect(screen.getByText(/upper b/i)).toBeInTheDocument();
-    expect(screen.getAllByTestId("status-glyph").length).toBeGreaterThan(0);
+    expect(screen.getByText(/push/i)).toBeInTheDocument();
+    expect(screen.getByText(/pull/i)).toBeInTheDocument();
+    expect(screen.getByText(/legs/i)).toBeInTheDocument();
+    expect(screen.getAllByTestId("status-glyph")).toHaveLength(3);
+    expect(screen.getAllByTestId("status-glyph-upcoming")).toHaveLength(2);
+    expect(screen.getAllByTestId("status-glyph-completed")).toHaveLength(1);
   });
 });

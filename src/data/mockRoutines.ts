@@ -3,7 +3,7 @@ import type { Routine } from "../types/domain";
 export const mockRoutines: Routine[] = [
   {
     id: "routine-upper-a",
-    name: "Upper A",
+    name: "Push",
     weekday: "Monday",
     completed: false,
     deltaPercent: 2.1,
@@ -25,7 +25,7 @@ export const mockRoutines: Routine[] = [
   },
   {
     id: "routine-lower-a",
-    name: "Lower A",
+    name: "Pull",
     weekday: "Wednesday",
     completed: true,
     deltaPercent: 1.4,
@@ -42,7 +42,7 @@ export const mockRoutines: Routine[] = [
   },
   {
     id: "routine-upper-b",
-    name: "Upper B",
+    name: "Legs",
     weekday: "Friday",
     completed: false,
     deltaPercent: 0.8,
