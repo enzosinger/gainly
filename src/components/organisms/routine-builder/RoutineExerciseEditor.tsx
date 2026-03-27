@@ -4,11 +4,11 @@ import TechniqueMenu from "./TechniqueMenu";
 export default function RoutineExerciseEditor({
   exercise,
   item,
-  showTechniqueMenu = true,
+  onSelectTechnique,
 }: {
   exercise: Exercise;
   item: RoutineExercise;
-  showTechniqueMenu?: boolean;
+  onSelectTechnique: (routineExerciseId: string, technique: "backoff" | "cluster" | "superset") => void;
 }) {
   return (
     <article className="rounded-[28px] border border-white/10 bg-white/5 p-4">
@@ -19,7 +19,7 @@ export default function RoutineExerciseEditor({
             {exercise.muscleGroup} · {exercise.unilateral ? "unilateral" : "bilateral"}
           </p>
         </div>
-        {showTechniqueMenu ? <TechniqueMenu /> : null}
+        <TechniqueMenu onSelect={(technique) => onSelectTechnique(item.id, technique)} />
       </div>
       <div className="mt-4 space-y-2">
         {item.sets.map((set, index) => (

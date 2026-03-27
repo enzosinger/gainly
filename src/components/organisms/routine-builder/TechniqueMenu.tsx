@@ -1,12 +1,17 @@
 import { useState } from "react";
+import type { TechniqueType } from "../../../types/domain";
 
 const menuItems = [
   { id: "backoff", label: "Back-off set" },
   { id: "cluster", label: "Cluster set" },
   { id: "superset", label: "Super set" },
-];
+] as const;
 
-export default function TechniqueMenu() {
+export default function TechniqueMenu({
+  onSelect,
+}: {
+  onSelect: (technique: Exclude<TechniqueType, "normal">) => void;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -28,6 +33,10 @@ export default function TechniqueMenu() {
               type="button"
               role="menuitem"
               className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-white/5"
+              onClick={() => {
+                onSelect(item.id);
+                setOpen(false);
+              }}
             >
               {item.label}
             </button>

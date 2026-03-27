@@ -8,11 +8,11 @@ describe("App shell", () => {
     dashboard.unmount();
 
     const routines = renderWithAppRouter(["/routines"]);
-    expect(await screen.findByRole("heading", { name: /routines/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /push builder/i })).toBeInTheDocument();
     routines.unmount();
 
     const exercises = renderWithAppRouter(["/exercises"]);
-    expect(await screen.findByRole("heading", { name: /exercises/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /reusable movements/i })).toBeInTheDocument();
     exercises.unmount();
 
     const profile = renderWithAppRouter(["/profile"]);

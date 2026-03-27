@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import { mockExercises } from "../data/mockExercises";
 import { mockRoutines } from "../data/mockRoutines";
-import type { Exercise, Routine } from "../types/domain";
+import type { Exercise, Routine, TechniqueType } from "../types/domain";
 import type { MuscleGroup, RoutineExercise } from "../types/domain";
 
 type GainlyStoreValue = {
@@ -11,6 +11,11 @@ type GainlyStoreValue = {
   setExpandedExerciseId: (id: string | null) => void;
   reorderRoutines: (nextIds: string[]) => void;
   addExerciseToRoutine: (routineId: string, exerciseId: string) => void;
+  addTechniqueToRoutineExercise: (
+    routineId: string,
+    routineExerciseId: string,
+    technique: Exclude<TechniqueType, "normal">,
+  ) => void;
   createExercise: (input: { name: string; muscleGroup: MuscleGroup; unilateral: boolean }) => Exercise;
 };
 
@@ -63,17 +68,68 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
           }),
         );
       },
+      addTechniqueToRoutineExercise: (
+        routineId: string,
+        routineExerciseId: string,
+        technique: Exclude<TechniqueType, "normal">,
+      ) => {
+        setRoutines((current) =>
+          current.map((routine) => {
+            if (routine.id !== routineId) {
+              return routine;
+            }
+
+            return {
+              ...routine,
+              exercises: routine.exercises.map((routineExercise) => {
+                if (routineExercise.id !== routineExerciseId) {
+                  return routineExercise;
+                }
+
+                const nextSetIndex = routineExercise.sets.length + 1;
+                return {
+                  ...routineExercise,
+                  sets: [
+                    ...routineExercise.sets,
+                    {
+                      id: `${routineExercise.id}-set-${nextSetIndex}`,
+                      technique,
+                    },
+                  ],
+                };
+              }),
+            };
+          }),
+        );
+      },
       createExercise: (input: { name: string; muscleGroup: MuscleGroup; unilateral: boolean }) => {
-        const id = `ex-${input.name.toLowerCase().trim().replace(/\s+/g, "-")}`;
-        const nextExercise: Exercise = {
-          id,
-          name: input.name.trim(),
+        const trimmedName = input.name.trim();
+        const baseId = `ex-${trimmedName.toLowerCase().replace(/\s+/g, "-")}`;
+        let createdExercise: Exercise = {
+          id: baseId,
+          name: trimmedName,
           muscleGroup: input.muscleGroup,
           unilateral: input.unilateral,
         };
 
-        setExercises((current) => [...current, nextExercise]);
-        return nextExercise;
+        setExercises((current) => {
+          const existingIds = new Set(current.map((exercise) => exercise.id));
+          let nextId = baseId;
+          let suffix = 2;
+
+          while (existingIds.has(nextId)) {
+            nextId = `${baseId}-${suffix}`;
+            suffix += 1;
+          }
+
+          createdExercise = {
+            ...createdExercise,
+            id: nextId,
+          };
+
+          return [...current, createdExercise];
+        });
+        return createdExercise;
       },
     }),
     [expandedExerciseId, exercises, routines],

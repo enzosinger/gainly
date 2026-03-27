@@ -3,7 +3,7 @@ import RoutineExerciseEditor from "../components/organisms/routine-builder/Routi
 import { useGainlyStore } from "../state/gainly-store";
 
 export default function RoutinesPage() {
-  const { routines, exercises } = useGainlyStore();
+  const { routines, exercises, addTechniqueToRoutineExercise } = useGainlyStore();
   const routine = routines[0];
   const exercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]));
 
@@ -24,7 +24,7 @@ export default function RoutinesPage() {
       </header>
       <ExercisePicker routineId={routine.id} />
       <div className="space-y-3">
-        {routine.exercises.map((item, index) => {
+        {routine.exercises.map((item) => {
           const exercise = exercisesById.get(item.exerciseId);
           if (!exercise) {
             return null;
@@ -34,7 +34,9 @@ export default function RoutinesPage() {
               key={item.id}
               exercise={exercise}
               item={item}
-              showTechniqueMenu={index === 0}
+              onSelectTechnique={(routineExerciseId, technique) =>
+                addTechniqueToRoutineExercise(routine.id, routineExerciseId, technique)
+              }
             />
           );
         })}
