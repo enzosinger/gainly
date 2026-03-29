@@ -1,3 +1,4 @@
+import { Card, CardContent, CardHeader } from "../components/ui/card";
 import { useGainlyStore } from "../state/gainly-store";
 
 export default function ProfilePage() {
@@ -15,33 +16,49 @@ export default function ProfilePage() {
       <header className="space-y-2">
         <p className="eyebrow">Athlete profile</p>
         <h1 className="screen-title">Profile</h1>
-        <p className="max-w-2xl text-sm text-zinc-500 md:text-base">
+        <p className="max-w-2xl text-sm text-[hsl(var(--muted-foreground))] md:text-base">
           Maintain a clear baseline of your current training footprint and weekly workload capacity.
         </p>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <article className="panel-card p-4 md:p-5">
-          <p className="eyebrow">Routines</p>
-          <p className="mt-3 text-3xl font-semibold">{routines.length}</p>
-        </article>
-        <article className="panel-card p-4 md:p-5">
-          <p className="eyebrow">Exercise library</p>
-          <p className="mt-3 text-3xl font-semibold">{exercises.length}</p>
-        </article>
-        <article className="panel-card p-4 md:p-5">
-          <p className="eyebrow">Weekly sets</p>
-          <p className="mt-3 text-3xl font-semibold">{weeklySets}</p>
-        </article>
+        <Card>
+          <CardHeader className="pb-3">
+            <p className="eyebrow">Routines</p>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-semibold">{routines.length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-3">
+            <p className="eyebrow">Exercise library</p>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-semibold">{exercises.length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-3">
+            <p className="eyebrow">Weekly sets</p>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-semibold">{weeklySets}</p>
+          </CardContent>
+        </Card>
       </div>
 
-      <article className="panel-card p-5 md:p-6">
-        <p className="eyebrow">Readiness note</p>
-        <p className="mt-3 text-lg font-medium tracking-tight">Total planned exercises: {totalExercises}</p>
-        <p className="mt-2 text-sm text-zinc-500">
-          Keep volume stable for 2-3 weeks before increasing load to preserve technique quality.
-        </p>
-      </article>
+      <Card>
+        <CardHeader className="pb-4">
+          <p className="eyebrow">Readiness note</p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-lg font-medium tracking-tight">Total planned exercises: {totalExercises}</p>
+          <div className="panel-inset rounded-2xl px-4 py-3 text-sm text-[hsl(var(--muted-foreground))]">
+            Keep volume stable for 2-3 weeks before increasing load to preserve technique quality.
+          </div>
+        </CardContent>
+      </Card>
     </section>
   );
 }

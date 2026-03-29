@@ -2,8 +2,9 @@ import { FormEvent, useState } from "react";
 import type { MuscleGroup } from "../../../types/domain";
 import { useGainlyStore } from "../../../state/gainly-store";
 import { Button } from "../../ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../ui/card";
 import { Input } from "../../ui/input";
+import { Select } from "../../ui/select";
 
 const muscleGroupOptions: MuscleGroup[] = ["chest", "back", "shoulders", "legs", "biceps", "triceps"];
 
@@ -29,7 +30,10 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-base">Add exercise</CardTitle>
+        <div className="space-y-2">
+          <CardTitle className="text-base">Add exercise</CardTitle>
+          <CardDescription>Pull from the library or create a movement for this routine.</CardDescription>
+        </div>
         <Button
           type="button"
           variant="outline"
@@ -40,10 +44,10 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
         </Button>
       </CardHeader>
       {createOpen ? (
-        <CardContent>
-          <form className="space-y-3 rounded-md border border-zinc-200 bg-zinc-50 p-3" onSubmit={handleCreate}>
+        <CardContent className="pb-0">
+          <form className="panel-inset space-y-3 rounded-2xl p-4" onSubmit={handleCreate}>
             <label className="block text-sm">
-              <span className="block text-zinc-600">Exercise name</span>
+              <span className="block text-[hsl(var(--muted-foreground))]">Exercise name</span>
               <Input
                 value={name}
                 onChange={(event) => setName(event.target.value)}
@@ -52,18 +56,18 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
               />
             </label>
             <label className="block text-sm">
-              <span className="block text-zinc-600">Muscle group</span>
-              <select
+              <span className="block text-[hsl(var(--muted-foreground))]">Muscle group</span>
+              <Select
                 value={muscleGroup}
                 onChange={(event) => setMuscleGroup(event.target.value as MuscleGroup)}
-                className="mt-2 flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
+                className="mt-2"
               >
                 {muscleGroupOptions.map((option) => (
                   <option key={option} value={option}>
                     {option}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
             <Button type="submit" variant="default" size="sm">
               Save exercise
@@ -71,14 +75,14 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
           </form>
         </CardContent>
       ) : null}
-      <CardContent className={createOpen ? "pt-0" : ""}>
+      <CardContent className={createOpen ? "pt-4" : ""}>
         <div className="grid gap-2">
           {exercises.map((exercise) => (
             <button
               key={exercise.id}
               type="button"
               onClick={() => addExerciseToRoutine(routineId, exercise.id)}
-              className="rounded-md border border-zinc-200 bg-white px-3 py-3 text-left text-sm text-zinc-900 transition hover:bg-zinc-50"
+              className="panel-inset rounded-2xl px-3 py-3 text-left text-sm text-[hsl(var(--foreground))] transition hover:border-[hsl(var(--ring))]"
             >
               {exercise.name}
             </button>

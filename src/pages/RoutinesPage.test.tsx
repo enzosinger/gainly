@@ -25,6 +25,22 @@ function CreateExerciseProbe() {
 }
 
 describe("RoutinesPage", () => {
+  it("keeps the create exercise form accessible without showing unilateral options", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <GainlyStoreProvider>
+        <RoutinesPage />
+      </GainlyStoreProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: /create new/i }));
+
+    expect(screen.getByRole("textbox", { name: /exercise name/i })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: /muscle group/i })).toBeInTheDocument();
+    expect(screen.queryAllByText(/unilateral|bilateral/i)).toHaveLength(0);
+  });
+
   it("starts with normal sets and lets the user add an advanced technique deliberately", async () => {
     const user = userEvent.setup();
 
