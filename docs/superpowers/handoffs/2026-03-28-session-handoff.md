@@ -26,6 +26,7 @@ Instead, a local UI layer was created at:
 - `src/components/ui/card.tsx`
 - `src/components/ui/badge.tsx`
 - `src/components/ui/input.tsx`
+- `src/components/ui/select.tsx`
 
 This means the app is only **shadcn-like**, not yet truly shadcn/ui-based.
 
@@ -53,7 +54,7 @@ Recent refactor shifted the app toward `B2 Monochrome Athletic`:
 
 - gradients removed from `src/styles/globals.css`
 - sidebar moved toward full-height left rail in `src/app/layouts/AppShell.tsx`
-- monochrome card/button/badge/input styling introduced
+- monochrome card/button/badge/input/select styling introduced
 - `unilateral` removed from visible routines/library UI and domain model
 
 ## Files Most Relevant Next
@@ -71,7 +72,7 @@ Recent refactor shifted the app toward `B2 Monochrome Athletic`:
 - `src/components/ui/badge.tsx`
 - `src/components/ui/input.tsx`
 
-### Pages likely needing further refinement
+### Pages to revisit for future polish or feature follow-up
 
 - `src/pages/DashboardPage.tsx`
 - `src/pages/WorkoutPage.tsx`
@@ -96,18 +97,20 @@ Completed after the B2 pass:
 ## Main Outstanding Work
 
 - optional dark mode implementation
+- restrained semantic color pass for feedback and status states
 - future decision on official `shadcn/ui` migration after the UI system settles
 
 ## Good Next Prompt For A New Chat
 
 “Read `docs/superpowers/handoffs/2026-03-28-session-handoff.md` first. We are continuing the Gainly frontend in `/Users/enzosinger/Desktop/repos/gainly`.
 
-Current chosen direction is `B2 Monochrome Athletic`: shadcn/ui-driven feel, monochrome base, no gradients, full-height left sidebar, colors later.
+The `B2 Monochrome Athletic` pass is complete: the app uses a monochrome, shadcn-like local primitive layer, the full-height sidebar shell is in place, and `unilateral` has been removed from the active product model and UI.
 
-Important: the current app only uses a local shadcn-like UI layer in `src/components/ui/*`; official shadcn/ui has not been installed yet.
+Important: the current app only uses a local shadcn-like UI layer in `src/components/ui/*`, including `select.tsx`; official shadcn/ui has not been installed yet.
 
-Please inspect the current frontend state, verify the latest refactor, and continue by either:
-1. migrating the app to real shadcn/ui components, or
-2. finishing the B2 redesign cleanly on the current local UI layer.
+Please inspect the current frontend state and continue with one concrete follow-up path:
+1. implement optional dark mode while preserving the B2 visual system, or
+2. add a restrained semantic color pass for feedback/status states, or
+3. evaluate whether the local primitives should stay as-is or be deliberately migrated to official `shadcn/ui`.
 
 Before coding, tell me which path you recommend and why.”
