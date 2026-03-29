@@ -28,6 +28,7 @@ describe("WorkoutPage", () => {
     expect(benchButton).toHaveAttribute("aria-expanded", "true");
     expect(rowButton).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByText(/previous 80 kg x 6/i)).toBeInTheDocument();
+    expect(screen.getByText(/previous 80 kg x 6/i).closest(".panel-inset")).toBeInTheDocument();
 
     await user.click(rowButton);
     expect(benchButton).toHaveAttribute("aria-expanded", "false");

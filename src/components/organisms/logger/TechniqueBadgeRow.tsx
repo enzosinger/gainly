@@ -12,7 +12,7 @@ export default function TechniqueBadgeRow({ sets }: { sets: SetEntry[] }) {
   return (
     <div className="flex flex-wrap gap-2">
       {Array.from(new Set(sets.map((set) => set.technique))).map((technique) => (
-        <Badge key={technique} variant="outline" className="capitalize">
+        <Badge key={technique} variant="secondary" className="capitalize">
           {labels[technique]}
         </Badge>
       ))}

@@ -46,7 +46,7 @@ export default function WeeklyRoutineList() {
       }}
     >
       <SortableContext items={routines.map((routine) => routine.id)} strategy={verticalListSortingStrategy}>
-        <div className="grid gap-4">
+        <div className="grid gap-4 md:gap-5">
           {routines.map((routine) => (
             <SortableRoutineCard key={routine.id} routine={routine} />
           ))}

@@ -31,6 +31,7 @@ describe("App shell", () => {
       "href",
       "/workout/routine-upper-a",
     );
+    expect(screen.getByText("Mon").closest(".panel-card")).toBeInTheDocument();
   });
 
   it("renders the full profile analytics page content", async () => {

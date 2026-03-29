@@ -17,22 +17,22 @@ function formatReps(set: SetEntry) {
 
 export default function SetRow({ set, index, pairExerciseName }: SetRowProps) {
   return (
-    <div className="space-y-2 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700">
+    <div className="panel-inset space-y-2 p-3 text-sm text-[hsl(var(--foreground))]">
       <div className="grid grid-cols-[44px_1fr_1fr] gap-2">
-        <div className="text-zinc-400">{index + 1}</div>
+        <div className="text-[hsl(var(--muted-foreground))]">{index + 1}</div>
         <div>{formatWeight(set.weightKg)}</div>
         <div>{formatReps(set)}</div>
       </div>
       {set.technique === "backoff" && set.backoffPercent ? (
-        <p className="text-xs text-zinc-500">Back-off: -{set.backoffPercent}%</p>
+        <p className="text-xs text-[hsl(var(--muted-foreground))]">Back-off: -{set.backoffPercent}%</p>
       ) : null}
       {set.technique === "cluster" && set.clusterBlocks ? (
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-[hsl(var(--muted-foreground))]">
           Cluster: {set.clusterBlocks} blocks{set.clusterRepRange ? ` (${set.clusterRepRange} reps)` : ""}
         </p>
       ) : null}
       {set.technique === "superset" && pairExerciseName ? (
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-[hsl(var(--muted-foreground))]">
           Paired with {pairExerciseName}
           {set.pairWeightKg ? ` · ${set.pairWeightKg} kg` : ""}
           {set.pairReps ? ` x ${set.pairReps}` : ""}
