@@ -13,6 +13,7 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState("");
   const [muscleGroup, setMuscleGroup] = useState<MuscleGroup>("chest");
+  const createFormId = `exercise-create-form-${routineId}`;
 
   function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -38,14 +39,16 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
           type="button"
           variant="outline"
           size="sm"
+          aria-controls={createFormId}
+          aria-expanded={createOpen}
           onClick={() => setCreateOpen((current) => !current)}
         >
-          Create new
+          {createOpen ? "Cancel" : "Create new"}
         </Button>
       </CardHeader>
       {createOpen ? (
         <CardContent className="pb-0">
-          <form className="panel-inset space-y-3 rounded-2xl p-4" onSubmit={handleCreate}>
+          <form id={createFormId} className="panel-inset space-y-3 rounded-2xl p-4" onSubmit={handleCreate}>
             <label className="block text-sm">
               <span className="block text-[hsl(var(--muted-foreground))]">Exercise name</span>
               <Input

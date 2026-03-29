@@ -25,6 +25,33 @@ function CreateExerciseProbe() {
 }
 
 describe("RoutinesPage", () => {
+  it("reflects the create-exercise disclosure open state accessibly", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <GainlyStoreProvider>
+        <RoutinesPage />
+      </GainlyStoreProvider>,
+    );
+
+    const createButton = screen.getByRole("button", { name: /create new/i });
+
+    expect(createButton).toHaveAttribute("aria-expanded", "false");
+    expect(createButton).toHaveAttribute("aria-controls");
+
+    await user.click(createButton);
+
+    const disclosureId = createButton.getAttribute("aria-controls");
+    expect(createButton).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: /cancel/i })).toHaveAttribute("aria-controls", disclosureId);
+    expect(document.getElementById(disclosureId ?? "")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /cancel/i }));
+
+    expect(screen.getByRole("button", { name: /create new/i })).toHaveAttribute("aria-expanded", "false");
+    expect(document.getElementById(disclosureId ?? "")).not.toBeInTheDocument();
+  });
+
   it("creates a custom exercise through the builder form with the selected muscle group", async () => {
     const user = userEvent.setup();
 
@@ -65,9 +92,12 @@ describe("RoutinesPage", () => {
     expect(screen.queryAllByText(/unilateral|bilateral/i)).toHaveLength(0);
 
     await user.click(screen.getAllByRole("button", { name: /add technique/i })[0]);
-    expect(screen.getByRole("menuitem", { name: /back-off set/i })).toBeInTheDocument();
-    expect(screen.getByRole("menuitem", { name: /cluster set/i })).toBeInTheDocument();
-    expect(screen.getByRole("menuitem", { name: /super set/i })).toBeInTheDocument();
+
+    const techniqueMenu = screen.getByRole("menu");
+    expect(techniqueMenu).toBeVisible();
+    expect(within(techniqueMenu).getByRole("menuitem", { name: /back-off set/i })).toBeVisible();
+    expect(within(techniqueMenu).getByRole("menuitem", { name: /cluster set/i })).toBeVisible();
+    expect(within(techniqueMenu).getByRole("menuitem", { name: /super set/i })).toBeVisible();
 
     await user.click(screen.getByRole("menuitem", { name: /back-off set/i }));
     expect(screen.getByText(/set 3 · backoff/i)).toBeInTheDocument();
