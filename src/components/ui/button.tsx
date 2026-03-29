@@ -5,10 +5,11 @@ type ButtonVariant = "default" | "outline" | "secondary" | "ghost";
 type ButtonSize = "default" | "sm" | "lg" | "icon";
 
 const variantClasses: Record<ButtonVariant, string> = {
-  default: "bg-zinc-950 text-zinc-50 hover:bg-zinc-800",
-  outline: "border border-zinc-200 bg-white text-zinc-950 hover:bg-zinc-50",
-  secondary: "bg-zinc-100 text-zinc-950 hover:bg-zinc-200",
-  ghost: "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950",
+  default: "bg-[hsl(var(--strong))] text-white hover:opacity-95",
+  outline:
+    "border border-[hsl(var(--border))] bg-[hsl(var(--panel))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--panel-inset))]",
+  secondary: "bg-[hsl(var(--panel-inset))] text-[hsl(var(--foreground))] hover:opacity-95",
+  ghost: "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--panel-inset))] hover:text-[hsl(var(--foreground))]",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -30,7 +31,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         type={type}
         className={cn(
-          "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+          "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
           variantClasses[variant],
           sizeClasses[size],
           className,

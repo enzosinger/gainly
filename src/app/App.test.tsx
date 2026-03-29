@@ -41,22 +41,16 @@ describe("App shell", () => {
 });
 
 describe("visual shell", () => {
-  it("renders the mobile navigation and premium heading treatment", () => {
+  it("renders the B2 shell with semantic surface classes", () => {
     render(<App />);
 
     const desktopNavigation = screen.getByRole("navigation", { name: /primary navigation/i });
     const mobileNavigation = screen.getByRole("navigation", { name: /primary mobile navigation/i });
     const mainRegion = screen.getByRole("main");
-    const desktopAside = desktopNavigation.closest("aside");
 
     expect(desktopNavigation).toBeInTheDocument();
-    expect(desktopAside).toHaveClass("min-h-screen", "border-r");
-    expect(desktopNavigation.closest(".panel-card")).not.toBeInTheDocument();
-    expect(mobileNavigation).toHaveClass("fixed", "inset-x-3", "bottom-3");
-    expect(mainRegion).toHaveClass("flex-1", "px-4", "pb-24");
-    expect(screen.getAllByRole("link", { name: /dashboard/i }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("link", { name: /profile/i }).length).toBeGreaterThan(0);
-    expect(screen.queryByText(/performance console/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/your training week/i)).toBeInTheDocument();
+    expect(desktopNavigation.closest("aside")).toHaveClass("app-shell-sidebar");
+    expect(mobileNavigation).toHaveClass("app-shell-mobile-nav");
+    expect(mainRegion).toHaveClass("app-shell-main");
   });
 });

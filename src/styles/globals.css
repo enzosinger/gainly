@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --background: 0 0% 98%;
-  --foreground: 240 10% 3.9%;
+  --background: 0 0% 97%;
+  --foreground: 240 10% 4%;
   --panel: 0 0% 100%;
-  --panel-2: 240 4.8% 95.9%;
-  --muted: 240 3.8% 46.1%;
-  --accent: 240 5.9% 10%;
-  --warning: 240 3.8% 46.1%;
-  --outline: 240 5.9% 90%;
+  --panel-inset: 240 5% 96%;
+  --border: 240 6% 88%;
+  --muted-foreground: 240 4% 40%;
+  --strong: 240 8% 8%;
+  --ring: 240 8% 8%;
 }
 
 body {
@@ -18,15 +18,41 @@ body {
 }
 
 @layer components {
+  .app-shell-sidebar {
+    @apply min-h-screen border-r;
+    background-color: hsl(var(--panel));
+    border-color: hsl(var(--border));
+  }
+
+  .app-shell-main {
+    @apply flex-1 px-4 pb-24 pt-6 md:px-10 md:pb-10 md:pt-10;
+  }
+
+  .app-shell-mobile-nav {
+    @apply fixed inset-x-3 bottom-3 z-20 rounded-xl border p-2 shadow-sm md:hidden;
+    background-color: hsl(var(--panel));
+    border-color: hsl(var(--border));
+  }
+
   .panel-card {
-    @apply rounded-xl border border-zinc-200 bg-white shadow-sm;
+    @apply rounded-xl border shadow-sm;
+    background-color: hsl(var(--panel));
+    border-color: hsl(var(--border));
+  }
+
+  .panel-inset {
+    @apply rounded-md border;
+    background-color: hsl(var(--panel-inset));
+    border-color: hsl(var(--border));
   }
 
   .eyebrow {
-    @apply text-[11px] uppercase tracking-[0.24em] text-zinc-400;
+    @apply text-[11px] uppercase tracking-[0.24em];
+    color: hsl(var(--muted-foreground));
   }
 
   .screen-title {
-    @apply text-3xl font-semibold tracking-tight text-zinc-950 md:text-4xl;
+    @apply text-3xl font-semibold tracking-tight md:text-4xl;
+    color: hsl(var(--foreground));
   }
 }
