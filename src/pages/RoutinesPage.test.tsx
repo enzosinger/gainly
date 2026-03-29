@@ -103,6 +103,87 @@ describe("RoutinesPage", () => {
     expect(screen.getByText(/set 3 · backoff/i)).toBeInTheDocument();
   });
 
+  it("switches the routine editor with the routine selector", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <GainlyStoreProvider>
+        <RoutinesPage />
+      </GainlyStoreProvider>,
+    );
+
+    expect(screen.getByRole("heading", { name: /push builder/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /barbell bench press/i })).toBeInTheDocument();
+
+    await user.selectOptions(screen.getByRole("combobox", { name: /routine/i }), "routine-lower-a");
+
+    expect(screen.getByRole("heading", { name: /pull builder/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /barbell back squat/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /barbell bench press/i })).not.toBeInTheDocument();
+  });
+
+  it("filters the exercise picker by search text and muscle group", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <GainlyStoreProvider>
+        <RoutinesPage />
+      </GainlyStoreProvider>,
+    );
+
+    const searchInput = screen.getByRole("textbox", { name: /search exercises/i });
+    const muscleGroupFilter = screen.getByRole("combobox", { name: /filter by muscle group/i });
+
+    await user.type(searchInput, "curl");
+
+    expect(screen.getByRole("button", { name: /incline dumbbell curl/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /barbell bench press/i })).not.toBeInTheDocument();
+
+    await user.clear(searchInput);
+    await user.selectOptions(muscleGroupFilter, "legs");
+
+    expect(screen.getByRole("button", { name: /barbell back squat/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /barbell bench press/i })).not.toBeInTheDocument();
+  });
+
+  it("adds a normal set to a routine exercise", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <GainlyStoreProvider>
+        <RoutinesPage />
+      </GainlyStoreProvider>,
+    );
+
+    const benchCard = screen.getByRole("heading", { name: /barbell bench press/i }).closest(".panel-card");
+    expect(benchCard).not.toBeNull();
+
+    await user.click(within(benchCard as HTMLElement).getByRole("button", { name: /add set/i }));
+
+    expect(within(benchCard as HTMLElement).getByText(/set 3 · normal/i)).toBeInTheDocument();
+  });
+
+  it("removes an exercise from the selected routine only", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <GainlyStoreProvider>
+        <RoutinesPage />
+      </GainlyStoreProvider>,
+    );
+
+    const benchCard = screen.getByRole("heading", { name: /barbell bench press/i }).closest(".panel-card");
+    expect(benchCard).not.toBeNull();
+
+    await user.click(within(benchCard as HTMLElement).getByRole("button", { name: /remove exercise/i }));
+
+    expect(screen.queryByRole("heading", { name: /barbell bench press/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /seated cable row/i })).toBeInTheDocument();
+
+    await user.selectOptions(screen.getByRole("combobox", { name: /routine/i }), "routine-upper-b");
+    expect(screen.getByRole("heading", { name: /incline dumbbell curl/i })).toBeInTheDocument();
+  });
+
   it("creates unique ids when creating duplicate exercise names", async () => {
     const user = userEvent.setup();
 
