@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { cn } from "../../lib/utils";
 
 const links = [
   { to: "/", label: "Dashboard" },
@@ -6,6 +7,15 @@ const links = [
   { to: "/exercises", label: "Exercises" },
   { to: "/profile", label: "Profile" },
 ];
+
+const desktopNavLinkClasses =
+  "rounded-md px-4 py-3 text-sm font-medium transition";
+const mobileNavLinkClasses =
+  "rounded-md px-2 py-2 text-center text-[11px] uppercase tracking-[0.16em] transition";
+const activeNavLinkClasses = "bg-[hsl(var(--strong))] text-white";
+const inactiveDesktopNavLinkClasses =
+  "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--panel-inset))] hover:text-[hsl(var(--foreground))]";
+const inactiveMobileNavLinkClasses = "text-[hsl(var(--muted-foreground))]";
 
 export default function AppShell() {
   return (
@@ -20,11 +30,10 @@ export default function AppShell() {
                 key={link.to}
                 to={link.to}
                 className={({ isActive }) =>
-                  `rounded-md px-4 py-3 text-sm font-medium transition ${
-                    isActive
-                      ? "bg-[hsl(var(--strong))] text-white"
-                      : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--panel-inset))] hover:text-[hsl(var(--foreground))]"
-                  }`
+                  cn(
+                    desktopNavLinkClasses,
+                    isActive ? activeNavLinkClasses : inactiveDesktopNavLinkClasses,
+                  )
                 }
               >
                 {link.label}
@@ -48,11 +57,10 @@ export default function AppShell() {
                 key={link.to}
                 to={link.to}
                 className={({ isActive }) =>
-                  `rounded-md px-2 py-2 text-center text-[11px] uppercase tracking-[0.16em] transition ${
-                    isActive
-                      ? "bg-[hsl(var(--strong))] text-white"
-                      : "text-[hsl(var(--muted-foreground))]"
-                  }`
+                  cn(
+                    mobileNavLinkClasses,
+                    isActive ? activeNavLinkClasses : inactiveMobileNavLinkClasses,
+                  )
                 }
               >
                 {link.label}

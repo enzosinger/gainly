@@ -41,16 +41,14 @@ describe("App shell", () => {
 });
 
 describe("visual shell", () => {
-  it("renders the B2 shell with semantic surface classes", () => {
+  it("renders the desktop rail and mobile nav as one shell system", () => {
     render(<App />);
 
-    const desktopNavigation = screen.getByRole("navigation", { name: /primary navigation/i });
+    const desktopAside = screen.getByRole("navigation", { name: /primary navigation/i }).closest("aside");
     const mobileNavigation = screen.getByRole("navigation", { name: /primary mobile navigation/i });
-    const mainRegion = screen.getByRole("main");
 
-    expect(desktopNavigation).toBeInTheDocument();
-    expect(desktopNavigation.closest("aside")).toHaveClass("app-shell-sidebar");
+    expect(desktopAside).toHaveClass("app-shell-sidebar");
     expect(mobileNavigation).toHaveClass("app-shell-mobile-nav");
-    expect(mainRegion).toHaveClass("app-shell-main");
+    expect(screen.getByText(/monochrome athletic/i)).toBeInTheDocument();
   });
 });
