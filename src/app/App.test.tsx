@@ -46,9 +46,11 @@ describe("visual shell", () => {
 
     const desktopAside = screen.getByRole("navigation", { name: /primary navigation/i }).closest("aside");
     const mobileNavigation = screen.getByRole("navigation", { name: /primary mobile navigation/i });
+    const mainRegion = screen.getByRole("main");
 
     expect(desktopAside).toHaveClass("app-shell-sidebar");
     expect(mobileNavigation).toHaveClass("app-shell-mobile-nav");
+    expect(mainRegion).toHaveClass("app-shell-main");
     expect(screen.getByText(/monochrome athletic/i)).toBeInTheDocument();
   });
 });
