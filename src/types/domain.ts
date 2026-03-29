@@ -12,7 +12,6 @@ export type Exercise = {
   id: string;
   name: string;
   muscleGroup: MuscleGroup;
-  unilateral: boolean;
 };
 
 export type SetEntry = {
@@ -20,8 +19,6 @@ export type SetEntry = {
   technique: TechniqueType;
   weightKg?: number;
   reps?: number;
-  leftReps?: number;
-  rightReps?: number;
   backoffPercent?: number;
   clusterBlocks?: number;
   clusterRepRange?: string;

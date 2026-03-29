@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import type { Routine } from "../../types/domain";
 import StatusGlyph from "../atoms/StatusGlyph";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 type RoutineWeekCardProps = {
   routine: Routine;
@@ -9,33 +11,37 @@ type RoutineWeekCardProps = {
 
 export default function RoutineWeekCard({ routine, workoutHref }: RoutineWeekCardProps) {
   return (
-    <article className="rounded-[28px] border border-white/10 bg-white/5 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.24)]">
-      <div className="flex items-start justify-between">
+    <Card>
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.22em] text-white/45">{routine.weekday}</p>
-          <h3 className="mt-2 text-xl font-semibold">{routine.name}</h3>
+          <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">{routine.weekday}</p>
+          <CardTitle className="mt-2 text-xl">{routine.name}</CardTitle>
         </div>
         <StatusGlyph completed={routine.completed} />
-      </div>
-      <div className="mt-5 flex items-center justify-between rounded-2xl bg-white/[0.03] px-3 py-2 text-sm text-white/70">
-        <span>Previous delta</span>
-        <span className={routine.deltaPercent >= 0 ? "text-[hsl(var(--accent))]" : "text-rose-300"}>
-          {routine.deltaPercent >= 0 ? "+" : ""}
-          {routine.deltaPercent.toFixed(1)}%
-        </span>
-      </div>
-      {workoutHref ? (
-        <Link
-          to={workoutHref}
-          className="mt-4 w-full rounded-2xl bg-white/10 px-3 py-2 text-sm font-medium text-white/85 hover:bg-white/15"
-          onPointerDown={(event) => {
-            event.stopPropagation();
-          }}
-          onClick={(event) => event.stopPropagation()}
-        >
-          Log {routine.name} workout
-        </Link>
-      ) : null}
-    </article>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
+          <span>Previous delta</span>
+          <span className={routine.deltaPercent >= 0 ? "text-zinc-950" : "text-zinc-500"}>
+            {routine.deltaPercent >= 0 ? "+" : ""}
+            {routine.deltaPercent.toFixed(1)}%
+          </span>
+        </div>
+        {workoutHref ? (
+          <Link
+            to={workoutHref}
+            className="block"
+            onPointerDown={(event) => {
+              event.stopPropagation();
+            }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <Button variant="outline" className="w-full">
+              Log {routine.name} workout
+            </Button>
+          </Link>
+        ) : null}
+      </CardContent>
+    </Card>
   );
 }

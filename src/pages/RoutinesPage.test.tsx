@@ -11,7 +11,7 @@ function CreateExerciseProbe() {
     <section>
       <button
         type="button"
-        onClick={() => createExercise({ name: "Custom Lift", muscleGroup: "back", unilateral: false })}
+        onClick={() => createExercise({ name: "Custom Lift", muscleGroup: "back" })}
       >
         Create duplicate
       </button>
@@ -33,6 +33,8 @@ describe("RoutinesPage", () => {
         <RoutinesPage />
       </GainlyStoreProvider>,
     );
+
+    expect(screen.queryAllByText(/unilateral|bilateral/i)).toHaveLength(0);
 
     await user.click(screen.getAllByRole("button", { name: /add technique/i })[0]);
     expect(screen.getByRole("menuitem", { name: /back-off set/i })).toBeInTheDocument();

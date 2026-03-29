@@ -13,7 +13,7 @@ describe("App shell", () => {
     routines.unmount();
 
     const exercises = renderWithAppRouter(["/exercises"]);
-    expect(await screen.findByRole("heading", { name: /reusable movements/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /^exercises$/i })).toBeInTheDocument();
     exercises.unmount();
 
     const profile = renderWithAppRouter(["/profile"]);
@@ -47,14 +47,16 @@ describe("visual shell", () => {
     const desktopNavigation = screen.getByRole("navigation", { name: /primary navigation/i });
     const mobileNavigation = screen.getByRole("navigation", { name: /primary mobile navigation/i });
     const mainRegion = screen.getByRole("main");
+    const desktopAside = desktopNavigation.closest("aside");
 
     expect(desktopNavigation).toBeInTheDocument();
-    expect(desktopNavigation.closest(".panel-card")).toBeInTheDocument();
-    expect(mobileNavigation).toHaveClass("fixed", "inset-x-4", "bottom-4");
-    expect(mainRegion).toHaveClass("flex-1", "px-4", "pb-28");
+    expect(desktopAside).toHaveClass("min-h-screen", "border-r");
+    expect(desktopNavigation.closest(".panel-card")).not.toBeInTheDocument();
+    expect(mobileNavigation).toHaveClass("fixed", "inset-x-3", "bottom-3");
+    expect(mainRegion).toHaveClass("flex-1", "px-4", "pb-24");
     expect(screen.getAllByRole("link", { name: /dashboard/i }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("link", { name: /profile/i }).length).toBeGreaterThan(0);
-    expect(screen.getByText(/performance console/i)).toBeInTheDocument();
+    expect(screen.queryByText(/performance console/i)).not.toBeInTheDocument();
     expect(screen.getByText(/your training week/i)).toBeInTheDocument();
   });
 });

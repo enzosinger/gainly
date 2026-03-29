@@ -16,7 +16,7 @@ type GainlyStoreValue = {
     routineExerciseId: string,
     technique: Exclude<TechniqueType, "normal">,
   ) => void;
-  createExercise: (input: { name: string; muscleGroup: MuscleGroup; unilateral: boolean }) => Exercise;
+  createExercise: (input: { name: string; muscleGroup: MuscleGroup }) => Exercise;
 };
 
 const GainlyStoreContext = createContext<GainlyStoreValue | null>(null);
@@ -102,14 +102,13 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
           }),
         );
       },
-      createExercise: (input: { name: string; muscleGroup: MuscleGroup; unilateral: boolean }) => {
+      createExercise: (input: { name: string; muscleGroup: MuscleGroup }) => {
         const trimmedName = input.name.trim();
         const baseId = `ex-${trimmedName.toLowerCase().replace(/\s+/g, "-")}`;
         let createdExercise: Exercise = {
           id: baseId,
           name: trimmedName,
           muscleGroup: input.muscleGroup,
-          unilateral: input.unilateral,
         };
 
         setExercises((current) => {

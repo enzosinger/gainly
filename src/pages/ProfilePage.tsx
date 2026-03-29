@@ -15,7 +15,7 @@ export default function ProfilePage() {
       <header className="space-y-2">
         <p className="eyebrow">Athlete profile</p>
         <h1 className="screen-title">Profile</h1>
-        <p className="max-w-2xl text-sm text-white/60 md:text-base">
+        <p className="max-w-2xl text-sm text-zinc-500 md:text-base">
           Maintain a clear baseline of your current training footprint and weekly workload capacity.
         </p>
       </header>
@@ -38,7 +38,7 @@ export default function ProfilePage() {
       <article className="panel-card p-5 md:p-6">
         <p className="eyebrow">Readiness note</p>
         <p className="mt-3 text-lg font-medium tracking-tight">Total planned exercises: {totalExercises}</p>
-        <p className="mt-2 text-sm text-white/60">
+        <p className="mt-2 text-sm text-zinc-500">
           Keep volume stable for 2-3 weeks before increasing load to preserve technique quality.
         </p>
       </article>

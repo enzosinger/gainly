@@ -1,5 +1,7 @@
 import type { Exercise, RoutineExercise } from "../../../types/domain";
 import TechniqueMenu from "./TechniqueMenu";
+import { Badge } from "../../ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 
 export default function RoutineExerciseEditor({
   exercise,
@@ -11,23 +13,23 @@ export default function RoutineExerciseEditor({
   onSelectTechnique: (routineExerciseId: string, technique: "backoff" | "cluster" | "superset") => void;
 }) {
   return (
-    <article className="rounded-[28px] border border-white/10 bg-white/5 p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="text-lg font-semibold">{exercise.name}</h3>
-          <p className="text-sm text-white/55">
-            {exercise.muscleGroup} · {exercise.unilateral ? "unilateral" : "bilateral"}
-          </p>
+    <Card>
+      <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 pb-4">
+        <div className="space-y-2">
+          <CardTitle className="text-base">{exercise.name}</CardTitle>
+          <Badge variant="outline" className="capitalize">
+            {exercise.muscleGroup}
+          </Badge>
         </div>
         <TechniqueMenu onSelect={(technique) => onSelectTechnique(item.id, technique)} />
-      </div>
-      <div className="mt-4 space-y-2">
+      </CardHeader>
+      <CardContent className="space-y-2">
         {item.sets.map((set, index) => (
-          <div key={set.id} className="rounded-2xl bg-white/[0.04] px-3 py-3 text-sm">
+          <div key={set.id} className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-3 text-sm text-zinc-700">
             Set {index + 1} · {set.technique}
           </div>
         ))}
-      </div>
-    </article>
+      </CardContent>
+    </Card>
   );
 }

@@ -12,7 +12,7 @@ export default function WorkoutPage() {
     return (
       <section className="space-y-4">
         <h1 className="screen-title">Workout</h1>
-        <p className="mt-4 text-sm text-white/60">No workout available.</p>
+        <p className="mt-4 text-sm text-zinc-500">No workout available.</p>
       </section>
     );
   }
@@ -22,9 +22,9 @@ export default function WorkoutPage() {
       <header className="space-y-2">
         <p className="eyebrow">{workoutRoutine.weekday}</p>
         <h1 className="screen-title">{workoutRoutine.name} workout</h1>
-        <p className="text-sm text-white/60">Track each set with consistent form quality and progressive overload.</p>
+        <p className="text-sm text-zinc-500">Track each set with a calmer, more focused logging surface.</p>
       </header>
-      <div className="panel-card space-y-3 p-4 md:p-5">
+      <div className="space-y-3">
         {workoutRoutine.exercises.map((item) => (
           <ExerciseAccordion
             key={item.id}

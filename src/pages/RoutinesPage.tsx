@@ -11,7 +11,7 @@ export default function RoutinesPage() {
     return (
       <section className="space-y-4">
         <h1 className="screen-title">Routines</h1>
-        <p className="mt-4 text-sm text-white/60">No routines available.</p>
+        <p className="mt-4 text-sm text-zinc-500">No routines available.</p>
       </section>
     );
   }
@@ -21,7 +21,7 @@ export default function RoutinesPage() {
       <header className="space-y-2">
         <p className="eyebrow">{routine.weekday}</p>
         <h1 className="screen-title">{routine.name} builder</h1>
-        <p className="text-sm text-white/60">Dial in weekly structure, then layer advanced techniques with intent.</p>
+        <p className="text-sm text-zinc-500">Build routines with normal sets first, then add advanced techniques deliberately.</p>
       </header>
       <ExercisePicker routineId={routine.id} />
       <div className="space-y-3">

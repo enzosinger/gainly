@@ -50,7 +50,7 @@ export const mockRoutines: Routine[] = [
       {
         id: "routine-upper-b-shoulder-press",
         exerciseId: "ex-dumbbell-shoulder-press",
-        sets: [{ id: "set-upper-b-press-1", technique: "normal", leftReps: 10, rightReps: 10 }],
+        sets: [{ id: "set-upper-b-press-1", technique: "normal", reps: 10 }],
       },
       {
         id: "routine-upper-b-arms",
