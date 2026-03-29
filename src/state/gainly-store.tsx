@@ -11,6 +11,8 @@ type GainlyStoreValue = {
   setExpandedExerciseId: (id: string | null) => void;
   reorderRoutines: (nextIds: string[]) => void;
   addExerciseToRoutine: (routineId: string, exerciseId: string) => void;
+  addSetToRoutineExercise: (routineId: string, routineExerciseId: string) => void;
+  removeExerciseFromRoutine: (routineId: string, routineExerciseId: string) => void;
   addTechniqueToRoutineExercise: (
     routineId: string,
     routineExerciseId: string,
@@ -64,6 +66,50 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
             return {
               ...routine,
               exercises: [...routine.exercises, nextItem],
+            };
+          }),
+        );
+      },
+      addSetToRoutineExercise: (routineId: string, routineExerciseId: string) => {
+        setRoutines((current) =>
+          current.map((routine) => {
+            if (routine.id !== routineId) {
+              return routine;
+            }
+
+            return {
+              ...routine,
+              exercises: routine.exercises.map((routineExercise) => {
+                if (routineExercise.id !== routineExerciseId) {
+                  return routineExercise;
+                }
+
+                const nextSetIndex = routineExercise.sets.length + 1;
+                return {
+                  ...routineExercise,
+                  sets: [
+                    ...routineExercise.sets,
+                    {
+                      id: `${routineExercise.id}-set-${nextSetIndex}`,
+                      technique: "normal",
+                    },
+                  ],
+                };
+              }),
+            };
+          }),
+        );
+      },
+      removeExerciseFromRoutine: (routineId: string, routineExerciseId: string) => {
+        setRoutines((current) =>
+          current.map((routine) => {
+            if (routine.id !== routineId) {
+              return routine;
+            }
+
+            return {
+              ...routine,
+              exercises: routine.exercises.filter((routineExercise) => routineExercise.id !== routineExerciseId),
             };
           }),
         );
