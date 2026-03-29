@@ -71,6 +71,7 @@ Recent refactor shifted the app toward `B2 Monochrome Athletic`:
 - `src/components/ui/card.tsx`
 - `src/components/ui/badge.tsx`
 - `src/components/ui/input.tsx`
+- `src/components/ui/select.tsx`
 
 ### Pages to revisit for future polish or feature follow-up
 
