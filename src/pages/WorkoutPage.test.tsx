@@ -23,6 +23,7 @@ describe("WorkoutPage", () => {
 
     expect(benchButton).toHaveAttribute("aria-expanded", "false");
     expect(rowButton).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryAllByText(/unilateral|bilateral/i)).toHaveLength(0);
 
     await user.click(benchButton);
     expect(benchButton).toHaveAttribute("aria-expanded", "true");
@@ -35,5 +36,6 @@ describe("WorkoutPage", () => {
     expect(rowButton).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByText(/previous 65 kg x 10/i)).toBeInTheDocument();
     expect(screen.queryByText(/back-off: -10%/i)).not.toBeInTheDocument();
+    expect(screen.queryAllByText(/unilateral|bilateral/i)).toHaveLength(0);
   });
 });

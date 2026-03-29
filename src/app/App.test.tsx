@@ -22,6 +22,7 @@ describe("App shell", () => {
 
     const workout = renderWithAppRouter(["/workout"]);
     expect(await screen.findByRole("heading", { name: /push workout/i })).toBeInTheDocument();
+    expect(screen.queryAllByText(/unilateral|bilateral/i)).toHaveLength(0);
     workout.unmount();
   });
 
@@ -45,6 +46,7 @@ describe("App shell", () => {
     renderWithAppRouter(["/profile"]);
     expect(await screen.findByText(/athlete profile/i)).toBeInTheDocument();
     expect(screen.getByText(/weekly sets/i)).toBeInTheDocument();
+    expect(screen.queryAllByText(/unilateral|bilateral/i)).toHaveLength(0);
   });
 });
 
@@ -60,5 +62,6 @@ describe("visual shell", () => {
     expect(mobileNavigation).toHaveClass("app-shell-mobile-nav");
     expect(mainRegion).toHaveClass("app-shell-main");
     expect(screen.getByText(/monochrome athletic/i)).toBeInTheDocument();
+    expect(screen.queryAllByText(/unilateral|bilateral/i)).toHaveLength(0);
   });
 });

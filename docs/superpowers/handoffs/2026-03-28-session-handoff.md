@@ -14,7 +14,7 @@ Project root: `/Users/enzosinger/Desktop/repos/gainly`
   - no gradients
   - full-height left sidebar
   - colors for feedback/status deferred to a later pass
-  - remove `unilateral` from the product/model/UI
+  - `unilateral` removed from the product/model/UI in the completed B2 pass
 
 ## Important Note
 
@@ -88,61 +88,21 @@ Recent refactor shifted the app toward `B2 Monochrome Athletic`:
 
 ## Tests / Verification Status
 
-At the end of the session, these passed:
+Completed after the B2 pass:
 
 - `npm test -- --runInBand`
 - `npm run build`
 
 ## Main Outstanding Work
 
-### 1. Decide whether to go fully official shadcn/ui
-
-Current state is not true shadcn/ui yet.
-
-Need decision:
-
-- keep local shadcn-like primitives
-- or install/generate real shadcn/ui and migrate surfaces
-
-### 2. Finish B2 styling properly
-
-The direction is chosen, but the current pass is still an intermediate refactor.
-
-Likely next design work:
-
-- make sidebar feel more truly B2
-- unify monochrome card hierarchy
-- reduce leftover ad hoc styling
-- tune typography/spacing
-- later introduce restrained semantic feedback colors
-
-### 3. Remove `unilateral` fully
-
-It was removed from the visible UI/model in the latest pass, but the next chat should verify no leftovers remain anywhere, including tests, mocks, logger assumptions, and builder behavior.
-
-### 4. Re-check page consistency
-
-Need a careful visual pass across:
-
-- dashboard
-- workout logger
-- routine builder
-- exercise library
-- profile
-
-Specifically for:
-
-- shared spacing rhythm
-- heading consistency
-- card hierarchy
-- sidebar height/structure
-- mobile navigation feel
+- optional dark mode implementation
+- future decision on official `shadcn/ui` migration after the UI system settles
 
 ## Good Next Prompt For A New Chat
 
 “Read `docs/superpowers/handoffs/2026-03-28-session-handoff.md` first. We are continuing the Gainly frontend in `/Users/enzosinger/Desktop/repos/gainly`.
 
-Current chosen direction is `B2 Monochrome Athletic`: shadcn/ui-driven feel, monochrome base, no gradients, full-height left sidebar, colors later, remove `unilateral`.
+Current chosen direction is `B2 Monochrome Athletic`: shadcn/ui-driven feel, monochrome base, no gradients, full-height left sidebar, colors later.
 
 Important: the current app only uses a local shadcn-like UI layer in `src/components/ui/*`; official shadcn/ui has not been installed yet.
 
@@ -151,4 +111,3 @@ Please inspect the current frontend state, verify the latest refactor, and conti
 2. finishing the B2 redesign cleanly on the current local UI layer.
 
 Before coding, tell me which path you recommend and why.”
-
