@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import RoutinesPage from "./RoutinesPage";
 import { GainlyStoreProvider, useGainlyStore } from "../state/gainly-store";
@@ -25,7 +25,7 @@ function CreateExerciseProbe() {
 }
 
 describe("RoutinesPage", () => {
-  it("keeps the create exercise form accessible without showing unilateral options", async () => {
+  it("creates a custom exercise through the builder form with the selected muscle group", async () => {
     const user = userEvent.setup();
 
     render(
@@ -38,6 +38,18 @@ describe("RoutinesPage", () => {
 
     expect(screen.getByRole("textbox", { name: /exercise name/i })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: /muscle group/i })).toBeInTheDocument();
+    expect(screen.queryAllByText(/unilateral|bilateral/i)).toHaveLength(0);
+
+    await user.type(screen.getByRole("textbox", { name: /exercise name/i }), "Face Pull");
+    await user.selectOptions(screen.getByRole("combobox", { name: /muscle group/i }), "shoulders");
+    await user.click(screen.getByRole("button", { name: /save exercise/i }));
+
+    const createdExerciseCard = screen
+      .getByRole("heading", { name: /face pull/i })
+      .closest(".panel-card");
+
+    expect(createdExerciseCard).not.toBeNull();
+    expect(within(createdExerciseCard as HTMLElement).getByText(/shoulders/i)).toBeInTheDocument();
     expect(screen.queryAllByText(/unilateral|bilateral/i)).toHaveLength(0);
   });
 

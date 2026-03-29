@@ -1,9 +1,29 @@
 import { render, screen } from "@testing-library/react";
+import ExercisesPage from "./ExercisesPage";
 import ProfilePage from "./ProfilePage";
+import RoutinesPage from "./RoutinesPage";
 import { GainlyStoreProvider } from "../state/gainly-store";
 
 describe("ProfilePage", () => {
-  it("uses the shared supporting copy treatment in the page header", () => {
+  it("shares the supporting copy treatment used by the other task 4 page headers", () => {
+    const exercisesView = render(
+      <GainlyStoreProvider>
+        <ExercisesPage />
+      </GainlyStoreProvider>,
+    );
+    const exercisesClassName = screen.getByText(/keep the shared movement catalog tidy/i).className;
+    exercisesView.unmount();
+
+    const routinesView = render(
+      <GainlyStoreProvider>
+        <RoutinesPage />
+      </GainlyStoreProvider>,
+    );
+    const routinesClassName = screen.getByText(
+      /build the session from a clean baseline, then layer in advanced techniques deliberately/i,
+    ).className;
+    routinesView.unmount();
+
     render(
       <GainlyStoreProvider>
         <ProfilePage />
@@ -14,8 +34,7 @@ describe("ProfilePage", () => {
       /maintain a clear baseline of your current training footprint/i,
     );
 
-    expect(supportingCopy).toHaveClass("text-sm", "text-[hsl(var(--muted-foreground))]");
-    expect(supportingCopy).not.toHaveClass("max-w-2xl");
-    expect(supportingCopy).not.toHaveClass("md:text-base");
+    expect(supportingCopy.className).toBe(exercisesClassName);
+    expect(supportingCopy.className).toBe(routinesClassName);
   });
 });
