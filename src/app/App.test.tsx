@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import App from "./App";
 import { renderWithAppRouter } from "../test/test-utils";
 
@@ -27,11 +27,18 @@ describe("App shell", () => {
 
   it("exposes a dashboard link to the workout logger", async () => {
     renderWithAppRouter(["/"]);
-    expect(await screen.findByRole("link", { name: /^log push workout$/i })).toHaveAttribute(
-      "href",
-      "/workout/routine-upper-a",
+    const logLink = await screen.findByRole("link", { name: /^log push workout$/i });
+
+    expect(logLink).toHaveAttribute("href", "/workout/routine-upper-a");
+
+    const pushCard = logLink.closest(".panel-card");
+
+    expect(pushCard).toBeInTheDocument();
+    expect(within(pushCard as HTMLElement).getByText("Monday")).toBeInTheDocument();
+    expect(within(pushCard as HTMLElement).getByTestId("status-glyph")).toHaveClass(
+      "bg-[hsl(var(--panel-inset))]",
+      "text-[hsl(var(--muted-foreground))]",
     );
-    expect(screen.getByText("Mon").closest(".panel-card")).toBeInTheDocument();
   });
 
   it("renders the full profile analytics page content", async () => {
