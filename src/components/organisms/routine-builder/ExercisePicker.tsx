@@ -93,8 +93,8 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
         </CardContent>
       ) : null}
       <CardContent className={createOpen ? "pt-4" : ""}>
-        <div className="space-y-4">
-          {!createOpen ? (
+        {!createOpen ? (
+          <div className="space-y-4">
             <div className="grid gap-3 md:grid-cols-2">
               <label className="block text-sm">
                 <span className="block text-[hsl(var(--muted-foreground))]">Search exercises</span>
@@ -120,26 +120,26 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
                 </Select>
               </label>
             </div>
-          ) : null}
-          {filteredExercises.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[hsl(var(--border))] px-3 py-4 text-sm text-[hsl(var(--muted-foreground))]">
-              No exercises match these filters.
-            </div>
-          ) : (
-            <div className="grid gap-2">
-              {filteredExercises.map((exercise) => (
-                <button
-                  key={exercise.id}
-                  type="button"
-                  onClick={() => addExerciseToRoutine(routineId, exercise.id)}
-                  className="panel-inset rounded-2xl px-3 py-3 text-left text-sm text-[hsl(var(--foreground))] transition hover:border-[hsl(var(--ring))]"
-                >
-                  {exercise.name}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+            {filteredExercises.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-[hsl(var(--border))] px-3 py-4 text-sm text-[hsl(var(--muted-foreground))]">
+                No exercises match these filters.
+              </div>
+            ) : (
+              <div className="grid gap-2">
+                {filteredExercises.map((exercise) => (
+                  <button
+                    key={exercise.id}
+                    type="button"
+                    onClick={() => addExerciseToRoutine(routineId, exercise.id)}
+                    className="panel-inset rounded-2xl px-3 py-3 text-left text-sm text-[hsl(var(--foreground))] transition hover:border-[hsl(var(--ring))]"
+                  >
+                    {exercise.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );
