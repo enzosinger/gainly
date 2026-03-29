@@ -23,6 +23,33 @@ type GainlyStoreValue = {
 
 const GainlyStoreContext = createContext<GainlyStoreValue | null>(null);
 
+function appendSetToRoutineExercise(
+  routine: Routine,
+  routineExerciseId: string,
+  technique: TechniqueType,
+) {
+  return {
+    ...routine,
+    exercises: routine.exercises.map((routineExercise) => {
+      if (routineExercise.id !== routineExerciseId) {
+        return routineExercise;
+      }
+
+      const nextSetIndex = routineExercise.sets.length + 1;
+      return {
+        ...routineExercise,
+        sets: [
+          ...routineExercise.sets,
+          {
+            id: `${routineExercise.id}-set-${nextSetIndex}`,
+            technique,
+          },
+        ],
+      };
+    }),
+  };
+}
+
 export function GainlyStoreProvider({ children }: { children: React.ReactNode }) {
   const [exercises, setExercises] = useState(mockExercises);
   const [routines, setRoutines] = useState(mockRoutines);
@@ -77,26 +104,7 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
               return routine;
             }
 
-            return {
-              ...routine,
-              exercises: routine.exercises.map((routineExercise) => {
-                if (routineExercise.id !== routineExerciseId) {
-                  return routineExercise;
-                }
-
-                const nextSetIndex = routineExercise.sets.length + 1;
-                return {
-                  ...routineExercise,
-                  sets: [
-                    ...routineExercise.sets,
-                    {
-                      id: `${routineExercise.id}-set-${nextSetIndex}`,
-                      technique: "normal",
-                    },
-                  ],
-                };
-              }),
-            };
+            return appendSetToRoutineExercise(routine, routineExerciseId, "normal");
           }),
         );
       },
@@ -125,26 +133,7 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
               return routine;
             }
 
-            return {
-              ...routine,
-              exercises: routine.exercises.map((routineExercise) => {
-                if (routineExercise.id !== routineExerciseId) {
-                  return routineExercise;
-                }
-
-                const nextSetIndex = routineExercise.sets.length + 1;
-                return {
-                  ...routineExercise,
-                  sets: [
-                    ...routineExercise.sets,
-                    {
-                      id: `${routineExercise.id}-set-${nextSetIndex}`,
-                      technique,
-                    },
-                  ],
-                };
-              }),
-            };
+            return appendSetToRoutineExercise(routine, routineExerciseId, technique);
           }),
         );
       },
