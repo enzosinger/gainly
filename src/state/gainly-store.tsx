@@ -17,6 +17,9 @@ import type { Id } from "../../convex/_generated/dataModel";
 type GainlyStoreValue = {
   viewer: { id: string; name: string | null; email: string | null } | null;
   exercises: Exercise[];
+  exerciseLibraryExercises: Exercise[];
+  exerciseLibraryMuscleGroupFilter: MuscleGroup | "all";
+  setExerciseLibraryMuscleGroupFilter: (muscleGroup: MuscleGroup | "all") => void;
   routines: Routine[];
   expandedExerciseId: string | null;
   setExpandedExerciseId: (id: string | null) => void;
@@ -31,15 +34,31 @@ type GainlyStoreValue = {
     routineExerciseId: string,
     technique: Exclude<TechniqueType, "normal">,
   ) => void;
-  createExercise: (input: { name: string; muscleGroup: MuscleGroup }) => Promise<Exercise>;
+  createExercise: (input: { name: string; muscleGroup: MuscleGroup; description?: string }) => Promise<Exercise>;
+  updateExercise: (
+    exerciseId: string,
+    input: { name: string; muscleGroup: MuscleGroup; description?: string },
+  ) => Promise<Exercise>;
   deleteExercise: (exerciseId: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
 const GainlyStoreContext = createContext<GainlyStoreValue | null>(null);
 
-function buildCreatedExercise(currentExercises: Exercise[], input: { name: string; muscleGroup: MuscleGroup }) {
+function normalizeExerciseDescription(description?: string) {
+  const trimmedDescription = description?.trim();
+  return trimmedDescription ? trimmedDescription : undefined;
+}
+
+function buildCreatedExercise(
+  currentExercises: Exercise[],
+  input: { name: string; muscleGroup: MuscleGroup; description?: string },
+) {
   const trimmedName = input.name.trim();
+  if (!trimmedName) {
+    throw new Error("Exercise name is required.");
+  }
+
   const baseId = `ex-${trimmedName.toLowerCase().replace(/\s+/g, "-")}`;
   const existingIds = new Set(currentExercises.map((exercise) => exercise.id));
   let nextId = baseId;
@@ -54,6 +73,40 @@ function buildCreatedExercise(currentExercises: Exercise[], input: { name: strin
     id: nextId,
     name: trimmedName,
     muscleGroup: input.muscleGroup,
+    description: normalizeExerciseDescription(input.description),
+  };
+}
+
+function buildUpdatedExercise(
+  currentExercises: Exercise[],
+  exerciseId: string,
+  input: { name: string; muscleGroup: MuscleGroup; description?: string },
+) {
+  const trimmedName = input.name.trim();
+  const description = normalizeExerciseDescription(input.description);
+  const existingExercise = currentExercises.find((exercise) => exercise.id === exerciseId);
+
+  if (!existingExercise) {
+    throw new Error("Exercise could not be updated.");
+  }
+
+  if (!trimmedName) {
+    throw new Error("Exercise name is required.");
+  }
+
+  const duplicateExercise = currentExercises.find(
+    (exercise) => exercise.id !== exerciseId && exercise.name === trimmedName,
+  );
+
+  if (duplicateExercise) {
+    throw new Error("Exercise name already exists.");
+  }
+
+  return {
+    ...existingExercise,
+    name: trimmedName,
+    muscleGroup: input.muscleGroup,
+    description,
   };
 }
 
@@ -77,6 +130,14 @@ function buildCreatedRoutine(currentRoutines: Routine[], input: RoutineCreationI
     deltaPercent: 0,
     exercises: [],
   };
+}
+
+function filterExercisesByMuscleGroup(exercises: Exercise[], muscleGroup: MuscleGroup | "all") {
+  if (muscleGroup === "all") {
+    return exercises;
+  }
+
+  return exercises.filter((exercise) => exercise.muscleGroup === muscleGroup);
 }
 
 function appendSetToRoutineExercise(
@@ -110,11 +171,19 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
   const [exercises, setExercises] = useState(mockExercises);
   const [routines, setRoutines] = useState(mockRoutines);
   const [expandedExerciseId, setExpandedExerciseId] = useState<string | null>(null);
+  const [exerciseLibraryMuscleGroupFilter, setExerciseLibraryMuscleGroupFilter] = useState<MuscleGroup | "all">("all");
+  const exerciseLibraryExercises = useMemo(
+    () => filterExercisesByMuscleGroup(exercises, exerciseLibraryMuscleGroupFilter),
+    [exerciseLibraryMuscleGroupFilter, exercises],
+  );
 
   const value = useMemo(
     () => ({
       viewer: null,
       exercises,
+      exerciseLibraryExercises,
+      exerciseLibraryMuscleGroupFilter,
+      setExerciseLibraryMuscleGroupFilter,
       routines,
       expandedExerciseId,
       setExpandedExerciseId,
@@ -202,10 +271,36 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
           }),
         );
       },
-      createExercise: async (input: { name: string; muscleGroup: MuscleGroup }) => {
-        const createdExercise = buildCreatedExercise(exercises, input);
-        setExercises((current) => [...current, createdExercise]);
+      createExercise: async (input: { name: string; muscleGroup: MuscleGroup; description?: string }) => {
+        let createdExercise: Exercise | null = null;
+
+        setExercises((current) => {
+          createdExercise = buildCreatedExercise(current, input);
+          return [...current, createdExercise];
+        });
+
+        if (!createdExercise) {
+          throw new Error("Exercise could not be created.");
+        }
+
         return createdExercise;
+      },
+      updateExercise: async (
+        exerciseId: string,
+        input: { name: string; muscleGroup: MuscleGroup; description?: string },
+      ) => {
+        let updatedExercise: Exercise | null = null;
+
+        setExercises((current) => {
+          updatedExercise = buildUpdatedExercise(current, exerciseId, input);
+          return current.map((exercise) => (exercise.id === exerciseId ? updatedExercise as Exercise : exercise));
+        });
+
+        if (!updatedExercise) {
+          throw new Error("Exercise could not be updated.");
+        }
+
+        return updatedExercise;
       },
       deleteExercise: async (exerciseId: string) => {
         setExercises((current) => current.filter((exercise) => exercise.id !== exerciseId));
@@ -218,7 +313,13 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
       },
       signOut: async () => {},
     }),
-    [expandedExerciseId, exercises, routines],
+    [
+      expandedExerciseId,
+      exerciseLibraryExercises,
+      exerciseLibraryMuscleGroupFilter,
+      exercises,
+      routines,
+    ],
   );
 
   return <GainlyStoreContext.Provider value={value}>{children}</GainlyStoreContext.Provider>;
@@ -236,11 +337,13 @@ function mapExerciseDoc(exercise: {
   _id: Id<"exercises">;
   name: string;
   muscleGroup: MuscleGroup;
+  description?: string;
 }): Exercise {
   return {
     id: exercise._id,
     name: exercise.name,
     muscleGroup: exercise.muscleGroup,
+    description: exercise.description,
   };
 }
 
@@ -271,6 +374,7 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
   const createRoutineMutation = useMutation(api.routines.create);
   const deleteRoutineMutation = useMutation(api.routines.remove);
   const createExerciseMutation = useMutation(api.exercises.create);
+  const updateExerciseMutation = useMutation(api.exercises.update);
   const deleteExerciseMutation = useMutation(api.exercises.remove);
   const reorderRoutinesMutation = useMutation(api.routines.reorder);
   const addExerciseToRoutineMutation = useMutation(api.routines.addExercise);
@@ -279,8 +383,23 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
   const addTechniqueToRoutineExerciseMutation = useMutation(api.routines.addTechnique);
   const { signOut } = useAuthActions();
   const [expandedExerciseId, setExpandedExerciseId] = useState<string | null>(null);
+  const [exerciseLibraryMuscleGroupFilter, setExerciseLibraryMuscleGroupFilter] = useState<MuscleGroup | "all">("all");
+  const filteredExerciseDocs =
+    useQuery(
+      api.exercises.list,
+      exerciseLibraryMuscleGroupFilter === "all"
+        ? "skip"
+        : { muscleGroup: exerciseLibraryMuscleGroupFilter },
+    ) ?? [];
 
   const exercises = useMemo(() => exerciseDocs.map(mapExerciseDoc), [exerciseDocs]);
+  const exerciseLibraryExercises = useMemo(
+    () =>
+      exerciseLibraryMuscleGroupFilter === "all"
+        ? exercises
+        : filteredExerciseDocs.map(mapExerciseDoc),
+    [exerciseLibraryMuscleGroupFilter, exercises, filteredExerciseDocs],
+  );
   const progressSummaryByRoutineId = useMemo(
     () => new Map(progressSummaries.map((summary) => [summary.routineId, summary])),
     [progressSummaries],
@@ -294,6 +413,9 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
     () => ({
       viewer: viewer ? { id: viewer.id, name: viewer.name, email: viewer.email } : null,
       exercises,
+      exerciseLibraryExercises,
+      exerciseLibraryMuscleGroupFilter,
+      setExerciseLibraryMuscleGroupFilter,
       routines,
       expandedExerciseId,
       setExpandedExerciseId,
@@ -342,13 +464,34 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
           technique,
         });
       },
-      createExercise: async (input: { name: string; muscleGroup: MuscleGroup }) => {
-        const createdExercise = await createExerciseMutation(input);
+      createExercise: async (input: { name: string; muscleGroup: MuscleGroup; description?: string }) => {
+        const createdExercise = await createExerciseMutation({
+          name: input.name,
+          muscleGroup: input.muscleGroup,
+          description: normalizeExerciseDescription(input.description),
+        });
         if (!createdExercise) {
           throw new Error("Exercise could not be created.");
         }
 
         return mapExerciseDoc(createdExercise);
+      },
+      updateExercise: async (
+        exerciseId: string,
+        input: { name: string; muscleGroup: MuscleGroup; description?: string },
+      ) => {
+        const updatedExercise = await updateExerciseMutation({
+          exerciseId: exerciseId as Id<"exercises">,
+          name: input.name,
+          muscleGroup: input.muscleGroup,
+          description: normalizeExerciseDescription(input.description),
+        });
+
+        if (!updatedExercise) {
+          throw new Error("Exercise could not be updated.");
+        }
+
+        return mapExerciseDoc(updatedExercise);
       },
       deleteExercise: async (exerciseId: string) => {
         await deleteExerciseMutation({
@@ -363,6 +506,8 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
       addTechniqueToRoutineExerciseMutation,
       createExerciseMutation,
       createRoutineMutation,
+      exerciseLibraryExercises,
+      exerciseLibraryMuscleGroupFilter,
       deleteExerciseMutation,
       deleteRoutineMutation,
       expandedExerciseId,
@@ -370,8 +515,10 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
       removeExerciseFromRoutineMutation,
       reorderRoutinesMutation,
       routines,
+      setExerciseLibraryMuscleGroupFilter,
       signOut,
       viewer,
+      updateExerciseMutation,
     ],
   );
 

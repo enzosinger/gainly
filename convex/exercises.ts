@@ -1,16 +1,29 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireCurrentUserId, requireExercise } from "./lib";
-import { muscleGroupValidator } from "./validators";
+import { exerciseDescriptionValidator, muscleGroupValidator } from "./validators";
+
+function normalizeExerciseDescription(description?: string) {
+  const trimmedDescription = description?.trim();
+  return trimmedDescription ? trimmedDescription : undefined;
+}
 
 export const list = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    muscleGroup: v.optional(muscleGroupValidator),
+  },
+  handler: async (ctx, args) => {
     const userId = await requireCurrentUserId(ctx);
 
     return await ctx.db
       .query("exercises")
-      .withIndex("by_user_name", (q) => q.eq("userId", userId))
+      .withIndex(
+        args.muscleGroup ? "by_user_muscleGroup_name" : "by_user_name",
+        (q) =>
+          args.muscleGroup
+            ? q.eq("userId", userId).eq("muscleGroup", args.muscleGroup)
+            : q.eq("userId", userId),
+      )
       .collect();
   },
 });
@@ -19,10 +32,12 @@ export const create = mutation({
   args: {
     name: v.string(),
     muscleGroup: muscleGroupValidator,
+    description: exerciseDescriptionValidator,
   },
   handler: async (ctx, args) => {
     const userId = await requireCurrentUserId(ctx);
     const trimmedName = args.name.trim();
+    const description = normalizeExerciseDescription(args.description);
 
     if (!trimmedName) {
       throw new Error("Exercise name is required.");
@@ -42,10 +57,47 @@ export const create = mutation({
       userId,
       name: trimmedName,
       muscleGroup: args.muscleGroup,
+      description,
       createdAt,
     });
 
     return await ctx.db.get(exerciseId);
+  },
+});
+
+export const update = mutation({
+  args: {
+    exerciseId: v.id("exercises"),
+    name: v.string(),
+    muscleGroup: muscleGroupValidator,
+    description: exerciseDescriptionValidator,
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireCurrentUserId(ctx);
+    const exercise = await requireExercise(ctx, userId, args.exerciseId);
+    const trimmedName = args.name.trim();
+    const description = normalizeExerciseDescription(args.description);
+
+    if (!trimmedName) {
+      throw new Error("Exercise name is required.");
+    }
+
+    const existingExercise = await ctx.db
+      .query("exercises")
+      .withIndex("by_user_name", (q) => q.eq("userId", userId).eq("name", trimmedName))
+      .unique();
+
+    if (existingExercise && existingExercise._id !== exercise._id) {
+      throw new Error("Exercise name already exists.");
+    }
+
+    await ctx.db.patch(exercise._id, {
+      name: trimmedName,
+      muscleGroup: args.muscleGroup,
+      description,
+    });
+
+    return await ctx.db.get(exercise._id);
   },
 });
 

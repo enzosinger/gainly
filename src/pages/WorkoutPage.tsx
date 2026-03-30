@@ -59,6 +59,10 @@ export default function WorkoutPage() {
     });
   }, [activeSession, ensureActiveSession, selectedRoutineId]);
 
+  const exercisesById = useMemo(
+    () => new Map(exercises.map((exercise) => [exercise.id, exercise])),
+    [exercises],
+  );
   const exerciseNamesById = useMemo(
     () => Object.fromEntries(exercises.map((exercise) => [exercise.id, exercise.name])),
     [exercises],
@@ -142,6 +146,7 @@ export default function WorkoutPage() {
         {workoutRoutine.exercises.map((item) => {
           const currentExercise = currentExerciseByRoutineExerciseId.get(item.id);
           const previousExercise = previousExerciseByRoutineExerciseId.get(item.id);
+          const exercise = exercisesById.get(item.exerciseId);
 
           if (!currentExercise) {
             return null;
@@ -151,7 +156,8 @@ export default function WorkoutPage() {
             <ExerciseAccordion
               key={item.id}
               item={item}
-              name={exerciseNamesById[item.exerciseId] ?? "Exercise"}
+              name={exercise?.name ?? "Exercise"}
+              description={exercise?.description}
               currentExercise={currentExercise}
               previousExercise={previousExercise}
               pairExerciseNamesById={exerciseNamesById}

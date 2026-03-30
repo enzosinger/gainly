@@ -12,6 +12,7 @@ export type Exercise = {
   id: string;
   name: string;
   muscleGroup: MuscleGroup;
+  description?: string;
 };
 
 export type RoutineCreationInput = {

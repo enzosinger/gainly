@@ -53,10 +53,12 @@ describe("RoutineDetailPage", () => {
 
     expect(screen.getByRole("textbox", { name: /exercise name/i })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: /muscle group/i })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: /description/i })).toBeInTheDocument();
     expect(screen.queryAllByText(/unilateral|bilateral/i)).toHaveLength(0);
 
     await user.type(screen.getByRole("textbox", { name: /exercise name/i }), "Face Pull");
     await user.selectOptions(screen.getByRole("combobox", { name: /muscle group/i }), "shoulders");
+    await user.type(screen.getByRole("textbox", { name: /description/i }), "Upper back and rear delt work");
     await user.click(screen.getByRole("button", { name: /save exercise/i }));
 
     const createdExerciseCard = screen
@@ -65,6 +67,9 @@ describe("RoutineDetailPage", () => {
 
     expect(createdExerciseCard).not.toBeNull();
     expect(within(createdExerciseCard as HTMLElement).getByText(/shoulders/i)).toBeInTheDocument();
+    expect(
+      within(createdExerciseCard as HTMLElement).getByText(/upper back and rear delt work/i),
+    ).toBeInTheDocument();
     expect(screen.queryAllByText(/unilateral|bilateral/i)).toHaveLength(0);
   });
 

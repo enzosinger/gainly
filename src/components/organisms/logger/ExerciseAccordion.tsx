@@ -7,6 +7,7 @@ import TechniqueBadgeRow from "./TechniqueBadgeRow";
 type ExerciseAccordionProps = {
   item: RoutineExercise;
   name: string;
+  description?: string | null;
   currentExercise: WorkoutSessionExercise;
   previousExercise?: WorkoutSessionExercise | null;
   pairExerciseNamesById: Record<string, string>;
@@ -37,6 +38,7 @@ function getPreviousPerformance(previousExercise?: WorkoutSessionExercise | null
 export default function ExerciseAccordion({
   item,
   name,
+  description,
   currentExercise,
   previousExercise,
   pairExerciseNamesById,
@@ -64,6 +66,9 @@ export default function ExerciseAccordion({
       </button>
       {expanded ? (
         <div className="space-y-3 border-t border-[hsl(var(--border))] px-4 py-4">
+          {description?.trim() ? (
+            <p className="text-sm leading-6 text-[hsl(var(--muted-foreground))]">{description.trim()}</p>
+          ) : null}
           <div className="panel-inset px-3 py-2">
             <p className="text-sm text-[hsl(var(--muted-foreground))]">{getPreviousPerformance(previousExercise)}</p>
           </div>

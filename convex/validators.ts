@@ -9,6 +9,8 @@ export const muscleGroupValidator = v.union(
   v.literal("triceps"),
 );
 
+export const exerciseDescriptionValidator = v.optional(v.string());
+
 export const techniqueTypeValidator = v.union(
   v.literal("normal"),
   v.literal("backoff"),

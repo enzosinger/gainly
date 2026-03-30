@@ -2,7 +2,7 @@ import type { Exercise, RoutineExercise } from "../../../types/domain";
 import TechniqueMenu from "./TechniqueMenu";
 import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
-import { Card, CardTitle } from "../../ui/card";
+import { Card, CardDescription, CardTitle } from "../../ui/card";
 
 export default function RoutineExerciseEditor({
   exercise,
@@ -22,7 +22,12 @@ export default function RoutineExerciseEditor({
       <div className="space-y-4 p-6">
         <p className="eyebrow">Routine exercise</p>
         <div className="flex flex-row items-start justify-between gap-3">
-          <CardTitle className="text-base">{exercise.name}</CardTitle>
+          <div className="space-y-2">
+            <CardTitle className="text-base">{exercise.name}</CardTitle>
+            <CardDescription className="max-w-xl text-sm leading-6">
+              {exercise.description?.trim() || "No description added yet."}
+            </CardDescription>
+          </div>
           <div className="flex flex-col items-end gap-3">
             <Badge variant="outline" className="capitalize">
               {exercise.muscleGroup}

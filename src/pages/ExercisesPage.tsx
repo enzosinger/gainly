@@ -1,6 +1,17 @@
+import { useEffect } from "react";
 import ExerciseLibraryList from "../components/organisms/library/ExerciseLibraryList";
+import { useGainlyStore } from "../state/gainly-store";
 
 export default function ExercisesPage() {
+  const { setExerciseLibraryMuscleGroupFilter } = useGainlyStore();
+
+  useEffect(
+    () => () => {
+      setExerciseLibraryMuscleGroupFilter("all");
+    },
+    [setExerciseLibraryMuscleGroupFilter],
+  );
+
   return (
     <section className="space-y-6 md:space-y-8">
       <header className="space-y-2">

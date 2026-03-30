@@ -2,6 +2,7 @@ import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import {
+  exerciseDescriptionValidator,
   muscleGroupValidator,
   routineExerciseValidator,
   workoutSessionExerciseValidator,
@@ -14,10 +15,12 @@ export default defineSchema({
     userId: v.id("users"),
     name: v.string(),
     muscleGroup: muscleGroupValidator,
+    description: exerciseDescriptionValidator,
     createdAt: v.number(),
   })
     .index("by_user", ["userId"])
-    .index("by_user_name", ["userId", "name"]),
+    .index("by_user_name", ["userId", "name"])
+    .index("by_user_muscleGroup_name", ["userId", "muscleGroup", "name"]),
   routines: defineTable({
     userId: v.id("users"),
     name: v.string(),

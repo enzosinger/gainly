@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useEffect } from "react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import WorkoutPage from "./WorkoutPage";
-import { GainlyStoreProvider } from "../state/gainly-store";
+import { GainlyStoreProvider, useGainlyStore } from "../state/gainly-store";
 import { getWeekWindow, shiftWeekWindowStart } from "../lib/week";
 
 const mockEnsureActiveSession = vi.fn();
@@ -153,6 +154,20 @@ vi.mock("convex/react", async () => {
   };
 });
 
+function SeedWorkoutExerciseDescription() {
+  const { updateExercise } = useGainlyStore();
+
+  useEffect(() => {
+    void updateExercise("ex-barbell-bench-press", {
+      name: "Barbell Bench Press",
+      muscleGroup: "chest",
+      description: "Pause on the chest before driving the bar up.",
+    });
+  }, []);
+
+  return null;
+}
+
 describe("WorkoutPage", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -180,6 +195,7 @@ describe("WorkoutPage", () => {
     render(
       <MemoryRouter initialEntries={["/workout/routine-upper-a"]}>
         <GainlyStoreProvider>
+          <SeedWorkoutExerciseDescription />
           <Routes>
             <Route path="/workout/:routineId" element={<WorkoutPage />} />
           </Routes>
@@ -192,7 +208,15 @@ describe("WorkoutPage", () => {
     const benchButton = screen.getByRole("button", { name: /barbell bench press/i });
     await user.click(benchButton);
 
-    expect(screen.getByText(/previous 80 kg x 6/i)).toBeInTheDocument();
+    const benchAccordion = benchButton.closest("section");
+    expect(benchAccordion).not.toBeNull();
+
+    const descriptionNode = await screen.findByText(
+      /pause on the chest before driving the bar up/i,
+    );
+    const previousPerformanceNode = within(benchAccordion as HTMLElement).getByText(/previous 80 kg x 6/i);
+
+    expect(descriptionNode.compareDocumentPosition(previousPerformanceNode) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
     await user.click(screen.getByRole("button", { name: /previous week/i }));
 

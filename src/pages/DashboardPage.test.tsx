@@ -137,6 +137,9 @@ describe("DashboardPage", () => {
     vi.spyOn(gainlyStore, "useGainlyStore").mockReturnValue({
       viewer: null,
       exercises: [],
+      exerciseLibraryExercises: [],
+      exerciseLibraryMuscleGroupFilter: "all",
+      setExerciseLibraryMuscleGroupFilter: vi.fn(),
       routines: [],
       expandedExerciseId: null,
       setExpandedExerciseId: vi.fn(),
@@ -148,6 +151,8 @@ describe("DashboardPage", () => {
       removeExerciseFromRoutine: vi.fn(),
       addTechniqueToRoutineExercise: vi.fn(),
       createExercise: vi.fn(),
+      updateExercise: vi.fn(),
+      deleteExercise: vi.fn(),
       signOut: vi.fn(),
     });
 

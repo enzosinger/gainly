@@ -18,12 +18,16 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [muscleFilter, setMuscleFilter] = useState<MuscleGroup | "all">("all");
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [muscleGroup, setMuscleGroup] = useState<MuscleGroup>("chest");
   const createFormId = `exercise-create-form-${routineId}`;
 
   useEffect(() => {
     if (!isOpen) {
       setCreateOpen(false);
+      setName("");
+      setDescription("");
+      setMuscleGroup("chest");
     }
   }, [isOpen]);
 
@@ -63,9 +67,10 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
       return;
     }
 
-    const nextExercise = await createExercise({ name, muscleGroup });
+    const nextExercise = await createExercise({ name, muscleGroup, description });
     addExerciseToRoutine(routineId, nextExercise.id);
     setName("");
+    setDescription("");
     setMuscleGroup("chest");
     setCreateOpen(false);
   }
@@ -75,7 +80,15 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
       setIsOpen(true);
     }
 
-    setCreateOpen((current) => !current);
+    setCreateOpen((current) => {
+      if (current) {
+        setName("");
+        setDescription("");
+        setMuscleGroup("chest");
+      }
+
+      return !current;
+    });
   }
 
   return (
@@ -137,6 +150,15 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
                       </option>
                     ))}
                   </Select>
+                </label>
+                <label className="block text-sm">
+                  <span className="block text-[hsl(var(--muted-foreground))]">Description</span>
+                  <textarea
+                    value={description}
+                    onChange={(event) => setDescription(event.target.value)}
+                    className="mt-2 flex min-h-[6rem] w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--panel))] px-3 py-2 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder="Short note about how to perform or program it"
+                  />
                 </label>
                 <Button type="submit" variant="default" size="sm">
                   Save exercise
