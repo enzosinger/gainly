@@ -63,7 +63,7 @@ export default function RoutinesPage() {
           Build the session from a clean baseline, then layer in advanced techniques deliberately.
         </p>
       </header>
-      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
+      <div className="space-y-4">
         <ExercisePicker routineId={routine.id} />
         <div className="space-y-3">
           {routine.exercises.length === 0 ? (

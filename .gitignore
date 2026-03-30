@@ -4,3 +4,5 @@ dist
 .superpowers
 .worktrees
 *.tsbuildinfo
+.env.local
+QUALITY_GATE_PLAN.md

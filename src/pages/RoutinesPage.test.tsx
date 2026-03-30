@@ -122,6 +122,44 @@ describe("RoutinesPage", () => {
     expect(screen.queryByRole("heading", { name: /barbell bench press/i })).not.toBeInTheDocument();
   });
 
+  it("collapses and expands the add exercise section", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <GainlyStoreProvider>
+        <RoutinesPage />
+      </GainlyStoreProvider>,
+    );
+
+    expect(screen.getByRole("button", { name: /expand add exercise/i })).toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: /search exercises/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /create new/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /expand add exercise/i }));
+
+    expect(screen.getByRole("button", { name: /collapse add exercise/i })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: /search exercises/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /create new/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /collapse add exercise/i }));
+
+    expect(screen.getByRole("button", { name: /expand add exercise/i })).toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: /search exercises/i })).not.toBeInTheDocument();
+  });
+
+  it("renders the exercise picker before the configured routine exercises in the page flow", () => {
+    render(
+      <GainlyStoreProvider>
+        <RoutinesPage />
+      </GainlyStoreProvider>,
+    );
+
+    const pickerHeading = screen.getByRole("heading", { name: /add exercise/i });
+    const routineExerciseHeading = screen.getByRole("heading", { name: /barbell bench press/i });
+
+    expect(pickerHeading.compareDocumentPosition(routineExerciseHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it("filters the exercise picker by search text and muscle group", async () => {
     const user = userEvent.setup();
 
@@ -130,6 +168,8 @@ describe("RoutinesPage", () => {
         <RoutinesPage />
       </GainlyStoreProvider>,
     );
+
+    await user.click(screen.getByRole("button", { name: /expand add exercise/i }));
 
     const searchInput = screen.getByRole("textbox", { name: /search exercises/i });
     const muscleGroupFilter = screen.getByRole("combobox", { name: /filter by muscle group/i });
@@ -219,6 +259,7 @@ describe("RoutinesPage", () => {
 
     await user.click(screen.getByRole("button", { name: /create duplicate/i }));
     await user.click(screen.getByRole("button", { name: /create duplicate/i }));
+    await user.click(screen.getByRole("button", { name: /expand add exercise/i }));
 
     const duplicateButtons = screen.getAllByRole("button", { name: /custom lift/i });
     expect(duplicateButtons).toHaveLength(2);

@@ -196,6 +196,11 @@ Do not start implementation for L2 or L3 before approval is obtained.
 
 Use `rpi-implement` only after the required preconditions are satisfied.
 
+Execution rule:
+- delegate the implementation phase to a spawned worker agent using model `gpt-5.4-mini` by default
+- keep orchestration and downstream governance in the primary agent
+- only bypass the `gpt-5.4-mini` implementation delegation when the user explicitly overrides the model choice
+
 Implementation must:
 - follow the approved plan
 - stay within approved scope
@@ -335,6 +340,7 @@ At minimum, it should make clear:
 - `plan-gap-check` allows progress
 - required gate artifacts exist
 - required approval has been obtained
+- the `gpt-5.4-mini` implementation delegation is prepared, unless the user explicitly approved a different implementation model
 
 ### Implementation must not proceed if:
 - research still depends on guesswork
@@ -351,6 +357,7 @@ Do not:
 - skip risk classification
 - treat chat-only reasoning as a substitute for explicit plan or gate artifacts
 - start L2 or L3 implementation before approval
+- run the implementation phase on a different model by default when `gpt-5.4-mini` delegation is required
 - skip mandatory specialized reviews
 - mark a task complete without verification evidence when required
 - continue under an outdated risk level after new evidence changes the task

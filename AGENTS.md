@@ -302,6 +302,8 @@ During implementation:
 - avoid unrelated cleanup
 - update tests or validation artifacts when needed
 - stop and surface scope drift if the task expands beyond the approved plan
+- execute the implementation phase through a spawned worker agent using model `gpt-5.4-mini` by default
+- only skip the `gpt-5.4-mini` implementation delegation when the user explicitly overrides that model choice
 
 ### Reviews and Verification
 After implementation:
@@ -413,6 +415,10 @@ When a suitable skill exists:
 - use the skill
 - follow its instructions as the operational procedure
 - keep outputs aligned with this `AGENTS.md`
+
+For non-L0 implementation work routed through `rpi-workflow`:
+- delegate the implementation phase to a spawned worker agent using model `gpt-5.4-mini`
+- keep orchestration, review, and verification responsibilities with the primary agent unless the user explicitly requests otherwise
 
 Skills extend this guidance; they do not override safety, risk, approval, or completion requirements defined here.
 

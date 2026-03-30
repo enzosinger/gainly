@@ -56,6 +56,7 @@ Do not use this skill for:
 - **Plan-bound execution:** Only implement what is covered by the approved plan.
 - **No silent scope growth:** Do not expand the task without surfacing and resolving the change.
 - **Risk-aware rigor:** Match implementation discipline to the assigned risk level.
+- **Model discipline:** Execute this implementation phase through a spawned worker agent using model `gpt-5.4-mini` by default unless the user explicitly approves a different model.
 - **Small, reviewable changes:** Prefer small cohesive edits over broad rewrites.
 - **Incremental validation:** Validate meaningful chunks when practical.
 - **Traceable deviations:** If implementation differs from the plan, record and explain the deviation.
@@ -87,6 +88,7 @@ Before editing code, confirm all of the following:
 - the target files are identified
 - the acceptance criteria are known
 - the required approval state is satisfied
+- the implementation worker model is `gpt-5.4-mini`, unless the user has explicitly approved a different model
 
 For L2 and L3 tasks, also confirm:
 - `QUALITY_GATE_PLAN.md` exists
@@ -115,6 +117,7 @@ Before changing code:
 - confirm the relevant files
 - confirm the acceptance criteria
 - confirm approval and gate status when required
+- confirm that the implementation worker is using `gpt-5.4-mini` unless the user explicitly chose another model
 
 If the real implementation surface is already broader than planned, stop and update the plan first.
 
@@ -289,6 +292,7 @@ For L2 and L3 tasks, enforce all of the following:
 Do not:
 - start coding before required approvals
 - treat the plan as optional
+- use a different implementation model by default when `gpt-5.4-mini` has not been explicitly overridden by the user
 - skip validation thinking because review happens later
 - bury important changes inside unrelated cleanup
 - imply that L2 or L3 work is done immediately after code is written
