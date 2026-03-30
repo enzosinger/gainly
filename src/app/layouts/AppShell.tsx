@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { cn } from "../../lib/utils";
+import gainlyLogo from "../../../gainly_logo.png";
 
 const links = [
   { to: "/", label: "Dashboard" },
@@ -22,8 +23,9 @@ export default function AppShell() {
     <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] md:grid md:grid-cols-[280px_1fr]">
       <aside className="app-shell-sidebar hidden md:flex md:flex-col">
         <div className="flex h-full flex-col px-6 py-8">
-          <div className="eyebrow">Gainly</div>
-          <p className="mt-3 text-xl font-semibold tracking-tight">Training OS</p>
+          <div className="space-y-3">
+            <img src={gainlyLogo} alt="Gainly" className="h-[4.5rem] w-auto" />
+          </div>
           <nav aria-label="Primary navigation" className="mt-10 flex flex-col gap-2">
             {links.map((link) => (
               <NavLink

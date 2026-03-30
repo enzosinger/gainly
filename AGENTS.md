@@ -186,6 +186,12 @@ Do not continue implementation under an outdated risk level.
 
 Respect context budget and load only what is needed for the current phase.
 
+Default context policy:
+- keep active context under an estimated 40% of available budget whenever practical
+- do not fork full thread context into subagents by default
+- pass task-local files, concise summaries, acceptance criteria, and exact paths instead of broad repository dumps
+- if the working set is likely to exceed this budget, compress the state into a short handoff summary before continuing or delegating
+
 Load in this priority order unless the task clearly requires otherwise:
 1. this `AGENTS.md`
 2. repository overview and domain docs
@@ -233,12 +239,14 @@ Always:
 - prefer exact files over broad folders
 - prefer repository docs over guessing
 - prefer targeted snippets over large dumps
+- prefer compact summaries over raw pasted content when delegating or handing off work
 - stop loading once there is enough evidence for the current phase
 
 Do not:
 - load large unrelated areas without need
 - carry research breadth into implementation unnecessarily
 - ignore risk level when deciding how much context to load
+- fork full thread context into a subagent unless the task is meaningfully blocked without it
 
 ---
 
@@ -307,9 +315,11 @@ During implementation:
 
 ### Reviews and Verification
 After implementation:
+- keep post-implementation review ownership with the primary agent, even when code implementation was delegated to a worker agent
 - run the required specialized reviews for the task’s risk level
 - create `REVIEW_REPORT.md` when required
 - create `VERIFICATION_EVIDENCE.md` when required
+- have the primary agent decide whether the implementation is accepted, requires changes, or remains blocked
 - do not treat implementation as task completion by itself
 
 ---
@@ -418,7 +428,7 @@ When a suitable skill exists:
 
 For non-L0 implementation work routed through `rpi-workflow`:
 - delegate the implementation phase to a spawned worker agent using model `gpt-5.4-mini`
-- keep orchestration, review, and verification responsibilities with the primary agent unless the user explicitly requests otherwise
+- keep orchestration, post-implementation review, review artifacts, verification, and completion decisions with the primary agent unless the user explicitly requests otherwise
 
 Skills extend this guidance; they do not override safety, risk, approval, or completion requirements defined here.
 

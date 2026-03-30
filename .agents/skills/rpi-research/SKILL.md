@@ -51,6 +51,7 @@ Do not use this skill for:
 - **Evidence first:** Use repository evidence before making claims.
 - **No invention:** Do not fabricate architecture, config, ownership, or dependencies.
 - **Targeted loading:** Keep context focused on the task and affected domain.
+- **Context-budget discipline:** Keep active context under an estimated 40% of available budget whenever practical by loading only the smallest evidence set needed for the current question.
 - **Path precision:** Prefer exact repository paths over broad directory references.
 - **Line-aware evidence:** Include line numbers for important claims when practical.
 - **Boundary discipline:** Distinguish confirmed evidence from likely impact and from unknowns.

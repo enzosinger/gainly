@@ -8,13 +8,14 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { useGainlyStore } from "../../../state/gainly-store";
 import RoutineWeekCard from "../../molecules/RoutineWeekCard";
-import type { Routine } from "../../../types/domain";
+import type { Routine, RoutineWeekSummary } from "../../../types/domain";
 
 type SortableRoutineCardProps = {
   routine: Routine;
+  summary?: RoutineWeekSummary;
 };
 
-function SortableRoutineCard({ routine }: SortableRoutineCardProps) {
+function SortableRoutineCard({ routine, summary }: SortableRoutineCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: routine.id,
   });
@@ -26,12 +27,16 @@ function SortableRoutineCard({ routine }: SortableRoutineCardProps) {
       {...attributes}
       {...listeners}
     >
-      <RoutineWeekCard routine={routine} workoutHref={`/workout/${routine.id}`} />
+      <RoutineWeekCard routine={routine} summary={summary} workoutHref={`/workout/${routine.id}`} />
     </div>
   );
 }
 
-export default function WeeklyRoutineList() {
+type WeeklyRoutineListProps = {
+  summariesByRoutineId?: Map<string, RoutineWeekSummary>;
+};
+
+export default function WeeklyRoutineList({ summariesByRoutineId }: WeeklyRoutineListProps) {
   const { routines, reorderRoutines } = useGainlyStore();
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -48,7 +53,7 @@ export default function WeeklyRoutineList() {
       <SortableContext items={routines.map((routine) => routine.id)} strategy={verticalListSortingStrategy}>
         <div className="grid gap-4 md:gap-5">
           {routines.map((routine) => (
-            <SortableRoutineCard key={routine.id} routine={routine} />
+            <SortableRoutineCard key={routine.id} routine={routine} summary={summariesByRoutineId?.get(routine.id)} />
           ))}
         </div>
       </SortableContext>

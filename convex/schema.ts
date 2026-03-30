@@ -1,0 +1,47 @@
+import { authTables } from "@convex-dev/auth/server";
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
+import {
+  muscleGroupValidator,
+  routineExerciseValidator,
+  workoutSessionExerciseValidator,
+  workoutSessionStatusValidator,
+} from "./validators";
+
+export default defineSchema({
+  ...authTables,
+  exercises: defineTable({
+    userId: v.id("users"),
+    name: v.string(),
+    muscleGroup: muscleGroupValidator,
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_name", ["userId", "name"]),
+  routines: defineTable({
+    userId: v.id("users"),
+    name: v.string(),
+    weekday: v.string(),
+    completed: v.boolean(),
+    deltaPercent: v.number(),
+    position: v.number(),
+    exercises: v.array(routineExerciseValidator),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_position", ["userId", "position"]),
+  workoutSessions: defineTable({
+    userId: v.id("users"),
+    routineId: v.id("routines"),
+    status: workoutSessionStatusValidator,
+    startedAt: v.number(),
+    completedAt: v.optional(v.number()),
+    updatedAt: v.number(),
+    exercises: v.array(workoutSessionExerciseValidator),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_routine_status", ["userId", "routineId", "status"])
+    .index("by_user_routine_status_completedAt", ["userId", "routineId", "status", "completedAt"])
+    .index("by_user_status_completedAt", ["userId", "status", "completedAt"]),
+});

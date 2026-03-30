@@ -57,13 +57,13 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
     });
   }, [filteredExercises]);
 
-  function handleCreate(event: FormEvent<HTMLFormElement>) {
+  async function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!name.trim()) {
       return;
     }
 
-    const nextExercise = createExercise({ name, muscleGroup });
+    const nextExercise = await createExercise({ name, muscleGroup });
     addExerciseToRoutine(routineId, nextExercise.id);
     setName("");
     setMuscleGroup("chest");

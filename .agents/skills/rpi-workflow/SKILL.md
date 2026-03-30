@@ -52,6 +52,7 @@ Do not use this skill for:
 - **RPI is mandatory for non-trivial work:** Do not skip required phases.
 - **No coding before governance is satisfied:** Implementation must not begin until the workflow allows it.
 - **Risk-aware enforcement:** The required rigor depends on the assigned risk level.
+- **Context-budget discipline:** Keep active context under an estimated 40% of available budget whenever practical by favoring targeted loading, concise summaries, and minimal delegation payloads.
 - **Phase-specific skills remain authoritative:** This skill routes and enforces; the detailed execution of each phase belongs to the corresponding skill.
 - **No false completion:** A task is not complete until all required downstream gates have passed.
 - **Escalate when reality changes:** If new evidence increases task severity, update the workflow path accordingly.
@@ -70,6 +71,12 @@ Use these inputs when available:
 - quality-gate artifacts
 - review artifacts
 - verification artifacts
+
+When delegating to subagents:
+- do not fork full thread context by default
+- pass only the minimum task-local context needed to execute the assigned phase
+- prefer exact file paths, compact summaries, and acceptance criteria over broad transcript history
+- if context is getting too large, stop and compress the task state into a short handoff before continuing
 
 ## Workflow Objectives
 
@@ -199,6 +206,7 @@ Use `rpi-implement` only after the required preconditions are satisfied.
 Execution rule:
 - delegate the implementation phase to a spawned worker agent using model `gpt-5.4-mini` by default
 - keep orchestration and downstream governance in the primary agent
+- keep post-implementation review ownership in the primary agent, including review execution, artifact generation, and final readiness decisions
 - only bypass the `gpt-5.4-mini` implementation delegation when the user explicitly overrides the model choice
 
 Implementation must:
@@ -217,6 +225,9 @@ Expected outcome:
 ### Step 8 — Run Specialized Reviews
 
 Select the required reviews based on risk and task type.
+
+The primary agent remains responsible for this step even when Step 7 was delegated.
+Delegated implementation does not transfer authority to approve the change, close findings, or declare the task complete.
 
 Minimum review requirements:
 
@@ -357,6 +368,7 @@ Do not:
 - skip risk classification
 - treat chat-only reasoning as a substitute for explicit plan or gate artifacts
 - start L2 or L3 implementation before approval
+- treat delegated implementation as transferring post-implementation review or completion authority away from the primary agent by default
 - run the implementation phase on a different model by default when `gpt-5.4-mini` delegation is required
 - skip mandatory specialized reviews
 - mark a task complete without verification evidence when required

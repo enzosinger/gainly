@@ -14,6 +14,11 @@ export type Exercise = {
   muscleGroup: MuscleGroup;
 };
 
+export type RoutineCreationInput = {
+  name: string;
+  weekday?: string;
+};
+
 export type SetEntry = {
   id: string;
   technique: TechniqueType;
@@ -25,6 +30,40 @@ export type SetEntry = {
   pairExerciseId?: string;
   pairWeightKg?: number;
   pairReps?: number;
+};
+
+export type WorkoutSessionStatus = "in_progress" | "completed";
+
+export type WorkoutSessionSet = {
+  id: string;
+  templateSetId: string;
+  technique: TechniqueType;
+  weightKg?: number;
+  reps?: number;
+  backoffPercent?: number;
+  clusterBlocks?: number;
+  clusterRepRange?: string;
+  pairExerciseId?: string;
+  pairWeightKg?: number;
+  pairReps?: number;
+};
+
+export type WorkoutSessionExercise = {
+  id: string;
+  routineExerciseId: string;
+  exerciseId: string;
+  position: number;
+  sets: WorkoutSessionSet[];
+};
+
+export type WorkoutSession = {
+  id: string;
+  routineId: string;
+  status: WorkoutSessionStatus;
+  startedAt: number;
+  updatedAt: number;
+  completedAt?: number;
+  exercises: WorkoutSessionExercise[];
 };
 
 export type RoutineExercise = {
@@ -39,5 +78,34 @@ export type Routine = {
   weekday: string;
   completed: boolean;
   deltaPercent: number;
+  hasProgressHistory?: boolean;
   exercises: RoutineExercise[];
+};
+
+export type WeekWindow = {
+  start: number;
+  endExclusive: number;
+  label: string;
+};
+
+export type RoutineWeekSummary = {
+  routineId: string;
+  completed: boolean;
+  deltaPercent: number;
+  hasHistory: boolean;
+  lastCompletedAt?: number;
+};
+
+export type RoutineWeekHistory = {
+  routineId: string;
+  latestCompletedSession: WorkoutSession | null;
+  previousCompletedSession: WorkoutSession | null;
+  hasHistory: boolean;
+};
+
+export type RoutineProgressSummary = {
+  routineId: string;
+  deltaPercent: number;
+  hasHistory: boolean;
+  lastCompletedAt?: number;
 };

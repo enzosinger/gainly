@@ -1,37 +1,22 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import RoutinesPage from "./RoutinesPage";
-import { GainlyStoreProvider, useGainlyStore } from "../state/gainly-store";
-
-function CreateExerciseProbe() {
-  const { exercises, createExercise } = useGainlyStore();
-  const duplicateExercises = exercises.filter((exercise) => exercise.name === "Custom Lift");
-
-  return (
-    <section>
-      <button
-        type="button"
-        onClick={() => createExercise({ name: "Custom Lift", muscleGroup: "back" })}
-      >
-        Create duplicate
-      </button>
-      <ul>
-        {duplicateExercises.map((exercise, index) => (
-          <li key={`${exercise.id}-${index}`}>{exercise.id}</li>
-        ))}
-      </ul>
-    </section>
-  );
-}
+import RoutineDetailPage from "./RoutineDetailPage";
+import { GainlyStoreProvider } from "../state/gainly-store";
 
 describe("RoutinesPage", () => {
-  it("reflects the create-exercise disclosure open state accessibly", async () => {
+  it("opens and closes the create routine form accessibly", async () => {
     const user = userEvent.setup();
 
     render(
-      <GainlyStoreProvider>
-        <RoutinesPage />
-      </GainlyStoreProvider>,
+      <MemoryRouter initialEntries={["/routines"]}>
+        <GainlyStoreProvider>
+          <Routes>
+            <Route path="/routines" element={<RoutinesPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
     );
 
     const createButton = screen.getByRole("button", { name: /create new/i });
@@ -43,228 +28,99 @@ describe("RoutinesPage", () => {
 
     const disclosureId = createButton.getAttribute("aria-controls");
     expect(createButton).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("button", { name: /cancel/i })).toHaveAttribute("aria-controls", disclosureId);
+    expect(screen.getAllByRole("button", { name: /cancel/i })[0]).toHaveAttribute("aria-controls", disclosureId);
     expect(document.getElementById(disclosureId ?? "")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /cancel/i }));
+    await user.click(screen.getAllByRole("button", { name: /cancel/i })[0]);
 
     expect(screen.getByRole("button", { name: /create new/i })).toHaveAttribute("aria-expanded", "false");
     expect(document.getElementById(disclosureId ?? "")).not.toBeInTheDocument();
   });
 
-  it("creates a custom exercise through the builder form with the selected muscle group", async () => {
+  it("creates a routine and routes to the detail builder", async () => {
     const user = userEvent.setup();
 
     render(
-      <GainlyStoreProvider>
-        <RoutinesPage />
-      </GainlyStoreProvider>,
+      <MemoryRouter initialEntries={["/routines"]}>
+        <GainlyStoreProvider>
+          <Routes>
+            <Route path="/routines" element={<RoutinesPage />} />
+            <Route path="/routines/:routineId" element={<RoutineDetailPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
     );
 
     await user.click(screen.getByRole("button", { name: /create new/i }));
+    await user.type(screen.getByRole("textbox", { name: /routine name/i }), "Upper Strength");
+    await user.click(screen.getByRole("button", { name: /create routine/i }));
 
-    expect(screen.getByRole("textbox", { name: /exercise name/i })).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: /muscle group/i })).toBeInTheDocument();
-    expect(screen.queryAllByText(/unilateral|bilateral/i)).toHaveLength(0);
-
-    await user.type(screen.getByRole("textbox", { name: /exercise name/i }), "Face Pull");
-    await user.selectOptions(screen.getByRole("combobox", { name: /muscle group/i }), "shoulders");
-    await user.click(screen.getByRole("button", { name: /save exercise/i }));
-
-    const createdExerciseCard = screen
-      .getByRole("heading", { name: /face pull/i })
-      .closest(".panel-card");
-
-    expect(createdExerciseCard).not.toBeNull();
-    expect(within(createdExerciseCard as HTMLElement).getByText(/shoulders/i)).toBeInTheDocument();
-    expect(screen.queryAllByText(/unilateral|bilateral/i)).toHaveLength(0);
+    expect(await screen.findByRole("heading", { name: /upper strength builder/i })).toBeInTheDocument();
   });
 
-  it("starts with normal sets and lets the user add an advanced technique deliberately", async () => {
+  it("links each routine card to its detail route", () => {
+    render(
+      <MemoryRouter initialEntries={["/routines"]}>
+        <GainlyStoreProvider>
+          <Routes>
+            <Route path="/routines" element={<RoutinesPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getAllByRole("link", { name: /edit routine/i })[0]).toHaveAttribute(
+      "href",
+      "/routines/routine-upper-a",
+    );
+    expect(screen.queryByTestId("status-glyph")).not.toBeInTheDocument();
+  });
+
+  it("deletes a routine from the index with the trash action", async () => {
     const user = userEvent.setup();
 
     render(
-      <GainlyStoreProvider>
-        <RoutinesPage />
-      </GainlyStoreProvider>,
+      <MemoryRouter initialEntries={["/routines"]}>
+        <GainlyStoreProvider>
+          <Routes>
+            <Route path="/routines" element={<RoutinesPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
     );
 
-    expect(screen.queryAllByText(/unilateral|bilateral/i)).toHaveLength(0);
+    expect(screen.getByRole("heading", { name: /^push$/i })).toBeInTheDocument();
 
-    await user.click(screen.getAllByRole("button", { name: /add technique/i })[0]);
+    await user.click(screen.getByRole("button", { name: /delete push routine/i }));
+    const dialog = screen.getByRole("alertdialog");
 
-    const techniqueMenu = screen.getByRole("menu");
-    expect(techniqueMenu).toBeVisible();
-    expect(within(techniqueMenu).getByRole("menuitem", { name: /back-off set/i })).toBeVisible();
-    expect(within(techniqueMenu).getByRole("menuitem", { name: /cluster set/i })).toBeVisible();
-    expect(within(techniqueMenu).getByRole("menuitem", { name: /super set/i })).toBeVisible();
+    expect(within(dialog).getByRole("heading", { name: /delete routine/i })).toBeInTheDocument();
+    expect(within(dialog).getByText(/delete push\? this will remove the routine and its workout history/i)).toBeInTheDocument();
+    await user.click(within(dialog).getByRole("button", { name: /delete routine/i }));
 
-    await user.click(screen.getByRole("menuitem", { name: /back-off set/i }));
-    expect(screen.getByText(/set 3 · backoff/i)).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /^push$/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^pull$/i })).toBeInTheDocument();
+    expect(screen.getByText(/2 routines available/i)).toBeInTheDocument();
   });
 
-  it("switches the routine editor with the routine selector", async () => {
+  it("does not delete a routine when the confirmation is cancelled", async () => {
     const user = userEvent.setup();
 
     render(
-      <GainlyStoreProvider>
-        <RoutinesPage />
-      </GainlyStoreProvider>,
+      <MemoryRouter initialEntries={["/routines"]}>
+        <GainlyStoreProvider>
+          <Routes>
+            <Route path="/routines" element={<RoutinesPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
     );
 
-    expect(screen.getByRole("heading", { name: /push builder/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /barbell bench press/i })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /delete push routine/i }));
+    const dialog = screen.getByRole("alertdialog");
+    await user.click(within(dialog).getByRole("button", { name: /^cancel$/i }));
 
-    await user.selectOptions(screen.getByRole("combobox", { name: /routine/i }), "routine-lower-a");
-
-    expect(screen.getByRole("heading", { name: /pull builder/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /barbell back squat/i })).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: /barbell bench press/i })).not.toBeInTheDocument();
-  });
-
-  it("collapses and expands the add exercise section", async () => {
-    const user = userEvent.setup();
-
-    render(
-      <GainlyStoreProvider>
-        <RoutinesPage />
-      </GainlyStoreProvider>,
-    );
-
-    expect(screen.getByRole("button", { name: /expand add exercise/i })).toBeInTheDocument();
-    expect(screen.queryByRole("textbox", { name: /search exercises/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /create new/i })).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /expand add exercise/i }));
-
-    expect(screen.getByRole("button", { name: /collapse add exercise/i })).toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: /search exercises/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /create new/i })).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /collapse add exercise/i }));
-
-    expect(screen.getByRole("button", { name: /expand add exercise/i })).toBeInTheDocument();
-    expect(screen.queryByRole("textbox", { name: /search exercises/i })).not.toBeInTheDocument();
-  });
-
-  it("renders the exercise picker before the configured routine exercises in the page flow", () => {
-    render(
-      <GainlyStoreProvider>
-        <RoutinesPage />
-      </GainlyStoreProvider>,
-    );
-
-    const pickerHeading = screen.getByRole("heading", { name: /add exercise/i });
-    const routineExerciseHeading = screen.getByRole("heading", { name: /barbell bench press/i });
-
-    expect(pickerHeading.compareDocumentPosition(routineExerciseHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  });
-
-  it("filters the exercise picker by search text and muscle group", async () => {
-    const user = userEvent.setup();
-
-    render(
-      <GainlyStoreProvider>
-        <RoutinesPage />
-      </GainlyStoreProvider>,
-    );
-
-    await user.click(screen.getByRole("button", { name: /expand add exercise/i }));
-
-    const searchInput = screen.getByRole("textbox", { name: /search exercises/i });
-    const muscleGroupFilter = screen.getByRole("combobox", { name: /filter by muscle group/i });
-
-    await user.type(searchInput, "curl");
-
-    expect(screen.getByRole("button", { name: /incline dumbbell curl/i })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /barbell bench press/i })).not.toBeInTheDocument();
-
-    await user.clear(searchInput);
-    await user.selectOptions(muscleGroupFilter, "legs");
-
-    expect(screen.getByRole("button", { name: /barbell back squat/i })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /barbell bench press/i })).not.toBeInTheDocument();
-  });
-
-  it("adds a normal set to a routine exercise", async () => {
-    const user = userEvent.setup();
-
-    render(
-      <GainlyStoreProvider>
-        <RoutinesPage />
-      </GainlyStoreProvider>,
-    );
-
-    const benchHeading = screen.getByRole("heading", { name: /barbell bench press/i });
-    const benchCard = benchHeading.parentElement?.parentElement;
-    expect(benchCard).not.toBeNull();
-
-    await user.click(within(benchCard as HTMLElement).getByRole("button", { name: /add set/i }));
-
-    expect(within(benchCard as HTMLElement).getByText(/set 3 · normal/i)).toBeInTheDocument();
-  });
-
-  it("removes an exercise from the selected routine only", async () => {
-    const user = userEvent.setup();
-
-    render(
-      <GainlyStoreProvider>
-        <RoutinesPage />
-      </GainlyStoreProvider>,
-    );
-
-    const benchHeading = screen.getByRole("heading", { name: /barbell bench press/i });
-    const benchCard = benchHeading.parentElement?.parentElement;
-    expect(benchCard).not.toBeNull();
-
-    await user.click(within(benchCard as HTMLElement).getByRole("button", { name: /remove exercise/i }));
-
-    expect(screen.queryByRole("heading", { name: /barbell bench press/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /seated cable row/i })).toBeInTheDocument();
-
-    await user.selectOptions(screen.getByRole("combobox", { name: /routine/i }), "routine-upper-b");
-    expect(screen.getByRole("heading", { name: /incline dumbbell curl/i })).toBeInTheDocument();
-
-    await user.selectOptions(screen.getByRole("combobox", { name: /routine/i }), "routine-upper-a");
-    expect(screen.queryByRole("heading", { name: /barbell bench press/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /seated cable row/i })).toBeInTheDocument();
-  });
-
-  it("creates unique ids when creating duplicate exercise names", async () => {
-    const user = userEvent.setup();
-
-    render(
-      <GainlyStoreProvider>
-        <CreateExerciseProbe />
-      </GainlyStoreProvider>,
-    );
-
-    await user.click(screen.getByRole("button", { name: /create duplicate/i }));
-    await user.click(screen.getByRole("button", { name: /create duplicate/i }));
-
-    const ids = screen.getAllByRole("listitem").map((item) => item.textContent ?? "");
-    expect(ids).toHaveLength(2);
-    expect(new Set(ids).size).toBe(2);
-  });
-
-  it("distinguishes duplicate exercise names in the picker", async () => {
-    const user = userEvent.setup();
-
-    render(
-      <GainlyStoreProvider>
-        <CreateExerciseProbe />
-        <RoutinesPage />
-      </GainlyStoreProvider>,
-    );
-
-    await user.click(screen.getByRole("button", { name: /create duplicate/i }));
-    await user.click(screen.getByRole("button", { name: /create duplicate/i }));
-    await user.click(screen.getByRole("button", { name: /expand add exercise/i }));
-
-    const duplicateButtons = screen.getAllByRole("button", { name: /custom lift/i });
-    expect(duplicateButtons).toHaveLength(2);
-
-    const labels = duplicateButtons.map((button) => button.textContent ?? "");
-    expect(labels).toEqual(expect.arrayContaining([expect.stringContaining("back · #1"), expect.stringContaining("back · #2")]));
+    expect(screen.getByRole("heading", { name: /^push$/i })).toBeInTheDocument();
+    expect(screen.getByText(/3 routines available/i)).toBeInTheDocument();
   });
 });

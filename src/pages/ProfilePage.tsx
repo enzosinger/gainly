@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader } from "../components/ui/card";
+import { Button } from "../components/ui/button";
 import { useGainlyStore } from "../state/gainly-store";
 
 export default function ProfilePage() {
-  const { routines, exercises } = useGainlyStore();
+  const { viewer, routines, exercises, signOut } = useGainlyStore();
 
   const totalExercises = routines.reduce((total, routine) => total + routine.exercises.length, 0);
   const weeklySets = routines.reduce(
@@ -59,6 +60,23 @@ export default function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+
+      {viewer ? (
+        <Card>
+          <CardHeader className="pb-4">
+            <p className="eyebrow">Account</p>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <p className="text-lg font-medium tracking-tight">{viewer.name ?? "Gainly athlete"}</p>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">{viewer.email ?? "Signed in"}</p>
+            </div>
+            <Button variant="outline" onClick={() => void signOut()}>
+              Sign out
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
     </section>
   );
 }
