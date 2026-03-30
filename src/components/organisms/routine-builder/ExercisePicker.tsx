@@ -28,6 +28,24 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
       return matchesSearch && matchesMuscleGroup;
     });
   }, [exercises, muscleFilter, searchQuery]);
+  const filteredExerciseLabels = useMemo(() => {
+    const nameCounts = filteredExercises.reduce((counts, exercise) => {
+      counts.set(exercise.name, (counts.get(exercise.name) ?? 0) + 1);
+      return counts;
+    }, new Map<string, number>());
+    const seenCounts = new Map<string, number>();
+
+    return filteredExercises.map((exercise) => {
+      const occurrenceCount = (seenCounts.get(exercise.name) ?? 0) + 1;
+      seenCounts.set(exercise.name, occurrenceCount);
+
+      return {
+        exercise,
+        occurrenceCount,
+        hasDuplicateName: (nameCounts.get(exercise.name) ?? 0) > 1,
+      };
+    });
+  }, [filteredExercises]);
 
   function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -120,22 +138,28 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
                 </Select>
               </label>
             </div>
-            {filteredExercises.length === 0 ? (
+            {filteredExerciseLabels.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[hsl(var(--border))] px-3 py-4 text-sm text-[hsl(var(--muted-foreground))]">
                 No exercises match these filters.
               </div>
             ) : (
               <div className="grid gap-2">
-                {filteredExercises.map((exercise) => (
-                  <button
-                    key={exercise.id}
-                    type="button"
-                    onClick={() => addExerciseToRoutine(routineId, exercise.id)}
-                    className="panel-inset rounded-2xl px-3 py-3 text-left text-sm text-[hsl(var(--foreground))] transition hover:border-[hsl(var(--ring))]"
-                  >
-                    {exercise.name}
-                  </button>
-                ))}
+                {filteredExerciseLabels.map(({ exercise, occurrenceCount, hasDuplicateName }) => {
+                  return (
+                    <button
+                      key={exercise.id}
+                      type="button"
+                      onClick={() => addExerciseToRoutine(routineId, exercise.id)}
+                      className="panel-inset rounded-2xl px-3 py-3 text-left text-sm text-[hsl(var(--foreground))] transition hover:border-[hsl(var(--ring))]"
+                    >
+                      <span className="block font-medium">{exercise.name}</span>
+                      <span className="mt-1 block text-xs text-[hsl(var(--muted-foreground))]">
+                        {exercise.muscleGroup}
+                        {hasDuplicateName ? ` · #${occurrenceCount}` : ""}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

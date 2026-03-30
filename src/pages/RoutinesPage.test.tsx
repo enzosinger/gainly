@@ -155,7 +155,8 @@ describe("RoutinesPage", () => {
       </GainlyStoreProvider>,
     );
 
-    const benchCard = screen.getByRole("heading", { name: /barbell bench press/i }).closest(".panel-card");
+    const benchHeading = screen.getByRole("heading", { name: /barbell bench press/i });
+    const benchCard = benchHeading.parentElement?.parentElement;
     expect(benchCard).not.toBeNull();
 
     await user.click(within(benchCard as HTMLElement).getByRole("button", { name: /add set/i }));
@@ -172,7 +173,8 @@ describe("RoutinesPage", () => {
       </GainlyStoreProvider>,
     );
 
-    const benchCard = screen.getByRole("heading", { name: /barbell bench press/i }).closest(".panel-card");
+    const benchHeading = screen.getByRole("heading", { name: /barbell bench press/i });
+    const benchCard = benchHeading.parentElement?.parentElement;
     expect(benchCard).not.toBeNull();
 
     await user.click(within(benchCard as HTMLElement).getByRole("button", { name: /remove exercise/i }));
@@ -182,6 +184,10 @@ describe("RoutinesPage", () => {
 
     await user.selectOptions(screen.getByRole("combobox", { name: /routine/i }), "routine-upper-b");
     expect(screen.getByRole("heading", { name: /incline dumbbell curl/i })).toBeInTheDocument();
+
+    await user.selectOptions(screen.getByRole("combobox", { name: /routine/i }), "routine-upper-a");
+    expect(screen.queryByRole("heading", { name: /barbell bench press/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /seated cable row/i })).toBeInTheDocument();
   });
 
   it("creates unique ids when creating duplicate exercise names", async () => {
@@ -199,5 +205,25 @@ describe("RoutinesPage", () => {
     const ids = screen.getAllByRole("listitem").map((item) => item.textContent ?? "");
     expect(ids).toHaveLength(2);
     expect(new Set(ids).size).toBe(2);
+  });
+
+  it("distinguishes duplicate exercise names in the picker", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <GainlyStoreProvider>
+        <CreateExerciseProbe />
+        <RoutinesPage />
+      </GainlyStoreProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: /create duplicate/i }));
+    await user.click(screen.getByRole("button", { name: /create duplicate/i }));
+
+    const duplicateButtons = screen.getAllByRole("button", { name: /custom lift/i });
+    expect(duplicateButtons).toHaveLength(2);
+
+    const labels = duplicateButtons.map((button) => button.textContent ?? "");
+    expect(labels).toEqual(expect.arrayContaining([expect.stringContaining("back · #1"), expect.stringContaining("back · #2")]));
   });
 });

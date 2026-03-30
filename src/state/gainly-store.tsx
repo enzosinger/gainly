@@ -23,6 +23,25 @@ type GainlyStoreValue = {
 
 const GainlyStoreContext = createContext<GainlyStoreValue | null>(null);
 
+function buildCreatedExercise(currentExercises: Exercise[], input: { name: string; muscleGroup: MuscleGroup }) {
+  const trimmedName = input.name.trim();
+  const baseId = `ex-${trimmedName.toLowerCase().replace(/\s+/g, "-")}`;
+  const existingIds = new Set(currentExercises.map((exercise) => exercise.id));
+  let nextId = baseId;
+  let suffix = 2;
+
+  while (existingIds.has(nextId)) {
+    nextId = `${baseId}-${suffix}`;
+    suffix += 1;
+  }
+
+  return {
+    id: nextId,
+    name: trimmedName,
+    muscleGroup: input.muscleGroup,
+  };
+}
+
 function appendSetToRoutineExercise(
   routine: Routine,
   routineExerciseId: string,
@@ -138,31 +157,8 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
         );
       },
       createExercise: (input: { name: string; muscleGroup: MuscleGroup }) => {
-        const trimmedName = input.name.trim();
-        const baseId = `ex-${trimmedName.toLowerCase().replace(/\s+/g, "-")}`;
-        let createdExercise: Exercise = {
-          id: baseId,
-          name: trimmedName,
-          muscleGroup: input.muscleGroup,
-        };
-
-        setExercises((current) => {
-          const existingIds = new Set(current.map((exercise) => exercise.id));
-          let nextId = baseId;
-          let suffix = 2;
-
-          while (existingIds.has(nextId)) {
-            nextId = `${baseId}-${suffix}`;
-            suffix += 1;
-          }
-
-          createdExercise = {
-            ...createdExercise,
-            id: nextId,
-          };
-
-          return [...current, createdExercise];
-        });
+        const createdExercise = buildCreatedExercise(exercises, input);
+        setExercises((current) => [...current, createdExercise]);
         return createdExercise;
       },
     }),
