@@ -40,10 +40,11 @@ export default defineSchema({
     startedAt: v.number(),
     completedAt: v.optional(v.number()),
     updatedAt: v.number(),
+    weekStart: v.optional(v.number()), // Will be required after migration
     exercises: v.array(workoutSessionExerciseValidator),
   })
     .index("by_user", ["userId"])
-    .index("by_user_routine_status", ["userId", "routineId", "status"])
-    .index("by_user_routine_status_completedAt", ["userId", "routineId", "status", "completedAt"])
-    .index("by_user_status_completedAt", ["userId", "status", "completedAt"]),
+    .index("by_user_routine_weekStart", ["userId", "routineId", "weekStart"])
+    .index("by_user_routine_status_weekStart", ["userId", "routineId", "status", "weekStart"])
+    .index("by_user_status_weekStart_completedAt", ["userId", "status", "weekStart", "completedAt"]),
 });

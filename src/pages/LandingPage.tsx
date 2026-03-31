@@ -1,5 +1,6 @@
 import PasswordAuthForm from "../components/auth/PasswordAuthForm";
 import gainlyLogo from "../../gainly_logo.png";
+import gainlyLogoWhite from "../../gainly_logo_white.png";
 
 export default function LandingPage() {
   return (
@@ -9,7 +10,9 @@ export default function LandingPage() {
           <div className="relative px-5 py-7 md:px-8 md:py-8">
             <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-br from-[hsl(var(--panel))] via-[hsl(var(--panel-inset))] to-[hsl(var(--background))]" />
             <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-3">
-              <img src={gainlyLogo} alt="Gainly" className="h-[4.75rem] w-auto md:h-[5.5rem]" />
+              <img src={gainlyLogo} alt="Gainly" className="h-[4.75rem] w-auto transition-opacity md:h-[5.5rem] dark:hidden" />
+              <img src={gainlyLogoWhite} alt="Gainly" className="hidden h-[4.75rem] w-auto transition-opacity md:h-[5.5rem] dark:block" />
+
               <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
                 Training OS for lifters who want structure without noise.
               </h1>

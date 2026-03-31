@@ -13,6 +13,7 @@ import type * as auth from "../auth.js";
 import type * as exercises from "../exercises.js";
 import type * as http from "../http.js";
 import type * as lib from "../lib.js";
+import type * as migrations from "../migrations.js";
 import type * as routines from "../routines.js";
 import type * as seed from "../seed.js";
 import type * as validators from "../validators.js";
@@ -30,6 +31,7 @@ declare const fullApi: ApiFromModules<{
   exercises: typeof exercises;
   http: typeof http;
   lib: typeof lib;
+  migrations: typeof migrations;
   routines: typeof routines;
   seed: typeof seed;
   validators: typeof validators;

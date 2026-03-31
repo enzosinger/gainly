@@ -9,7 +9,7 @@ export default function StatusGlyph({ completed }: StatusGlyphProps) {
   const glyphClasses = cn(
     "inline-flex h-8 w-8 items-center justify-center rounded-full border",
     completed
-      ? "border-[hsl(var(--strong))] bg-[hsl(var(--strong))] text-white"
+      ? "border-[hsl(var(--strong))] bg-[hsl(var(--strong))] text-[hsl(var(--strong-foreground))]"
       : "border-[hsl(var(--border))] bg-[hsl(var(--panel-inset))] text-[hsl(var(--muted-foreground))]",
   );
 

@@ -1,9 +1,15 @@
+import { Moon, Sun } from "lucide-react";
 import { Card, CardContent, CardHeader } from "../components/ui/card";
 import { Button } from "../components/ui/button";
+import { Switch } from "../components/ui/switch";
+import { useTheme } from "../components/ui/theme-provider";
 import { useGainlyStore } from "../state/gainly-store";
+import { cn } from "../lib/utils";
+
 
 export default function ProfilePage() {
   const { viewer, routines, exercises, signOut } = useGainlyStore();
+  const { theme, setTheme } = useTheme();
 
   const totalExercises = routines.reduce((total, routine) => total + routine.exercises.length, 0);
   const weeklySets = routines.reduce(
@@ -16,11 +22,68 @@ export default function ProfilePage() {
     <section className="space-y-6 md:space-y-8">
       <header className="space-y-2">
         <p className="eyebrow">Athlete profile</p>
-        <h1 className="screen-title">Profile</h1>
+        <h1 className="screen-title">PROFILE</h1>
         <p className="max-w-2xl text-sm text-[hsl(var(--muted-foreground))] md:text-base">
           Maintain a clear baseline of your current training footprint and weekly workload capacity.
         </p>
       </header>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader className="pb-4">
+            <p className="eyebrow">Appearance</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-lg font-medium tracking-tight">Dark mode</p>
+                <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                  {theme === "dark" ? "Enhanced athlete focus" : "Maximum visibility"}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Sun className={cn("h-4 w-4 transition-colors", theme === "light" ? "text-[hsl(var(--strong))]" : "text-[hsl(var(--muted-foreground))]")} />
+                <Switch
+                  checked={theme === "dark"}
+                  onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+                />
+                <Moon className={cn("h-4 w-4 transition-colors", theme === "dark" ? "text-[hsl(var(--strong))]" : "text-[hsl(var(--foreground))]")} />
+              </div>
+            </div>
+            <div className="panel-inset flex items-center justify-between rounded-xl px-4 py-3">
+              <p className="text-sm font-medium">Follow system preference</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  "h-8 px-3 text-xs",
+                  theme === "system" && "bg-[hsl(var(--panel))] text-[hsl(var(--foreground))] shadow-sm"
+                )}
+                onClick={() => setTheme("system")}
+              >
+                Auto
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {viewer ? (
+          <Card>
+            <CardHeader className="pb-4">
+              <p className="eyebrow">Account</p>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <div className="space-y-1">
+                <p className="text-lg font-medium tracking-tight">{viewer.name ?? "Gainly athlete"}</p>
+                <p className="text-sm text-[hsl(var(--muted-foreground))]">{viewer.email ?? "Signed in"}</p>
+              </div>
+              <Button variant="outline" className="w-full justify-center" onClick={() => void signOut()}>
+                Sign out
+              </Button>
+            </CardContent>
+          </Card>
+        ) : null}
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
@@ -49,34 +112,20 @@ export default function ProfilePage() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader className="pb-4">
-          <p className="eyebrow">Readiness note</p>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-lg font-medium tracking-tight">Total planned exercises: {totalExercises}</p>
-          <div className="panel-inset rounded-2xl px-4 py-3 text-sm text-[hsl(var(--muted-foreground))]">
-            Keep volume stable for 2-3 weeks before increasing load to preserve technique quality.
-          </div>
-        </CardContent>
-      </Card>
-
-      {viewer ? (
+      <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader className="pb-4">
-            <p className="eyebrow">Account</p>
+            <p className="eyebrow">Readiness note</p>
           </CardHeader>
-          <CardContent className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="space-y-1">
-              <p className="text-lg font-medium tracking-tight">{viewer.name ?? "Gainly athlete"}</p>
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">{viewer.email ?? "Signed in"}</p>
+          <CardContent className="space-y-3">
+            <p className="text-lg font-medium tracking-tight">Total planned exercises: {totalExercises}</p>
+            <div className="panel-inset rounded-2xl px-4 py-3 text-sm text-[hsl(var(--muted-foreground))]">
+              Keep volume stable for 2-3 weeks before increasing load to preserve technique quality.
             </div>
-            <Button variant="outline" onClick={() => void signOut()}>
-              Sign out
-            </Button>
           </CardContent>
         </Card>
-      ) : null}
+      </div>
     </section>
   );
 }
+

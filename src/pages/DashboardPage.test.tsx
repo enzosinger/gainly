@@ -148,7 +148,9 @@ describe("DashboardPage", () => {
       reorderRoutines: vi.fn(),
       addExerciseToRoutine: vi.fn(),
       addSetToRoutineExercise: vi.fn(),
+      removeSetFromRoutineExercise: vi.fn(),
       removeExerciseFromRoutine: vi.fn(),
+
       addTechniqueToRoutineExercise: vi.fn(),
       createExercise: vi.fn(),
       updateExercise: vi.fn(),

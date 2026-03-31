@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { cn } from "../../lib/utils";
 import gainlyLogo from "../../../gainly_logo.png";
+import gainlyLogoWhite from "../../../gainly_logo_white.png";
 
 const links = [
   { to: "/", label: "Dashboard" },
@@ -13,7 +14,7 @@ const desktopNavLinkClasses =
   "rounded-md px-4 py-3 text-sm font-medium transition";
 const mobileNavLinkClasses =
   "rounded-md px-2 py-2 text-center text-[11px] uppercase tracking-[0.16em] transition";
-const activeNavLinkClasses = "bg-[hsl(var(--strong))] text-white";
+const activeNavLinkClasses = "bg-[hsl(var(--strong))] text-[hsl(var(--strong-foreground))]";
 const inactiveDesktopNavLinkClasses =
   "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--panel-inset))] hover:text-[hsl(var(--foreground))]";
 const inactiveMobileNavLinkClasses = "text-[hsl(var(--muted-foreground))]";
@@ -24,8 +25,10 @@ export default function AppShell() {
       <aside className="app-shell-sidebar hidden md:flex md:flex-col">
         <div className="flex h-full flex-col px-6 py-8">
           <div className="space-y-3">
-            <img src={gainlyLogo} alt="Gainly" className="h-[4.5rem] w-auto" />
+            <img src={gainlyLogo} alt="Gainly" className="h-[4.5rem] w-auto dark:hidden" />
+            <img src={gainlyLogoWhite} alt="Gainly" className="hidden h-[4.5rem] w-auto dark:block" />
           </div>
+
           <nav aria-label="Primary navigation" className="mt-10 flex flex-col gap-2">
             {links.map((link) => (
               <NavLink

@@ -12,10 +12,11 @@ import type { Routine, RoutineWeekSummary } from "../../../types/domain";
 
 type SortableRoutineCardProps = {
   routine: Routine;
+  weekStart: number;
   summary?: RoutineWeekSummary;
 };
 
-function SortableRoutineCard({ routine, summary }: SortableRoutineCardProps) {
+function SortableRoutineCard({ routine, weekStart, summary }: SortableRoutineCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: routine.id,
   });
@@ -27,16 +28,17 @@ function SortableRoutineCard({ routine, summary }: SortableRoutineCardProps) {
       {...attributes}
       {...listeners}
     >
-      <RoutineWeekCard routine={routine} summary={summary} workoutHref={`/workout/${routine.id}`} />
+      <RoutineWeekCard routine={routine} summary={summary} workoutHref={`/workout/${routine.id}?weekStart=${weekStart}`} />
     </div>
   );
 }
 
 type WeeklyRoutineListProps = {
   summariesByRoutineId?: Map<string, RoutineWeekSummary>;
+  weekStart: number;
 };
 
-export default function WeeklyRoutineList({ summariesByRoutineId }: WeeklyRoutineListProps) {
+export default function WeeklyRoutineList({ summariesByRoutineId, weekStart }: WeeklyRoutineListProps) {
   const { routines, reorderRoutines } = useGainlyStore();
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -53,7 +55,7 @@ export default function WeeklyRoutineList({ summariesByRoutineId }: WeeklyRoutin
       <SortableContext items={routines.map((routine) => routine.id)} strategy={verticalListSortingStrategy}>
         <div className="grid gap-4 md:gap-5">
           {routines.map((routine) => (
-            <SortableRoutineCard key={routine.id} routine={routine} summary={summariesByRoutineId?.get(routine.id)} />
+            <SortableRoutineCard key={routine.id} routine={routine} weekStart={weekStart} summary={summariesByRoutineId?.get(routine.id)} />
           ))}
         </div>
       </SortableContext>

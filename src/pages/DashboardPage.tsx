@@ -21,7 +21,6 @@ export default function DashboardPage() {
   const weekWindow = getWeekWindow(selectedWeekStart);
   const weeklySummaries = useQuery(api.workouts.weeklyRoutineSummaries, {
     weekStart: weekWindow.start,
-    weekEndExclusive: weekWindow.endExclusive,
   }) ?? [];
   const summariesByRoutineId = useMemo(
     () => new Map(weeklySummaries.map((summary) => [summary.routineId, summary])),
@@ -62,7 +61,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       ) : (
-        <WeeklyRoutineList summariesByRoutineId={summariesByRoutineId} />
+        <WeeklyRoutineList summariesByRoutineId={summariesByRoutineId} weekStart={weekWindow.start} />
       )}
     </section>
   );

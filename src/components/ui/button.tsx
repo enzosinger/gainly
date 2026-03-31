@@ -5,7 +5,7 @@ type ButtonVariant = "default" | "outline" | "secondary" | "ghost";
 type ButtonSize = "default" | "sm" | "lg" | "icon";
 
 const variantClasses: Record<ButtonVariant, string> = {
-  default: "bg-[hsl(var(--strong))] text-white hover:opacity-95",
+  default: "bg-[hsl(var(--strong))] text-[hsl(var(--strong-foreground))] hover:opacity-95",
   outline:
     "border border-[hsl(var(--border))] bg-[hsl(var(--panel))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--panel-inset))]",
   secondary: "bg-[hsl(var(--panel-inset))] text-[hsl(var(--foreground))] hover:opacity-95",

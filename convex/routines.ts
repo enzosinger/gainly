@@ -86,7 +86,7 @@ export const remove = mutation({
 
     const sessions = await ctx.db
       .query("workoutSessions")
-      .withIndex("by_user_routine_status", (q) =>
+      .withIndex("by_user_routine_weekStart", (q) =>
         q.eq("userId", userId).eq("routineId", args.routineId),
       )
       .collect();

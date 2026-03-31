@@ -54,7 +54,7 @@ export default function RoutineWeekCard({
               onClick={(event) => event.stopPropagation()}
             >
               <Button variant="outline" className="w-full">
-                Log {routine.name} workout
+                {completed ? "View workout" : `Log ${routine.name} workout`}
               </Button>
             </Link>
           ) : null}

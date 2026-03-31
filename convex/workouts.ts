@@ -47,13 +47,14 @@ function buildSessionExercise(
   };
 }
 
-function buildWorkoutSession(routine: Doc<"routines">, now: number) {
+function buildWorkoutSession(routine: Doc<"routines">, weekStart: number, now: number) {
   return {
     userId: routine.userId,
     routineId: routine._id,
     status: "in_progress" as const,
     startedAt: now,
     updatedAt: now,
+    weekStart,
     exercises: routine.exercises.map((exercise, index) => buildSessionExercise(exercise, index)),
   };
 }
@@ -108,12 +109,7 @@ function calculateDeltaPercent(latestScore: number, previousScore: number) {
   return ((latestScore - previousScore) / previousScore) * 100;
 }
 
-function getWeekRange(weekStart: number, weekEndExclusive: number) {
-  return {
-    weekStart,
-    weekEndExclusive,
-  };
-}
+
 
 function cloneUpdatedSessionSet(
   set: Doc<"workoutSessions">["exercises"][number]["sets"][number],
@@ -143,17 +139,18 @@ function cloneUpdatedSessionSet(
   return Object.fromEntries(Object.entries(nextSet).filter(([, value]) => value !== undefined)) as typeof nextSet;
 }
 
-export const activeSessionForRoutine = query({
+export const sessionForRoutineWeek = query({
   args: {
     routineId: v.id("routines"),
+    weekStart: v.number(),
   },
   handler: async (ctx, args) => {
     const userId = await requireCurrentUserId(ctx);
 
     return await ctx.db
       .query("workoutSessions")
-      .withIndex("by_user_routine_status", (q) =>
-        q.eq("userId", userId).eq("routineId", args.routineId).eq("status", "in_progress"),
+      .withIndex("by_user_routine_weekStart", (q) =>
+        q.eq("userId", userId).eq("routineId", args.routineId).eq("weekStart", args.weekStart),
       )
       .first();
   },
@@ -168,7 +165,7 @@ export const latestCompletedSessionForRoutine = query({
 
     return await ctx.db
       .query("workoutSessions")
-      .withIndex("by_user_routine_status_completedAt", (q) =>
+      .withIndex("by_user_routine_status_weekStart", (q) =>
         q.eq("userId", userId).eq("routineId", args.routineId).eq("status", "completed"),
       )
       .order("desc")
@@ -176,34 +173,31 @@ export const latestCompletedSessionForRoutine = query({
   },
 });
 
-export const weekHistoryForRoutine = query({
+export const previousHistoryForRoutine = query({
   args: {
     routineId: v.id("routines"),
     weekStart: v.number(),
-    weekEndExclusive: v.number(),
   },
   handler: async (ctx, args) => {
     const userId = await requireCurrentUserId(ctx);
-    const { weekStart, weekEndExclusive } = getWeekRange(args.weekStart, args.weekEndExclusive);
 
     const completedSessions = await ctx.db
       .query("workoutSessions")
-      .withIndex("by_user_routine_status_completedAt", (q) =>
+      .withIndex("by_user_routine_status_weekStart", (q) =>
         q
           .eq("userId", userId)
           .eq("routineId", args.routineId)
           .eq("status", "completed")
-          .gte("completedAt", weekStart)
-          .lt("completedAt", weekEndExclusive),
       )
       .order("desc")
       .collect();
 
+    // Find the most recent session from a previous week
+    const previousSession = completedSessions.find(s => (s.weekStart ?? 0) < args.weekStart);
+
     return {
       routineId: args.routineId,
-      latestCompletedSession: completedSessions[0] ?? null,
-      previousCompletedSession: completedSessions[1] ?? null,
-      hasHistory: completedSessions.length > 1,
+      latestCompletedSession: previousSession ?? null,
     };
   },
 });
@@ -211,22 +205,30 @@ export const weekHistoryForRoutine = query({
 export const weeklyRoutineSummaries = query({
   args: {
     weekStart: v.number(),
-    weekEndExclusive: v.number(),
   },
   handler: async (ctx, args) => {
     const userId = await requireCurrentUserId(ctx);
-    const { weekStart, weekEndExclusive } = getWeekRange(args.weekStart, args.weekEndExclusive);
     const routines = await ctx.db
       .query("routines")
       .withIndex("by_user_position", (q) => q.eq("userId", userId))
       .collect();
 
-    const completedSessions = await ctx.db
+    const currentWeekSessions = await ctx.db
       .query("workoutSessions")
-      .withIndex("by_user_status_completedAt", (q) =>
-        q.eq("userId", userId).eq("status", "completed").gte("completedAt", weekStart).lt("completedAt", weekEndExclusive),
+      .withIndex("by_user_status_weekStart_completedAt", (q) =>
+        q.eq("userId", userId).eq("status", "completed").eq("weekStart", args.weekStart),
       )
-      .order("desc")
+      .collect();
+
+    // Using shiftWeekWindowStart logic inside convex is non-ideal if the frontend usually computes weekStart.
+    // Assuming 7 days offset (604800000 ms).
+    const previousWeekStart = args.weekStart - 604800000;
+
+    const previousWeekSessions = await ctx.db
+      .query("workoutSessions")
+      .withIndex("by_user_status_weekStart_completedAt", (q) =>
+        q.eq("userId", userId).eq("status", "completed").eq("weekStart", previousWeekStart),
+      )
       .collect();
 
     const sessionsByRoutineId = new Map<
@@ -242,10 +244,11 @@ export const weeklyRoutineSummaries = query({
         }>;
         completedAt?: number;
         updatedAt: number;
+        weekStart?: number;
       }>
     >();
 
-    for (const session of completedSessions) {
+    for (const session of currentWeekSessions.concat(previousWeekSessions)) {
       const routineSessions = sessionsByRoutineId.get(String(session.routineId)) ?? [];
       routineSessions.push(session);
       sessionsByRoutineId.set(String(session.routineId), routineSessions);
@@ -253,8 +256,8 @@ export const weeklyRoutineSummaries = query({
 
     return routines.map((routine) => {
       const routineSessions = sessionsByRoutineId.get(String(routine._id)) ?? [];
-      const latestSession = routineSessions[0];
-      const previousSession = routineSessions[1];
+      const latestSession = routineSessions.find((s) => s.weekStart === args.weekStart);
+      const previousSession = routineSessions.find((s) => s.weekStart === previousWeekStart);
       const latestScore = latestSession ? sumSessionScore(latestSession) : 0;
       const previousScore = previousSession ? sumSessionScore(previousSession) : 0;
       const hasHistory = Boolean(previousSession);
@@ -283,11 +286,11 @@ export const progressSummaries = query({
       routines.map(async (routine) => {
         const routineSessions = await ctx.db
           .query("workoutSessions")
-          .withIndex("by_user_routine_status_completedAt", (q) =>
+          .withIndex("by_user_routine_status_weekStart", (q) =>
             q.eq("userId", userId).eq("routineId", routine._id).eq("status", "completed"),
           )
           .order("desc")
-          .collect();
+          .take(2);
 
         const latestSession = routineSessions[0];
         if (!latestSession) {
@@ -364,16 +367,17 @@ function syncSessionWithRoutine(
   return syncedExercises;
 }
 
-export const ensureActiveSession = mutation({
+export const ensureSessionForRoutineWeek = mutation({
   args: {
     routineId: v.id("routines"),
+    weekStart: v.number(),
   },
   handler: async (ctx, args) => {
     const userId = await requireCurrentUserId(ctx);
     const existingSession = await ctx.db
       .query("workoutSessions")
-      .withIndex("by_user_routine_status", (q) =>
-        q.eq("userId", userId).eq("routineId", args.routineId).eq("status", "in_progress"),
+      .withIndex("by_user_routine_weekStart", (q) =>
+        q.eq("userId", userId).eq("routineId", args.routineId).eq("weekStart", args.weekStart)
       )
       .first();
 
@@ -395,7 +399,7 @@ export const ensureActiveSession = mutation({
     }
 
     const now = Date.now();
-    return await ctx.db.insert("workoutSessions", buildWorkoutSession(routine, now));
+    return await ctx.db.insert("workoutSessions", buildWorkoutSession(routine, args.weekStart, now));
   },
 });
 
@@ -407,10 +411,6 @@ export const updateWorkoutSet = mutation({
 
     if (!session || session.userId !== userId) {
       throw new Error("Workout session not found.");
-    }
-
-    if (session.status !== "in_progress") {
-      throw new Error("Workout session is already completed.");
     }
 
     const nextExercises = session.exercises.map((exercise) => {

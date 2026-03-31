@@ -14,7 +14,7 @@ export default function WorkoutPage() {
   const { routineId } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const ensureActiveSession = useMutation(api.workouts.ensureActiveSession);
+  const ensureSessionForRoutineWeek = useMutation(api.workouts.ensureSessionForRoutineWeek);
   const updateWorkoutSet = useMutation(api.workouts.updateWorkoutSet);
   const completeSession = useMutation(api.workouts.completeSession);
   const [workflowMessage, setWorkflowMessage] = useState<string | null>(null);
@@ -29,13 +29,13 @@ export default function WorkoutPage() {
     : currentWeekStart;
   const weekWindow = getWeekWindow(selectedWeekStart);
   const activeSession = useQuery(
-    api.workouts.activeSessionForRoutine,
-    selectedRoutineId ? { routineId: selectedRoutineId } : "skip",
+    api.workouts.sessionForRoutineWeek,
+    selectedRoutineId ? { routineId: selectedRoutineId, weekStart: weekWindow.start } : "skip",
   );
   const weekHistory = useQuery(
-    api.workouts.weekHistoryForRoutine,
+    api.workouts.previousHistoryForRoutine,
     selectedRoutineId
-      ? { routineId: selectedRoutineId, weekStart: weekWindow.start, weekEndExclusive: weekWindow.endExclusive }
+      ? { routineId: selectedRoutineId, weekStart: weekWindow.start }
       : "skip",
   );
   const requestedRoutineIdRef = useRef<string | null>(null);
@@ -54,11 +54,11 @@ export default function WorkoutPage() {
     }
 
     requestedRoutineIdRef.current = syncKey;
-    void ensureActiveSession({ routineId: selectedRoutineId }).catch(() => {
+    void ensureSessionForRoutineWeek({ routineId: selectedRoutineId, weekStart: weekWindow.start }).catch(() => {
       requestedRoutineIdRef.current = null;
       setWorkflowMessage("Unable to restore this workout session. Please refresh and try again.");
     });
-  }, [activeSession, ensureActiveSession, selectedRoutineId, routineUpdatedAt]);
+  }, [activeSession, ensureSessionForRoutineWeek, selectedRoutineId, routineUpdatedAt, weekWindow.start]);
 
   const exercisesById = useMemo(
     () => new Map(exercises.map((exercise) => [exercise.id, exercise])),
