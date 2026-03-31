@@ -17,7 +17,6 @@ export type Exercise = {
 
 export type RoutineCreationInput = {
   name: string;
-  weekday?: string;
 };
 
 export type SetEntry = {
@@ -76,11 +75,11 @@ export type RoutineExercise = {
 export type Routine = {
   id: string;
   name: string;
-  weekday: string;
   completed: boolean;
   deltaPercent: number;
   hasProgressHistory?: boolean;
   exercises: RoutineExercise[];
+  updatedAt?: number;
 };
 
 export type WeekWindow = {

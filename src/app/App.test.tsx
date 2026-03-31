@@ -47,7 +47,6 @@ describe("App shell", () => {
     mockUseConvexAuth.mockReset();
     mockUseMutation.mockReset();
     mockUseQuery.mockReset();
-    mockUseMutation.mockResolvedValue({ seeded: false });
     mockUseQuery.mockReturnValue(null);
   });
 
@@ -110,7 +109,6 @@ describe("App shell", () => {
     const pushCard = logLink.closest(".panel-card");
 
     expect(pushCard).toBeInTheDocument();
-    expect(within(pushCard as HTMLElement).getByText("Monday")).toBeInTheDocument();
     expect(within(pushCard as HTMLElement).getByTestId("status-glyph")).toHaveClass(
       "bg-[hsl(var(--panel-inset))]",
       "text-[hsl(var(--muted-foreground))]",

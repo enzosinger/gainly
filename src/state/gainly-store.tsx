@@ -125,10 +125,10 @@ function buildCreatedRoutine(currentRoutines: Routine[], input: RoutineCreationI
   return {
     id: nextId,
     name: trimmedName,
-    weekday: input.weekday ?? "Monday",
     completed: false,
     deltaPercent: 0,
     exercises: [],
+    updatedAt: Date.now(),
   };
 }
 
@@ -147,6 +147,7 @@ function appendSetToRoutineExercise(
 ) {
   return {
     ...routine,
+    updatedAt: Date.now(),
     exercises: routine.exercises.map((routineExercise) => {
       if (routineExercise.id !== routineExerciseId) {
         return routineExercise;
@@ -226,6 +227,7 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
 
             return {
               ...routine,
+              updatedAt: Date.now(),
               exercises: [...routine.exercises, nextItem],
             };
           }),
@@ -251,6 +253,7 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
 
             return {
               ...routine,
+              updatedAt: Date.now(),
               exercises: routine.exercises.filter((routineExercise) => routineExercise.id !== routineExerciseId),
             };
           }),
@@ -305,10 +308,17 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
       deleteExercise: async (exerciseId: string) => {
         setExercises((current) => current.filter((exercise) => exercise.id !== exerciseId));
         setRoutines((current) =>
-          current.map((routine) => ({
-            ...routine,
-            exercises: routine.exercises.filter((routineExercise) => routineExercise.exerciseId !== exerciseId),
-          })),
+          current.map((routine) => {
+            const nextExercises = routine.exercises.filter((routineExercise) => routineExercise.exerciseId !== exerciseId);
+            if (nextExercises.length === routine.exercises.length) {
+              return routine;
+            }
+            return {
+              ...routine,
+              updatedAt: Date.now(),
+              exercises: nextExercises,
+            };
+          }),
         );
       },
       signOut: async () => {},
@@ -350,19 +360,19 @@ function mapExerciseDoc(exercise: {
 function mapRoutineDoc(routine: {
   _id: Id<"routines">;
   name: string;
-  weekday: string;
   completed: boolean;
   deltaPercent: number;
   exercises: RoutineExercise[];
+  updatedAt?: number;
 }, progressSummary?: RoutineProgressSummary): Routine {
   return {
     id: routine._id,
     name: routine.name,
-    weekday: routine.weekday,
     completed: routine.completed,
     deltaPercent: progressSummary?.deltaPercent ?? routine.deltaPercent,
     hasProgressHistory: progressSummary?.hasHistory ?? false,
     exercises: routine.exercises,
+    updatedAt: routine.updatedAt,
   };
 }
 
@@ -422,7 +432,6 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
       createRoutine: async (input: RoutineCreationInput) => {
         const createdRoutine = await createRoutineMutation({
           name: input.name,
-          weekday: input.weekday,
         });
 
         if (!createdRoutine) {

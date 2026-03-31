@@ -79,6 +79,25 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
     setDraft(buildDraft(set));
   }, [set.id]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const payload = toPayload(draft);
+      const originalPayload = toPayload(buildDraft(set));
+
+      // Only commit if the values have actually changed from the current set data
+      if (
+        payload.weightKg !== originalPayload.weightKg ||
+        payload.reps !== originalPayload.reps ||
+        payload.pairWeightKg !== originalPayload.pairWeightKg ||
+        payload.pairReps !== originalPayload.pairReps
+      ) {
+        onCommit(payload);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [draft, onCommit, set]);
+
   return (
     <div className="panel-inset space-y-3 p-3 text-sm text-[hsl(var(--foreground))]">
       <div className="flex items-center justify-between gap-3">

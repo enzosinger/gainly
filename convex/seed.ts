@@ -21,7 +21,6 @@ type StarterSet = {
 
 type StarterRoutine = {
   name: string;
-  weekday: string;
   completed: boolean;
   deltaPercent: number;
   exercises: Array<{
@@ -43,7 +42,6 @@ export const starterExercises: StarterExercise[] = [
 export const starterRoutines: StarterRoutine[] = [
   {
     name: "Push",
-    weekday: "Monday",
     completed: false,
     deltaPercent: 2.1,
     exercises: [
@@ -64,7 +62,6 @@ export const starterRoutines: StarterRoutine[] = [
   },
   {
     name: "Pull",
-    weekday: "Wednesday",
     completed: true,
     deltaPercent: 1.4,
     exercises: [
@@ -80,7 +77,6 @@ export const starterRoutines: StarterRoutine[] = [
   },
   {
     name: "Legs",
-    weekday: "Friday",
     completed: false,
     deltaPercent: 0.8,
     exercises: [

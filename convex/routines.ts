@@ -5,7 +5,6 @@ import { requireCurrentUserId, requireExercise, requireRoutine } from "./lib";
 export const create = mutation({
   args: {
     name: v.string(),
-    weekday: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await requireCurrentUserId(ctx);
@@ -25,7 +24,6 @@ export const create = mutation({
     const routineId = await ctx.db.insert("routines", {
       userId,
       name,
-      weekday: args.weekday ?? "Monday",
       completed: false,
       deltaPercent: 0,
       position,
@@ -207,3 +205,4 @@ export const removeExercise = mutation({
     });
   },
 });
+

@@ -38,9 +38,7 @@ export default function DashboardPage() {
         </p>
       </header>
       <WeekStrip
-        weekStart={weekWindow.start}
         weekLabel={weekWindow.label}
-        showDays={false}
         onPreviousWeek={() => {
           setSearchParams({ weekStart: String(shiftWeekWindowStart(weekWindow.start, -1)) });
         }}

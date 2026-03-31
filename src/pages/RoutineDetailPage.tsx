@@ -37,7 +37,6 @@ export default function RoutineDetailPage() {
       <header className="space-y-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
-            <p className="eyebrow">{routine.weekday}</p>
             <h1 className="screen-title">{routine.name} builder</h1>
           </div>
           <label className="block w-full max-w-xs text-sm font-medium text-[hsl(var(--foreground))]">
@@ -45,7 +44,7 @@ export default function RoutineDetailPage() {
             <Select value={routine.id} onChange={(event) => navigate(`/routines/${event.target.value}`)}>
               {routines.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.weekday} · {item.name}
+                  {item.name}
                 </option>
               ))}
             </Select>

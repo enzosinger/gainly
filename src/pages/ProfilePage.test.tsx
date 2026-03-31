@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import ExercisesPage from "./ExercisesPage";
 import ProfilePage from "./ProfilePage";
 import RoutinesPage from "./RoutinesPage";
+import { MemoryRouter } from "react-router-dom";
 import { GainlyStoreProvider } from "../state/gainly-store";
 
 describe("ProfilePage", () => {
@@ -15,12 +16,14 @@ describe("ProfilePage", () => {
     exercisesView.unmount();
 
     const routinesView = render(
-      <GainlyStoreProvider>
-        <RoutinesPage />
-      </GainlyStoreProvider>,
+      <MemoryRouter>
+        <GainlyStoreProvider>
+          <RoutinesPage />
+        </GainlyStoreProvider>
+      </MemoryRouter>
     );
     const routinesClassName = screen.getByText(
-      /build the session from a clean baseline, then layer in advanced techniques deliberately/i,
+      /create new routines here, then open one to refine its exercises and set structure/i,
     ).className;
     routinesView.unmount();
 

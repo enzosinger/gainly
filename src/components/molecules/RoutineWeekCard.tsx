@@ -27,7 +27,6 @@ export default function RoutineWeekCard({
     <Card>
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
         <div>
-          <p className="eyebrow">{routine.weekday}</p>
           <CardTitle className="mt-2 text-xl">{routine.name}</CardTitle>
         </div>
         {showStatus ? <StatusGlyph completed={completed} /> : null}

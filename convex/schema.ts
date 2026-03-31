@@ -24,7 +24,6 @@ export default defineSchema({
   routines: defineTable({
     userId: v.id("users"),
     name: v.string(),
-    weekday: v.string(),
     completed: v.boolean(),
     deltaPercent: v.number(),
     position: v.number(),

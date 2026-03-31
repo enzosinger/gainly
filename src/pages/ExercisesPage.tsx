@@ -17,7 +17,7 @@ export default function ExercisesPage() {
       <header className="space-y-2">
         <p className="eyebrow">Exercise library</p>
         <h1 className="screen-title">Exercises</h1>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">
+        <p className="max-w-2xl text-sm text-[hsl(var(--muted-foreground))] md:text-base">
           Keep the shared movement catalog tidy so the builder and workout flow speak the same language.
         </p>
       </header>

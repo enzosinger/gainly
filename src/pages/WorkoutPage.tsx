@@ -40,24 +40,25 @@ export default function WorkoutPage() {
   );
   const requestedRoutineIdRef = useRef<string | null>(null);
 
+  const routineUpdatedAt = workoutRoutine?.updatedAt;
+
   useEffect(() => {
-    if (!selectedRoutineId || activeSession === undefined || activeSession !== null) {
-      if (activeSession) {
-        requestedRoutineIdRef.current = null;
-      }
+    if (!selectedRoutineId || activeSession === undefined) {
       return;
     }
 
-    if (requestedRoutineIdRef.current === selectedRoutineId) {
+    const syncKey = `${selectedRoutineId}-${routineUpdatedAt}`;
+
+    if (requestedRoutineIdRef.current === syncKey) {
       return;
     }
 
-    requestedRoutineIdRef.current = selectedRoutineId;
+    requestedRoutineIdRef.current = syncKey;
     void ensureActiveSession({ routineId: selectedRoutineId }).catch(() => {
       requestedRoutineIdRef.current = null;
       setWorkflowMessage("Unable to restore this workout session. Please refresh and try again.");
     });
-  }, [activeSession, ensureActiveSession, selectedRoutineId]);
+  }, [activeSession, ensureActiveSession, selectedRoutineId, routineUpdatedAt]);
 
   const exercisesById = useMemo(
     () => new Map(exercises.map((exercise) => [exercise.id, exercise])),
@@ -88,7 +89,6 @@ export default function WorkoutPage() {
 
   const weekNavigation = (
     <WeekStrip
-      weekStart={weekWindow.start}
       weekLabel={weekWindow.label}
       onPreviousWeek={() => {
         setSearchParams({ weekStart: String(shiftWeekWindowStart(weekWindow.start, -1)) });
@@ -114,7 +114,6 @@ export default function WorkoutPage() {
       <section className="space-y-4">
         {weekNavigation}
         <header className="space-y-2">
-          <p className="eyebrow">{workoutRoutine.weekday}</p>
           <h1 className="screen-title">{workoutRoutine.name} workout</h1>
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
             Restoring your workout session and pulling the last week-scoped logged set values.
@@ -136,7 +135,6 @@ export default function WorkoutPage() {
     <section className="space-y-6 md:space-y-8">
       {weekNavigation}
       <header className="space-y-2">
-        <p className="eyebrow">{workoutRoutine.weekday}</p>
         <h1 className="screen-title">{workoutRoutine.name} workout</h1>
         <p className="text-sm text-[hsl(var(--muted-foreground))]">
           Track each set with current inputs and keep the previous workout from the selected week visible for comparison.

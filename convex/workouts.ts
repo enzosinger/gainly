@@ -313,6 +313,57 @@ export const progressSummaries = query({
   },
 });
 
+function syncSessionWithRoutine(
+  existingExercises: Doc<"workoutSessions">["exercises"],
+  routine: Doc<"routines">,
+) {
+  const sessionExercisesByRoutineId = new Map(
+    existingExercises.map((ex) => [ex.routineExerciseId, ex]),
+  );
+
+  const syncedExercises = routine.exercises.map((routineExercise, index) => {
+    const existingSessionEx = sessionExercisesByRoutineId.get(routineExercise.id);
+
+    if (existingSessionEx) {
+      const sessionSetsByTemplateId = new Map(
+        existingSessionEx.sets.map((s) => [s.templateSetId, s]),
+      );
+
+      const syncedSets = routineExercise.sets.map((routineSet, setIndex) => {
+        const existingSessionSet = sessionSetsByTemplateId.get(routineSet.id);
+
+        if (existingSessionSet) {
+          // Keep logged data but sync prescriptive fields
+          return {
+            ...existingSessionSet,
+            technique: routineSet.technique,
+            backoffPercent: routineSet.backoffPercent,
+            clusterBlocks: routineSet.clusterBlocks,
+            clusterRepRange: routineSet.clusterRepRange,
+            pairExerciseId: routineSet.pairExerciseId,
+            pairWeightKg: routineSet.pairWeightKg,
+            pairReps: routineSet.pairReps,
+          };
+        }
+
+        // New set added to an existing exercise
+        return buildSessionSet(routineExercise.id, routineSet, setIndex);
+      });
+
+      return {
+        ...existingSessionEx,
+        position: index,
+        sets: syncedSets,
+      };
+    }
+
+    // Completely new exercise added to routine
+    return buildSessionExercise(routineExercise, index);
+  });
+
+  return syncedExercises;
+}
+
 export const ensureActiveSession = mutation({
   args: {
     routineId: v.id("routines"),
@@ -326,11 +377,23 @@ export const ensureActiveSession = mutation({
       )
       .first();
 
+    const routine = await requireRoutine(ctx, userId, args.routineId);
+
     if (existingSession) {
+      const syncedExercises = syncSessionWithRoutine(existingSession.exercises, routine);
+
+      // Simple deep equality check for structural changes
+      if (JSON.stringify(syncedExercises) !== JSON.stringify(existingSession.exercises)) {
+        await ctx.db.patch(existingSession._id, {
+          exercises: syncedExercises,
+          updatedAt: Date.now(),
+        });
+        return (await ctx.db.get(existingSession._id))!;
+      }
+
       return existingSession;
     }
 
-    const routine = await requireRoutine(ctx, userId, args.routineId);
     const now = Date.now();
     return await ctx.db.insert("workoutSessions", buildWorkoutSession(routine, now));
   },

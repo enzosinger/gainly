@@ -48,7 +48,6 @@ export const ensureStarterData = mutation({
       await ctx.db.insert("routines", {
         userId,
         name: routine.name,
-        weekday: routine.weekday,
         completed: routine.completed,
         deltaPercent: routine.deltaPercent,
         position: index,

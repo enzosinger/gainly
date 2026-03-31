@@ -4,7 +4,6 @@ export const mockRoutines: Routine[] = [
   {
     id: "routine-upper-a",
     name: "Push",
-    weekday: "Monday",
     completed: false,
     deltaPercent: 2.1,
     exercises: [
@@ -26,7 +25,6 @@ export const mockRoutines: Routine[] = [
   {
     id: "routine-lower-a",
     name: "Pull",
-    weekday: "Wednesday",
     completed: true,
     deltaPercent: 1.4,
     exercises: [
@@ -43,7 +41,6 @@ export const mockRoutines: Routine[] = [
   {
     id: "routine-upper-b",
     name: "Legs",
-    weekday: "Friday",
     completed: false,
     deltaPercent: 0.8,
     exercises: [

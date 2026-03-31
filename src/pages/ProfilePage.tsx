@@ -17,7 +17,7 @@ export default function ProfilePage() {
       <header className="space-y-2">
         <p className="eyebrow">Athlete profile</p>
         <h1 className="screen-title">Profile</h1>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">
+        <p className="max-w-2xl text-sm text-[hsl(var(--muted-foreground))] md:text-base">
           Maintain a clear baseline of your current training footprint and weekly workload capacity.
         </p>
       </header>
