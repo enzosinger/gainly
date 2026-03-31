@@ -28,6 +28,7 @@ type GainlyStoreValue = {
   reorderRoutines: (nextIds: string[]) => void;
   addExerciseToRoutine: (routineId: string, exerciseId: string) => void;
   addSetToRoutineExercise: (routineId: string, routineExerciseId: string) => void;
+  removeSetFromRoutineExercise: (routineId: string, routineExerciseId: string, setId: string) => void;
   removeExerciseFromRoutine: (routineId: string, routineExerciseId: string) => void;
   addTechniqueToRoutineExercise: (
     routineId: string,
@@ -244,6 +245,32 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
           }),
         );
       },
+      removeSetFromRoutineExercise: (routineId: string, routineExerciseId: string, setId: string) => {
+        setRoutines((current) =>
+          current.map((routine) => {
+            if (routine.id !== routineId) {
+              return routine;
+            }
+
+            const nextExercises = routine.exercises.map((routineExercise) => {
+              if (routineExercise.id !== routineExerciseId) {
+                return routineExercise;
+              }
+
+              return {
+                ...routineExercise,
+                sets: routineExercise.sets.filter((set) => set.id !== setId),
+              };
+            });
+
+            return {
+              ...routine,
+              updatedAt: Date.now(),
+              exercises: nextExercises,
+            };
+          }),
+        );
+      },
       removeExerciseFromRoutine: (routineId: string, routineExerciseId: string) => {
         setRoutines((current) =>
           current.map((routine) => {
@@ -391,6 +418,7 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
   const addSetToRoutineExerciseMutation = useMutation(api.routines.addSet);
   const removeExerciseFromRoutineMutation = useMutation(api.routines.removeExercise);
   const addTechniqueToRoutineExerciseMutation = useMutation(api.routines.addTechnique);
+  const removeSetFromRoutineExerciseMutation = useMutation(api.routines.removeSet);
   const { signOut } = useAuthActions();
   const [expandedExerciseId, setExpandedExerciseId] = useState<string | null>(null);
   const [exerciseLibraryMuscleGroupFilter, setExerciseLibraryMuscleGroupFilter] = useState<MuscleGroup | "all">("all");
@@ -460,6 +488,13 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
           routineExerciseId,
         });
       },
+      removeSetFromRoutineExercise: (routineId: string, routineExerciseId: string, setId: string) => {
+        void removeSetFromRoutineExerciseMutation({
+          routineId: routineId as Id<"routines">,
+          routineExerciseId,
+          setId,
+        });
+      },
       removeExerciseFromRoutine: (routineId: string, routineExerciseId: string) => {
         void removeExerciseFromRoutineMutation({
           routineId: routineId as Id<"routines">,
@@ -523,6 +558,7 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
       exercises,
       removeExerciseFromRoutineMutation,
       reorderRoutinesMutation,
+      removeSetFromRoutineExerciseMutation,
       routines,
       setExerciseLibraryMuscleGroupFilter,
       signOut,

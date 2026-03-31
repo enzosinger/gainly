@@ -1,3 +1,4 @@
+import { Toaster } from "sonner";
 import { RouterProvider } from "react-router-dom";
 import type { ComponentProps } from "react";
 import { useConvexAuth } from "convex/react";
@@ -13,6 +14,7 @@ function AuthenticatedApp({ router }: Required<AppProps>) {
   return (
     <ConvexGainlyStoreProvider>
       <RouterProvider router={router} />
+      <Toaster position="bottom-right" expand={true} richColors={true} />
     </ConvexGainlyStoreProvider>
   );
 }

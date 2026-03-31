@@ -8,8 +8,14 @@ import { Select } from "../components/ui/select";
 import { useGainlyStore } from "../state/gainly-store";
 
 export default function RoutineDetailPage() {
-  const { routines, exercises, addSetToRoutineExercise, removeExerciseFromRoutine, addTechniqueToRoutineExercise } =
-    useGainlyStore();
+  const {
+    routines,
+    exercises,
+    addSetToRoutineExercise,
+    removeSetFromRoutineExercise,
+    removeExerciseFromRoutine,
+    addTechniqueToRoutineExercise,
+  } = useGainlyStore();
   const { routineId } = useParams();
   const navigate = useNavigate();
   const routine = useMemo(() => routines.find((item) => item.id === routineId) ?? null, [routineId, routines]);
@@ -65,7 +71,7 @@ export default function RoutineDetailPage() {
               </CardContent>
             </Card>
           ) : null}
-          {routine.exercises.map((item) => {
+          {routine.exercises.map((item, index) => {
             const exercise = exercisesById.get(item.exerciseId);
             if (!exercise) {
               return null;
@@ -74,9 +80,13 @@ export default function RoutineDetailPage() {
             return (
               <RoutineExerciseEditor
                 key={item.id}
+                index={index}
                 exercise={exercise}
                 item={item}
                 onAddSet={(routineExerciseId) => addSetToRoutineExercise(routine.id, routineExerciseId)}
+                onRemoveSet={(routineExerciseId, setId) =>
+                  removeSetFromRoutineExercise(routine.id, routineExerciseId, setId)
+                }
                 onRemove={(routineExerciseId) => removeExerciseFromRoutine(routine.id, routineExerciseId)}
                 onSelectTechnique={(routineExerciseId, technique) =>
                   addTechniqueToRoutineExercise(routine.id, routineExerciseId, technique)

@@ -206,3 +206,31 @@ export const removeExercise = mutation({
   },
 });
 
+export const removeSet = mutation({
+  args: {
+    routineId: v.id("routines"),
+    routineExerciseId: v.string(),
+    setId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireCurrentUserId(ctx);
+    const routine = await requireRoutine(ctx, userId, args.routineId);
+
+    const nextExercises = routine.exercises.map((routineExercise) => {
+      if (routineExercise.id !== args.routineExerciseId) {
+        return routineExercise;
+      }
+
+      return {
+        ...routineExercise,
+        sets: routineExercise.sets.filter((set) => set.id !== args.setId),
+      };
+    });
+
+    await ctx.db.patch(routine._id, {
+      exercises: nextExercises,
+      updatedAt: Date.now(),
+    });
+  },
+});
+

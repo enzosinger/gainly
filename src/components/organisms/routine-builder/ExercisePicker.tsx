@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import type { MuscleGroup } from "../../../types/domain";
 import { useGainlyStore } from "../../../state/gainly-store";
 import { Button } from "../../ui/button";
@@ -69,6 +70,7 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
 
     const nextExercise = await createExercise({ name, muscleGroup, description });
     addExerciseToRoutine(routineId, nextExercise.id);
+    toast.success("Exercise added");
     setName("");
     setDescription("");
     setMuscleGroup("chest");
@@ -205,7 +207,10 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
                         <button
                           key={exercise.id}
                           type="button"
-                          onClick={() => addExerciseToRoutine(routineId, exercise.id)}
+                          onClick={() => {
+                            addExerciseToRoutine(routineId, exercise.id);
+                            toast.success("Exercise added");
+                          }}
                           className="panel-inset rounded-2xl px-3 py-3 text-left text-sm text-[hsl(var(--foreground))] transition hover:border-[hsl(var(--ring))]"
                         >
                           <span className="block font-medium">{exercise.name}</span>
