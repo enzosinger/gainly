@@ -6,3 +6,5 @@ dist
 *.tsbuildinfo
 .env.local
 QUALITY_GATE_PLAN.md
+REVIEW-REPORT.md
+VERIFICATION_EVIDENCE.md
