@@ -152,6 +152,8 @@ describe("DashboardPage", () => {
       removeExerciseFromRoutine: vi.fn(),
 
       addTechniqueToRoutineExercise: vi.fn(),
+      updateRoutineExerciseWarmupSets: vi.fn(),
+      updateRoutineExerciseFeederSets: vi.fn(),
       createExercise: vi.fn(),
       updateExercise: vi.fn(),
       deleteExercise: vi.fn(),

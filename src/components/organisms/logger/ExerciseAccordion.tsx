@@ -2,7 +2,6 @@ import { ChevronDown } from "lucide-react";
 import { useGainlyStore } from "../../../state/gainly-store";
 import type { RoutineExercise, WorkoutSessionExercise } from "../../../types/domain";
 import SetRow from "../../molecules/SetRow";
-import TechniqueBadgeRow from "./TechniqueBadgeRow";
 
 type ExerciseAccordionProps = {
   item: RoutineExercise;
@@ -22,18 +21,7 @@ type ExerciseAccordionProps = {
   ) => void;
 };
 
-function getPreviousPerformance(previousExercise?: WorkoutSessionExercise | null) {
-  const previousSet = previousExercise?.sets.find((set) => set.weightKg || set.reps || set.pairWeightKg || set.pairReps);
-
-  if (!previousSet) return "Previous --";
-  if (previousSet.weightKg && previousSet.reps) return `Previous ${previousSet.weightKg} kg x ${previousSet.reps}`;
-  if (previousSet.weightKg) return `Previous ${previousSet.weightKg} kg`;
-  if (previousSet.reps) return `Previous x ${previousSet.reps}`;
-  if (previousSet.pairWeightKg && previousSet.pairReps) {
-    return `Previous pair ${previousSet.pairWeightKg} kg x ${previousSet.pairReps}`;
-  }
-  return "Previous --";
-}
+// No longer used, replaced by WS/FS display
 
 export default function ExerciseAccordion({
   item,
@@ -70,9 +58,11 @@ export default function ExerciseAccordion({
             <p className="text-sm leading-6 text-[hsl(var(--muted-foreground))]">{description.trim()}</p>
           ) : null}
           <div className="panel-inset px-3 py-2">
-            <p className="text-sm text-[hsl(var(--muted-foreground))]">{getPreviousPerformance(previousExercise)}</p>
+            <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">
+              WS: {currentExercise.warmupSets ?? 0} · FS: {currentExercise.feederSets ?? 0}
+            </p>
           </div>
-          <TechniqueBadgeRow sets={currentExercise.sets} />
+          {/* TechniqueBadgeRow was here, removed as redundant */}
           {currentExercise.sets.map((set, index) => {
             const previousSet = previousExercise?.sets.find((candidate) => candidate.templateSetId === set.templateSetId);
 

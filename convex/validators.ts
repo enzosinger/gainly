@@ -53,10 +53,14 @@ export const workoutSessionExerciseValidator = v.object({
   exerciseId: v.id("exercises"),
   position: v.number(),
   sets: v.array(workoutSessionSetValidator),
+  warmupSets: v.optional(v.number()),
+  feederSets: v.optional(v.number()),
 });
 
 export const routineExerciseValidator = v.object({
   id: v.string(),
   exerciseId: v.id("exercises"),
   sets: v.array(setEntryValidator),
+  warmupSets: v.optional(v.number()),
+  feederSets: v.optional(v.number()),
 });

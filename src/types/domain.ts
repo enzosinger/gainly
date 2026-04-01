@@ -54,6 +54,8 @@ export type WorkoutSessionExercise = {
   exerciseId: string;
   position: number;
   sets: WorkoutSessionSet[];
+  warmupSets?: number;
+  feederSets?: number;
 };
 
 export type WorkoutSession = {
@@ -70,6 +72,8 @@ export type RoutineExercise = {
   id: string;
   exerciseId: string;
   sets: SetEntry[];
+  warmupSets?: number;
+  feederSets?: number;
 };
 
 export type Routine = {

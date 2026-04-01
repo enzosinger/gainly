@@ -44,6 +44,8 @@ function buildSessionExercise(
     exerciseId: routineExercise.exerciseId,
     position: index,
     sets: routineExercise.sets.map((set, setIndex) => buildSessionSet(routineExercise.id, set, setIndex)),
+    warmupSets: routineExercise.warmupSets,
+    feederSets: routineExercise.feederSets,
   };
 }
 
@@ -357,6 +359,8 @@ function syncSessionWithRoutine(
         ...existingSessionEx,
         position: index,
         sets: syncedSets,
+        warmupSets: routineExercise.warmupSets,
+        feederSets: routineExercise.feederSets,
       };
     }
 

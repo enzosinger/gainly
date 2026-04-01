@@ -35,6 +35,8 @@ type GainlyStoreValue = {
     routineExerciseId: string,
     technique: Exclude<TechniqueType, "normal">,
   ) => void;
+  updateRoutineExerciseWarmupSets: (routineId: string, routineExerciseId: string, count: number) => void;
+  updateRoutineExerciseFeederSets: (routineId: string, routineExerciseId: string, count: number) => void;
   createExercise: (input: { name: string; muscleGroup: MuscleGroup; description?: string }) => Promise<Exercise>;
   updateExercise: (
     exerciseId: string,
@@ -301,6 +303,32 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
           }),
         );
       },
+      updateRoutineExerciseWarmupSets: (routineId: string, routineExerciseId: string, count: number) => {
+        setRoutines((current) =>
+          current.map((routine) => {
+            if (routine.id !== routineId) return routine;
+            return {
+              ...routine,
+              exercises: routine.exercises.map((ex) =>
+                ex.id === routineExerciseId ? { ...ex, warmupSets: count } : ex,
+              ),
+            };
+          }),
+        );
+      },
+      updateRoutineExerciseFeederSets: (routineId: string, routineExerciseId: string, count: number) => {
+        setRoutines((current) =>
+          current.map((routine) => {
+            if (routine.id !== routineId) return routine;
+            return {
+              ...routine,
+              exercises: routine.exercises.map((ex) =>
+                ex.id === routineExerciseId ? { ...ex, feederSets: count } : ex,
+              ),
+            };
+          }),
+        );
+      },
       createExercise: async (input: { name: string; muscleGroup: MuscleGroup; description?: string }) => {
         let createdExercise: Exercise | null = null;
 
@@ -398,7 +426,11 @@ function mapRoutineDoc(routine: {
     completed: routine.completed,
     deltaPercent: progressSummary?.deltaPercent ?? routine.deltaPercent,
     hasProgressHistory: progressSummary?.hasHistory ?? false,
-    exercises: routine.exercises,
+    exercises: routine.exercises.map((ex) => ({
+      ...ex,
+      warmupSets: ex.warmupSets ?? 0,
+      feederSets: ex.feederSets ?? 0,
+    })),
     updatedAt: routine.updatedAt,
   };
 }
@@ -419,6 +451,8 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
   const removeExerciseFromRoutineMutation = useMutation(api.routines.removeExercise);
   const addTechniqueToRoutineExerciseMutation = useMutation(api.routines.addTechnique);
   const removeSetFromRoutineExerciseMutation = useMutation(api.routines.removeSet);
+  const updateWarmupSetsMutation = useMutation(api.routines.updateWarmupSets);
+  const updateFeederSetsMutation = useMutation(api.routines.updateFeederSets);
   const { signOut } = useAuthActions();
   const [expandedExerciseId, setExpandedExerciseId] = useState<string | null>(null);
   const [exerciseLibraryMuscleGroupFilter, setExerciseLibraryMuscleGroupFilter] = useState<MuscleGroup | "all">("all");
@@ -508,6 +542,20 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
           technique,
         });
       },
+      updateRoutineExerciseWarmupSets: (routineId: string, routineExerciseId: string, count: number) => {
+        void updateWarmupSetsMutation({
+          routineId: routineId as Id<"routines">,
+          routineExerciseId,
+          warmupSets: count,
+        });
+      },
+      updateRoutineExerciseFeederSets: (routineId: string, routineExerciseId: string, count: number) => {
+        void updateFeederSetsMutation({
+          routineId: routineId as Id<"routines">,
+          routineExerciseId,
+          feederSets: count,
+        });
+      },
       createExercise: async (input: { name: string; muscleGroup: MuscleGroup; description?: string }) => {
         const createdExercise = await createExerciseMutation({
           name: input.name,
@@ -564,6 +612,8 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
       signOut,
       viewer,
       updateExerciseMutation,
+      updateWarmupSetsMutation,
+      updateFeederSetsMutation,
     ],
   );
 

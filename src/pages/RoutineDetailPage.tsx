@@ -15,6 +15,8 @@ export default function RoutineDetailPage() {
     removeSetFromRoutineExercise,
     removeExerciseFromRoutine,
     addTechniqueToRoutineExercise,
+    updateRoutineExerciseWarmupSets,
+    updateRoutineExerciseFeederSets,
   } = useGainlyStore();
   const { routineId } = useParams();
   const navigate = useNavigate();
@@ -90,6 +92,12 @@ export default function RoutineDetailPage() {
                 onRemove={(routineExerciseId) => removeExerciseFromRoutine(routine.id, routineExerciseId)}
                 onSelectTechnique={(routineExerciseId, technique) =>
                   addTechniqueToRoutineExercise(routine.id, routineExerciseId, technique)
+                }
+                onUpdateWS={(routineExerciseId, count) =>
+                  updateRoutineExerciseWarmupSets(routine.id, routineExerciseId, count)
+                }
+                onUpdateFS={(routineExerciseId, count) =>
+                  updateRoutineExerciseFeederSets(routine.id, routineExerciseId, count)
                 }
               />
             );

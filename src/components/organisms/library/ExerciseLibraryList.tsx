@@ -149,8 +149,8 @@ export default function ExerciseLibraryList() {
   return (
     <>
       <div className="space-y-4">
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="space-y-4 md:space-y-2">
+          <div className="flex items-center justify-between gap-3">
             <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">Filter by muscle group</p>
             <Button
               type="button"
@@ -163,24 +163,30 @@ export default function ExerciseLibraryList() {
               {createOpen ? "Cancel" : "Create exercise"}
             </Button>
           </div>
-          <div role="group" aria-label="Muscle group filter" className="flex flex-wrap gap-2">
-            {muscleGroupOptions.map((option) => {
-              const isActive = exerciseLibraryMuscleGroupFilter === option;
+          <div
+            role="group"
+            aria-label="Muscle group filter"
+            className="scrollbar-hide -mx-4 flex flex-nowrap overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0 md:pb-0"
+          >
+            <div className="flex gap-2">
+              {muscleGroupOptions.map((option) => {
+                const isActive = exerciseLibraryMuscleGroupFilter === option;
 
-              return (
-                <Button
-                  key={option}
-                  type="button"
-                  variant={isActive ? "default" : "outline"}
-                  size="sm"
-                  aria-pressed={isActive}
-                  className="rounded-full px-4 capitalize"
-                  onClick={() => setExerciseLibraryMuscleGroupFilter(option)}
-                >
-                  {option === "all" ? "All muscle groups" : option}
-                </Button>
-              );
-            })}
+                return (
+                  <Button
+                    key={option}
+                    type="button"
+                    variant={isActive ? "default" : "outline"}
+                    size="sm"
+                    aria-pressed={isActive}
+                    className="shrink-0 rounded-full px-4 capitalize"
+                    onClick={() => setExerciseLibraryMuscleGroupFilter(option)}
+                  >
+                    {option === "all" ? "All muscle groups" : option}
+                  </Button>
+                );
+              })}
+            </div>
           </div>
         </div>
 

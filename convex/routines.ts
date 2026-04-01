@@ -234,3 +234,41 @@ export const removeSet = mutation({
   },
 });
 
+export const updateWarmupSets = mutation({
+  args: {
+    routineId: v.id("routines"),
+    routineExerciseId: v.string(),
+    warmupSets: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireCurrentUserId(ctx);
+    const routine = await requireRoutine(ctx, userId, args.routineId);
+    const nextExercises = routine.exercises.map((ex) => {
+      if (ex.id === args.routineExerciseId) {
+        return { ...ex, warmupSets: args.warmupSets };
+      }
+      return ex;
+    });
+    await ctx.db.patch(args.routineId, { exercises: nextExercises, updatedAt: Date.now() });
+  },
+});
+
+export const updateFeederSets = mutation({
+  args: {
+    routineId: v.id("routines"),
+    routineExerciseId: v.string(),
+    feederSets: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireCurrentUserId(ctx);
+    const routine = await requireRoutine(ctx, userId, args.routineId);
+    const nextExercises = routine.exercises.map((ex) => {
+      if (ex.id === args.routineExerciseId) {
+        return { ...ex, feederSets: args.feederSets };
+      }
+      return ex;
+    });
+    await ctx.db.patch(args.routineId, { exercises: nextExercises, updatedAt: Date.now() });
+  },
+});
+

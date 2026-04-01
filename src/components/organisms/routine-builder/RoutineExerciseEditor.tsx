@@ -4,6 +4,7 @@ import TechniqueMenu from "./TechniqueMenu";
 import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
 import { Card, CardDescription, CardTitle } from "../../ui/card";
+import { Select } from "../../ui/select";
 
 export default function RoutineExerciseEditor({
   exercise,
@@ -13,6 +14,8 @@ export default function RoutineExerciseEditor({
   onRemoveSet,
   onRemove,
   onSelectTechnique,
+  onUpdateWS,
+  onUpdateFS,
 }: {
   exercise: Exercise;
   item: RoutineExercise;
@@ -21,32 +24,69 @@ export default function RoutineExerciseEditor({
   onRemoveSet: (routineExerciseId: string, setId: string) => void;
   onRemove: (routineExerciseId: string) => void;
   onSelectTechnique: (routineExerciseId: string, technique: "backoff" | "cluster" | "superset") => void;
+  onUpdateWS: (routineExerciseId: string, count: number) => void;
+  onUpdateFS: (routineExerciseId: string, count: number) => void;
 }) {
   return (
     <Card>
       <div className="space-y-4 p-6">
-        <p className="eyebrow">Exercise {index + 1}</p>
+        <div className="flex items-center justify-between">
+          <p className="eyebrow">Exercise {index + 1}</p>
+          <Badge variant="outline" className="h-fit capitalize">
+            {exercise.muscleGroup}
+          </Badge>
+        </div>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
           <div className="flex flex-1 flex-col gap-1.5">
             <div className="flex items-center justify-between gap-2 sm:justify-start">
               <CardTitle className="text-base font-semibold sm:text-[1.1rem]">
                 {exercise.name}
               </CardTitle>
-              <Badge variant="outline" className="h-fit capitalize sm:hidden">
-                {exercise.muscleGroup}
-              </Badge>
             </div>
             <CardDescription className="max-w-xl text-sm leading-6">
               {exercise.description?.trim() || "No description added yet."}
             </CardDescription>
           </div>
 
-          <div className="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end">
-            <Badge variant="outline" className="hidden capitalize sm:inline-flex">
-              {exercise.muscleGroup}
-            </Badge>
+          <div className="flex w-full flex-row items-end justify-between sm:w-auto sm:flex-col sm:items-end sm:gap-3">
+            {/* WS/FS Group */}
+            <div className="flex flex-row items-end gap-3">
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                  WS
+                </span>
+                <Select
+                  className="h-10 w-14 rounded-xl px-2 py-0 text-xs"
+                  value={item.warmupSets ?? 0}
+                  onChange={(e) => onUpdateWS(item.id, Number(e.target.value))}
+                >
+                  {[0, 1, 2, 3].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                  FS
+                </span>
+                <Select
+                  className="h-10 w-14 rounded-xl px-2 py-0 text-xs"
+                  value={item.feederSets ?? 0}
+                  onChange={(e) => onUpdateFS(item.id, Number(e.target.value))}
+                >
+                  {[0, 1, 2, 3].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            </div>
 
-            <div className="flex flex-row items-center gap-2">
+            {/* Actions Group */}
+            <div className="flex flex-row items-end gap-2">
               <Button
                 type="button"
                 variant="outline"

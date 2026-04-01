@@ -63,12 +63,12 @@ function buildDraft(set: WorkoutSessionSet): DraftValues {
   };
 }
 
-function toPayload(draft: DraftValues) {
+function toPayload(draft: DraftValues, previousSet?: WorkoutSessionSet) {
   return {
-    weightKg: parseValue(draft.weightKg),
-    reps: parseValue(draft.reps),
-    pairWeightKg: parseValue(draft.pairWeightKg),
-    pairReps: parseValue(draft.pairReps),
+    weightKg: parseValue(draft.weightKg) ?? previousSet?.weightKg ?? null,
+    reps: parseValue(draft.reps) ?? previousSet?.reps ?? null,
+    pairWeightKg: parseValue(draft.pairWeightKg) ?? previousSet?.pairWeightKg ?? null,
+    pairReps: parseValue(draft.pairReps) ?? previousSet?.pairReps ?? null,
   };
 }
 
@@ -81,7 +81,7 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const payload = toPayload(draft);
+      const payload = toPayload(draft, previousSet);
       const originalPayload = toPayload(buildDraft(set));
 
       // Only commit if the values have actually changed from the current set data
@@ -96,7 +96,7 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [draft, onCommit, set]);
+  }, [draft, onCommit, set, previousSet]);
 
   return (
     <div className="panel-inset space-y-3 p-3 text-sm text-[hsl(var(--foreground))]">
@@ -122,7 +122,7 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
             onBlur={(event) => {
               const nextDraft = { ...draft, weightKg: event.currentTarget.value };
               setDraft(nextDraft);
-              onCommit(toPayload(nextDraft));
+              onCommit(toPayload(nextDraft, previousSet));
             }}
             onKeyDown={(event) => {
               if (event.key === "Enter") {
@@ -147,7 +147,7 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
             onBlur={(event) => {
               const nextDraft = { ...draft, reps: event.currentTarget.value };
               setDraft(nextDraft);
-              onCommit(toPayload(nextDraft));
+              onCommit(toPayload(nextDraft, previousSet));
             }}
             onKeyDown={(event) => {
               if (event.key === "Enter") {
@@ -187,7 +187,7 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
                 onBlur={(event) => {
                   const nextDraft = { ...draft, pairWeightKg: event.currentTarget.value };
                   setDraft(nextDraft);
-                  onCommit(toPayload(nextDraft));
+                  onCommit(toPayload(nextDraft, previousSet));
                 }}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
@@ -214,7 +214,7 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
                 onBlur={(event) => {
                   const nextDraft = { ...draft, pairReps: event.currentTarget.value };
                   setDraft(nextDraft);
-                  onCommit(toPayload(nextDraft));
+                  onCommit(toPayload(nextDraft, previousSet));
                 }}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
