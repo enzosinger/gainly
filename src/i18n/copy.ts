@@ -187,8 +187,8 @@ const translations = {
     },
     builder: {
       exerciseIndex: (index: number) => `Exercise ${index}`,
-      warmupSets: "Warm-up sets",
-      feederSets: "Feeder sets",
+      warmupSets: "WU",
+      feederSets: "FS",
       addSet: "Add set",
       removeExercise: "Remove exercise",
       removeSet: "Remove set",
@@ -411,8 +411,8 @@ const translations = {
     },
     builder: {
       exerciseIndex: (index: number) => `Exercício ${index}`,
-      warmupSets: "Séries de aquecimento",
-      feederSets: "Séries de apoio",
+      warmupSets: "AQ",
+      feederSets: "FS",
       addSet: "Adicionar série",
       removeExercise: "Remover exercício",
       removeSet: "Remover série",
