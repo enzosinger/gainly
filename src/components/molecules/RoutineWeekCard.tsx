@@ -3,6 +3,7 @@ import type { Routine, RoutineWeekSummary } from "../../types/domain";
 import StatusGlyph from "../atoms/StatusGlyph";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { useLanguage } from "../../i18n/LanguageProvider";
 
 type RoutineWeekCardProps = {
   routine: Routine;
@@ -19,6 +20,7 @@ export default function RoutineWeekCard({
   summary,
   showStatus = true,
 }: RoutineWeekCardProps) {
+  const { copy } = useLanguage();
   const completed = summary?.completed ?? routine.completed;
   const deltaPercent = summary?.deltaPercent ?? routine.deltaPercent;
   const hasHistory = summary?.hasHistory ?? routine.hasProgressHistory ?? true;
@@ -33,14 +35,14 @@ export default function RoutineWeekCard({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="panel-inset flex items-center justify-between px-3 py-2 text-sm text-[hsl(var(--muted-foreground))]">
-          <span>Previous delta</span>
+          <span>{copy.routines.previousDelta}</span>
           {hasHistory ? (
             <span className={deltaPercent >= 0 ? "text-[hsl(var(--foreground))]" : undefined}>
               {deltaPercent >= 0 ? "+" : ""}
               {deltaPercent.toFixed(1)}%
             </span>
           ) : (
-            <span>No history</span>
+            <span>{copy.routines.noHistory}</span>
           )}
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -54,7 +56,7 @@ export default function RoutineWeekCard({
               onClick={(event) => event.stopPropagation()}
             >
               <Button variant="outline" className="w-full">
-                {completed ? "View workout" : `Log ${routine.name} workout`}
+                {completed ? copy.routines.viewWorkout : copy.routines.logWorkout(routine.name)}
               </Button>
             </Link>
           ) : null}
@@ -68,7 +70,7 @@ export default function RoutineWeekCard({
               onClick={(event) => event.stopPropagation()}
             >
               <Button variant="secondary" className="w-full">
-                Edit routine
+                {copy.routines.editRoutine}
               </Button>
             </Link>
           ) : null}

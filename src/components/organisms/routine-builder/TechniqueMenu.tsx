@@ -2,12 +2,7 @@ import { useState } from "react";
 import { Zap } from "lucide-react";
 import type { TechniqueType } from "../../../types/domain";
 import { Button } from "../../ui/button";
-
-const menuItems = [
-  { id: "backoff", label: "Back-off set" },
-  { id: "cluster", label: "Cluster set" },
-  { id: "superset", label: "Super set" },
-] as const;
+import { useLanguage } from "../../../i18n/LanguageProvider";
 
 export default function TechniqueMenu({
   onSelect,
@@ -15,6 +10,12 @@ export default function TechniqueMenu({
   onSelect: (technique: Exclude<TechniqueType, "normal">) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const { copy } = useLanguage();
+  const menuItems = [
+    { id: "backoff", label: copy.builder.techniqueMenu.backoff },
+    { id: "cluster", label: copy.builder.techniqueMenu.cluster },
+    { id: "superset", label: copy.builder.techniqueMenu.superset },
+  ] as const;
 
   return (
     <div className="relative">
@@ -26,7 +27,7 @@ export default function TechniqueMenu({
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
-        aria-label="Add technique"
+        aria-label={copy.builder.addTechnique}
       >
         <Zap className="h-4 w-4" />
       </Button>

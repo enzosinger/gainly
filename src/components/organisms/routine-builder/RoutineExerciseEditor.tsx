@@ -5,6 +5,8 @@ import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
 import { Card, CardDescription, CardTitle } from "../../ui/card";
 import { Select } from "../../ui/select";
+import { useLanguage } from "../../../i18n/LanguageProvider";
+import { getMuscleGroupLabel, getTechniqueLabel } from "../../../i18n/copy";
 
 export default function RoutineExerciseEditor({
   exercise,
@@ -27,13 +29,15 @@ export default function RoutineExerciseEditor({
   onUpdateWS: (routineExerciseId: string, count: number) => void;
   onUpdateFS: (routineExerciseId: string, count: number) => void;
 }) {
+  const { copy, language } = useLanguage();
+
   return (
     <Card>
       <div className="space-y-4 p-6">
         <div className="flex items-center justify-between">
-          <p className="eyebrow">Exercise {index + 1}</p>
+          <p className="eyebrow">{copy.builder.exerciseIndex(index + 1)}</p>
           <Badge variant="outline" className="h-fit capitalize">
-            {exercise.muscleGroup}
+            {getMuscleGroupLabel(language, exercise.muscleGroup)}
           </Badge>
         </div>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
@@ -44,7 +48,7 @@ export default function RoutineExerciseEditor({
               </CardTitle>
             </div>
             <CardDescription className="max-w-xl text-sm leading-6">
-              {exercise.description?.trim() || "No description added yet."}
+              {exercise.description?.trim() || copy.builder.noDescription}
             </CardDescription>
           </div>
 
@@ -53,7 +57,7 @@ export default function RoutineExerciseEditor({
             <div className="flex flex-row items-end gap-3">
               <div className="flex flex-col items-center gap-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                  WS
+                  {copy.builder.warmupSets}
                 </span>
                 <Select
                   className="h-10 w-14 rounded-xl px-2 py-0 text-xs"
@@ -69,7 +73,7 @@ export default function RoutineExerciseEditor({
               </div>
               <div className="flex flex-col items-center gap-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                  FS
+                  {copy.builder.feederSets}
                 </span>
                 <Select
                   className="h-10 w-14 rounded-xl px-2 py-0 text-xs"
@@ -93,7 +97,7 @@ export default function RoutineExerciseEditor({
                 size="icon"
                 className="rounded-full"
                 onClick={() => onAddSet(item.id)}
-                aria-label="Add set"
+                aria-label={copy.builder.addSet}
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -104,7 +108,7 @@ export default function RoutineExerciseEditor({
                 size="icon"
                 className="rounded-full text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--destructive))]"
                 onClick={() => onRemove(item.id)}
-                aria-label="Remove exercise"
+                aria-label={copy.builder.removeExercise}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -117,16 +121,14 @@ export default function RoutineExerciseEditor({
               key={set.id}
               className="panel-inset flex items-center justify-between rounded-2xl px-3 py-3 text-sm text-[hsl(var(--muted-foreground))]"
             >
-              <span>
-                Set {setIndex + 1} · {set.technique}
-              </span>
+              <span>{copy.builder.setTechnique(setIndex + 1, getTechniqueLabel(language, set.technique))}</span>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 className="h-6 w-6"
                 onClick={() => onRemoveSet(item.id, set.id)}
-                aria-label="Remove set"
+                aria-label={copy.builder.removeSet}
               >
                 <X className="h-4 w-4" />
               </Button>

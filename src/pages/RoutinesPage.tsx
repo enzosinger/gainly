@@ -16,9 +16,11 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { useGainlyStore } from "../state/gainly-store";
+import { useLanguage } from "../i18n/LanguageProvider";
 
 export default function RoutinesPage() {
   const { routines, createRoutine, deleteRoutine } = useGainlyStore();
+  const { copy } = useLanguage();
   const navigate = useNavigate();
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState("");
@@ -66,18 +68,14 @@ export default function RoutinesPage() {
   return (
     <section className="space-y-6 md:space-y-8">
       <header className="space-y-3">
-        <p className="eyebrow">Routine library</p>
-        <h1 className="screen-title">Routines</h1>
-        <p className="max-w-2xl text-sm text-[hsl(var(--muted-foreground))] md:text-base">
-          Create new routines here, then open one to refine its exercises and set structure.
-        </p>
+        <p className="eyebrow">{copy.routines.eyebrow}</p>
+        <h1 className="screen-title">{copy.routines.title}</h1>
+        <p className="max-w-2xl text-sm text-[hsl(var(--muted-foreground))] md:text-base">{copy.routines.description}</p>
       </header>
 
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {routines.length} routine{routines.length === 1 ? "" : "s"} available
-          </p>
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">{copy.routines.available(routines.length)}</p>
           <Button
             type="button"
             variant="outline"
@@ -86,7 +84,7 @@ export default function RoutinesPage() {
             aria-expanded={createOpen}
             onClick={() => setCreateOpen((current) => !current)}
           >
-            {createOpen ? "Cancel" : "Create new"}
+            {createOpen ? copy.routines.cancel : copy.routines.toggleCreate}
           </Button>
         </div>
 
@@ -95,17 +93,17 @@ export default function RoutinesPage() {
             <CardContent className="space-y-4 p-6">
               <form id={createFormId} className="space-y-4" onSubmit={handleCreate}>
                 <label className="block text-sm">
-                  <span className="block text-[hsl(var(--muted-foreground))]">Routine name</span>
+                  <span className="block text-[hsl(var(--muted-foreground))]">{copy.routines.createLabel}</span>
                   <Input
                     value={name}
                     onChange={(event) => setName(event.target.value)}
                     className="mt-2"
-                    placeholder="Upper strength"
+                    placeholder={copy.routines.createPlaceholder}
                   />
                 </label>
                 <div className="flex flex-wrap gap-3">
                   <Button type="submit" disabled={isSaving}>
-                    Create routine
+                    {copy.routines.createAction}
                   </Button>
                   <Button
                     type="button"
@@ -116,7 +114,7 @@ export default function RoutinesPage() {
                       setCreateOpen(false);
                     }}
                   >
-                    Close
+                    {copy.routines.close}
                   </Button>
                 </div>
               </form>
@@ -126,9 +124,7 @@ export default function RoutinesPage() {
 
         {routines.length === 0 ? (
           <Card>
-            <CardContent className="p-6 text-sm text-[hsl(var(--muted-foreground))]">
-              No routines yet. Create one to start building.
-            </CardContent>
+            <CardContent className="p-6 text-sm text-[hsl(var(--muted-foreground))]">{copy.routines.empty}</CardContent>
           </Card>
         ) : (
           <div className="grid gap-4 md:gap-5 xl:grid-cols-2">
@@ -140,7 +136,7 @@ export default function RoutinesPage() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8"
-                    aria-label={`Delete ${routine.name} routine`}
+                    aria-label={copy.routines.deleteRoutineButton(routine.name)}
                     disabled={deletingRoutineId === routine.id}
                     onClick={() => {
                       setPendingDeleteRoutineId(routine.id);
@@ -158,15 +154,13 @@ export default function RoutinesPage() {
       <AlertDialog open={pendingDeleteRoutine !== null} onOpenChange={(open) => !open && setPendingDeleteRoutineId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete routine?</AlertDialogTitle>
+            <AlertDialogTitle>{copy.routines.deleteTitle}</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingDeleteRoutine
-                ? `Delete ${pendingDeleteRoutine.name}? This will remove the routine and its workout history.`
-                : "This will remove the routine and its workout history."}
+              {copy.routines.deleteDescription(pendingDeleteRoutine?.name ?? undefined)}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deletingRoutineId !== null}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deletingRoutineId !== null}>{copy.routines.cancel}</AlertDialogCancel>
             <AlertDialogAction
               disabled={!pendingDeleteRoutine || deletingRoutineId !== null}
               onClick={() => {
@@ -177,7 +171,7 @@ export default function RoutinesPage() {
                 void handleDelete(pendingDeleteRoutine.id);
               }}
             >
-              Delete routine
+              {copy.routines.deleteAction}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

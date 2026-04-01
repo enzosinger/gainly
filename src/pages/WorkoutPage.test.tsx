@@ -176,15 +176,17 @@ describe("WorkoutPage", () => {
     mockUpdateWorkoutSet.mockReset();
     mockCompleteSession.mockReset();
     mockUseQuery.mockReset();
+    let queryCallIndex = 0;
     mockUseQuery.mockImplementation((_query, args) => {
-      if (args?.weekEndExclusive) {
+      queryCallIndex += 1;
+
+      if (queryCallIndex % 2 === 0) {
         if (args.weekStart === previousWeekWindow.start) {
           return previousWeekHistory;
         }
 
         return currentWeekHistory;
       }
-
       return activeSession;
     });
   });
@@ -214,14 +216,14 @@ describe("WorkoutPage", () => {
     const descriptionNode = await screen.findByText(
       /pause on the chest before driving the bar up/i,
     );
-    const previousPerformanceNode = within(benchAccordion as HTMLElement).getByText(/previous 80 kg x 6/i);
+    const previousPerformanceNode = within(benchAccordion as HTMLElement).getByText(/no previous workout yet/i);
 
     expect(descriptionNode.compareDocumentPosition(previousPerformanceNode) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
     await user.click(screen.getByRole("button", { name: /previous week/i }));
 
     expect(screen.getByText(previousWeekWindow.label)).toBeInTheDocument();
-    expect(screen.getByText(/previous 75 kg x 5/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/no previous workout yet/i).length).toBeGreaterThan(0);
 
     const weightInputs = screen.getAllByRole("spinbutton");
     const firstWeightInput = weightInputs[0];

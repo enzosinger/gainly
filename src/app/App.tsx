@@ -5,6 +5,7 @@ import { useConvexAuth } from "convex/react";
 import LandingPage from "../pages/LandingPage";
 import { ConvexGainlyStoreProvider } from "../state/gainly-store";
 import { appRouter } from "./router";
+import { useLanguage } from "../i18n/LanguageProvider";
 
 type AppProps = {
   router?: ComponentProps<typeof RouterProvider>["router"];
@@ -21,12 +22,13 @@ function AuthenticatedApp({ router }: Required<AppProps>) {
 
 export default function App({ router = appRouter }: AppProps) {
   const { isLoading, isAuthenticated } = useConvexAuth();
+  const { copy } = useLanguage();
 
   if (isLoading) {
     return (
       <main className="min-h-screen bg-[hsl(var(--background))] px-4 py-6 md:px-10 md:py-10">
         <div className="panel-card mx-auto max-w-2xl px-6 py-8 text-sm text-[hsl(var(--muted-foreground))]">
-          Connecting to your training workspace...
+          {copy.app.loading}
         </div>
       </main>
     );

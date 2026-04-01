@@ -33,6 +33,7 @@ describe("ProfilePage", () => {
       </GainlyStoreProvider>,
     );
 
+    expect(screen.getByRole("group", { name: /language/i })).toBeInTheDocument();
     const supportingCopy = screen.getByText(
       /maintain a clear baseline of your current training footprint/i,
     );

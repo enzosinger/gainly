@@ -4,15 +4,17 @@ import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import App from "./app/App";
 import { convex } from "./lib/convex";
 import { ThemeProvider } from "./components/ui/theme-provider";
+import { LanguageProvider } from "./i18n/LanguageProvider";
 import "./styles/globals.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ThemeProvider defaultTheme="system" storageKey="gainly-ui-theme">
-      <ConvexAuthProvider client={convex}>
-        <App />
-      </ConvexAuthProvider>
-    </ThemeProvider>
+    <LanguageProvider>
+      <ThemeProvider defaultTheme="system" storageKey="gainly-ui-theme">
+        <ConvexAuthProvider client={convex}>
+          <App />
+        </ConvexAuthProvider>
+      </ThemeProvider>
+    </LanguageProvider>
   </React.StrictMode>,
 );
-

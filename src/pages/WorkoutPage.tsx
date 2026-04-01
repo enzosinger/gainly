@@ -8,9 +8,11 @@ import ExerciseAccordion from "../components/organisms/logger/ExerciseAccordion"
 import { Button } from "../components/ui/button";
 import { useGainlyStore } from "../state/gainly-store";
 import { getMondayWeekStart, getWeekWindow, shiftWeekWindowStart } from "../lib/week";
+import { useLanguage } from "../i18n/LanguageProvider";
 
 export default function WorkoutPage() {
   const { routines, exercises } = useGainlyStore();
+  const { copy, locale } = useLanguage();
   const { routineId } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -27,7 +29,7 @@ export default function WorkoutPage() {
   const selectedWeekStart = Number.isFinite(parsedWeekStart)
     ? getMondayWeekStart(parsedWeekStart)
     : currentWeekStart;
-  const weekWindow = getWeekWindow(selectedWeekStart);
+  const weekWindow = getWeekWindow(selectedWeekStart, locale);
   const activeSession = useQuery(
     api.workouts.sessionForRoutineWeek,
     selectedRoutineId ? { routineId: selectedRoutineId, weekStart: weekWindow.start } : "skip",
@@ -56,9 +58,9 @@ export default function WorkoutPage() {
     requestedRoutineIdRef.current = syncKey;
     void ensureSessionForRoutineWeek({ routineId: selectedRoutineId, weekStart: weekWindow.start }).catch(() => {
       requestedRoutineIdRef.current = null;
-      setWorkflowMessage("Unable to restore this workout session. Please refresh and try again.");
+      setWorkflowMessage(copy.workout.restoreError);
     });
-  }, [activeSession, ensureSessionForRoutineWeek, selectedRoutineId, routineUpdatedAt, weekWindow.start]);
+  }, [activeSession, copy.workout.restoreError, ensureSessionForRoutineWeek, selectedRoutineId, routineUpdatedAt, weekWindow.start]);
 
   const exercisesById = useMemo(
     () => new Map(exercises.map((exercise) => [exercise.id, exercise])),
@@ -103,8 +105,8 @@ export default function WorkoutPage() {
   if (!workoutRoutine) {
     return (
       <section className="space-y-4">
-        <h1 className="screen-title">Workout</h1>
-        <p className="mt-4 text-sm text-[hsl(var(--muted-foreground))]">No workout available.</p>
+        <h1 className="screen-title">{copy.workout.title}</h1>
+        <p className="mt-4 text-sm text-[hsl(var(--muted-foreground))]">{copy.workout.noWorkout}</p>
       </section>
     );
   }
@@ -114,19 +116,15 @@ export default function WorkoutPage() {
       <section className="space-y-4">
         {weekNavigation}
         <header className="space-y-2">
-          <h1 className="screen-title">{workoutRoutine.name} workout</h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            Restoring your workout session and pulling the last week-scoped logged set values.
-          </p>
+          <h1 className="screen-title">{copy.workout.routineWorkout(workoutRoutine.name)}</h1>
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">{copy.workout.restoringDescription}</p>
         </header>
         {workflowMessage ? (
           <div className="panel-inset border border-[hsl(var(--border))] px-4 py-3 text-sm text-[hsl(var(--foreground))]">
             {workflowMessage}
           </div>
         ) : null}
-        <div className="panel-card px-4 py-6 text-sm text-[hsl(var(--muted-foreground))]">
-          Preparing your workout session...
-        </div>
+        <div className="panel-card px-4 py-6 text-sm text-[hsl(var(--muted-foreground))]">{copy.workout.restoringBody}</div>
       </section>
     );
   }
@@ -135,10 +133,8 @@ export default function WorkoutPage() {
     <section className="space-y-6 md:space-y-8">
       {weekNavigation}
       <header className="space-y-2">
-        <h1 className="screen-title">{workoutRoutine.name} workout</h1>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">
-          Track each set with current inputs and keep the previous workout from the selected week visible for comparison.
-        </p>
+        <h1 className="screen-title">{copy.workout.routineWorkout(workoutRoutine.name)}</h1>
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">{copy.workout.description}</p>
       </header>
       <div className="space-y-3">
         {workoutRoutine.exercises.map((item) => {
@@ -154,7 +150,7 @@ export default function WorkoutPage() {
             <ExerciseAccordion
               key={item.id}
               item={item}
-              name={exercise?.name ?? "Exercise"}
+              name={exercise?.name ?? copy.exercises.exerciseEyebrow}
               description={exercise?.description}
               currentExercise={currentExercise}
               previousExercise={previousExercise}
@@ -168,7 +164,7 @@ export default function WorkoutPage() {
                   pairWeightKg: input.pairWeightKg,
                   pairReps: input.pairReps,
                 }).catch(() => {
-                  setWorkflowMessage("Unable to save that set right now.");
+                  setWorkflowMessage(copy.workout.saveError);
                 });
               }}
             />
@@ -182,7 +178,7 @@ export default function WorkoutPage() {
       ) : null}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-[hsl(var(--muted-foreground))]">
-          {activeSession?.status === "completed" ? "Workout completed." : "Changes are saved into the active session."}
+          {activeSession?.status === "completed" ? copy.workout.completed : copy.workout.activeSession}
         </p>
         <Button
           className="sm:w-auto"
@@ -197,11 +193,11 @@ export default function WorkoutPage() {
                 navigate("/");
               })
               .catch(() => {
-                setWorkflowMessage("Unable to complete this session right now.");
+                setWorkflowMessage(copy.workout.completeError);
               });
           }}
         >
-          Complete session
+          {copy.workout.completeSession}
         </Button>
       </div>
     </section>

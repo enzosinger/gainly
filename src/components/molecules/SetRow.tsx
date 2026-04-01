@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Input } from "../ui/input";
 import type { WorkoutSessionSet } from "../../types/domain";
+import { useLanguage } from "../../i18n/LanguageProvider";
+import { getTechniqueLabel } from "../../i18n/copy";
 
 type SetRowProps = {
   set: WorkoutSessionSet;
@@ -31,9 +33,12 @@ function formatReps(set: { reps?: number }) {
   return "--";
 }
 
-function formatReference(set?: WorkoutSessionSet) {
+function formatReference(
+  set: WorkoutSessionSet | undefined,
+  copy?: { builder: { noPreviousWorkout: string; lastWorkout: (summary: string) => string } },
+) {
   if (!set) {
-    return "No previous workout yet.";
+    return copy?.builder.noPreviousWorkout ?? "No previous workout yet.";
   }
 
   const parts = [formatWeight(set.weightKg), formatReps(set)];
@@ -42,7 +47,8 @@ function formatReference(set?: WorkoutSessionSet) {
     parts.push(`pair ${formatWeight(set.pairWeightKg)}${set.pairReps ? ` x ${set.pairReps}` : ""}`);
   }
 
-  return `Last workout: ${parts.join(" · ")}`;
+  const summary = parts.join(" · ");
+  return copy?.builder.lastWorkout(summary) ?? `Last workout: ${summary}`;
 }
 
 function parseValue(value: string) {
@@ -73,6 +79,7 @@ function toPayload(draft: DraftValues, previousSet?: WorkoutSessionSet) {
 }
 
 export default function SetRow({ set, index, previousSet, pairExerciseName, onCommit }: SetRowProps) {
+  const { copy, language } = useLanguage();
   const [draft, setDraft] = useState<DraftValues>(() => buildDraft(set));
 
   useEffect(() => {
@@ -101,13 +108,15 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
   return (
     <div className="panel-inset space-y-3 p-3 text-sm text-[hsl(var(--foreground))]">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-[hsl(var(--muted-foreground))]">Set {index + 1}</div>
-        <div className="text-xs uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]">{set.technique}</div>
+        <div className="text-[hsl(var(--muted-foreground))]">{copy.builder.setIndex(index + 1)}</div>
+        <div className="text-xs uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]">
+          {getTechniqueLabel(language, set.technique)}
+        </div>
       </div>
-      <p className="text-xs text-[hsl(var(--muted-foreground))]">{formatReference(previousSet)}</p>
+      <p className="text-xs text-[hsl(var(--muted-foreground))]">{formatReference(previousSet, copy)}</p>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="space-y-1">
-          <span className="block text-xs uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]">Weight</span>
+          <span className="block text-xs uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]">{copy.builder.weight}</span>
           <Input
             type="number"
             step="0.5"
@@ -132,7 +141,7 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
           />
         </label>
         <label className="space-y-1">
-          <span className="block text-xs uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]">Reps</span>
+          <span className="block text-xs uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]">{copy.builder.reps}</span>
           <Input
             type="number"
             step="1"
@@ -158,20 +167,20 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
         </label>
       </div>
       {set.technique === "backoff" && set.backoffPercent ? (
-        <p className="text-xs text-[hsl(var(--muted-foreground))]">Back-off: -{set.backoffPercent}%</p>
+        <p className="text-xs text-[hsl(var(--muted-foreground))]">{copy.builder.backoff(set.backoffPercent)}</p>
       ) : null}
       {set.technique === "cluster" && set.clusterBlocks ? (
         <p className="text-xs text-[hsl(var(--muted-foreground))]">
-          Cluster: {set.clusterBlocks} blocks{set.clusterRepRange ? ` (${set.clusterRepRange} reps)` : ""}
+          {copy.builder.cluster(set.clusterBlocks, set.clusterRepRange)}
         </p>
       ) : null}
       {set.technique === "superset" && pairExerciseName ? (
         <div className="space-y-2">
-          <p className="text-xs text-[hsl(var(--muted-foreground))]">Paired with {pairExerciseName}</p>
+          <p className="text-xs text-[hsl(var(--muted-foreground))]">{copy.builder.pairedWith(pairExerciseName)}</p>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="space-y-1">
               <span className="block text-xs uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]">
-                Pair weight
+                {copy.builder.pairWeight}
               </span>
               <Input
                 type="number"
@@ -198,7 +207,7 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
             </label>
             <label className="space-y-1">
               <span className="block text-xs uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]">
-                Pair reps
+                {copy.builder.pairReps}
               </span>
               <Input
                 type="number"

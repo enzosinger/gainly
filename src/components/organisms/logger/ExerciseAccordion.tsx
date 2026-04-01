@@ -2,6 +2,7 @@ import { ChevronDown } from "lucide-react";
 import { useGainlyStore } from "../../../state/gainly-store";
 import type { RoutineExercise, WorkoutSessionExercise } from "../../../types/domain";
 import SetRow from "../../molecules/SetRow";
+import { useLanguage } from "../../../i18n/LanguageProvider";
 
 type ExerciseAccordionProps = {
   item: RoutineExercise;
@@ -33,6 +34,7 @@ export default function ExerciseAccordion({
   onCommitSet,
 }: ExerciseAccordionProps) {
   const { expandedExerciseId, setExpandedExerciseId } = useGainlyStore();
+  const { copy } = useLanguage();
   const expanded = expandedExerciseId === item.id;
 
   return (
@@ -59,7 +61,7 @@ export default function ExerciseAccordion({
           ) : null}
           <div className="panel-inset px-3 py-2">
             <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">
-              WS: {currentExercise.warmupSets ?? 0} · FS: {currentExercise.feederSets ?? 0}
+              {copy.builder.warmupSets}: {currentExercise.warmupSets ?? 0} · {copy.builder.feederSets}: {currentExercise.feederSets ?? 0}
             </p>
           </div>
           {/* TechniqueBadgeRow was here, removed as redundant */}

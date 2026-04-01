@@ -2,13 +2,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import { cn } from "../../lib/utils";
 import gainlyLogo from "../../../gainly_logo.png";
 import gainlyLogoWhite from "../../../gainly_logo_white.png";
-
-const links = [
-  { to: "/", label: "Dashboard" },
-  { to: "/routines", label: "Routines" },
-  { to: "/exercises", label: "Exercises" },
-  { to: "/profile", label: "Profile" },
-];
+import { useLanguage } from "../../i18n/LanguageProvider";
 
 const desktopNavLinkClasses =
   "rounded-md px-4 py-3 text-sm font-medium transition";
@@ -20,6 +14,14 @@ const inactiveDesktopNavLinkClasses =
 const inactiveMobileNavLinkClasses = "text-[hsl(var(--muted-foreground))]";
 
 export default function AppShell() {
+  const { copy } = useLanguage();
+  const links = [
+    { to: "/", label: copy.shell.nav.dashboard },
+    { to: "/routines", label: copy.shell.nav.routines },
+    { to: "/exercises", label: copy.shell.nav.exercises },
+    { to: "/profile", label: copy.shell.nav.profile },
+  ];
+
   return (
     <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] md:grid md:grid-cols-[280px_1fr]">
       <aside className="app-shell-sidebar hidden md:flex md:flex-col">
@@ -29,7 +31,7 @@ export default function AppShell() {
             <img src={gainlyLogoWhite} alt="Gainly" className="hidden h-[4.5rem] w-auto dark:block" />
           </div>
 
-          <nav aria-label="Primary navigation" className="mt-10 flex flex-col gap-2">
+          <nav aria-label={copy.shell.navigationLabel} className="mt-10 flex flex-col gap-2">
             {links.map((link) => (
               <NavLink
                 key={link.to}
@@ -46,8 +48,8 @@ export default function AppShell() {
             ))}
           </nav>
           <div className="panel-inset mt-auto p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-[hsl(var(--muted-foreground))]">Mode</p>
-            <p className="mt-2 text-sm font-medium text-[hsl(var(--foreground))]">Monochrome Athletic</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-[hsl(var(--muted-foreground))]">{copy.shell.modeLabel}</p>
+            <p className="mt-2 text-sm font-medium text-[hsl(var(--foreground))]">{copy.shell.modeValue}</p>
           </div>
         </div>
       </aside>
@@ -55,7 +57,7 @@ export default function AppShell() {
         <main className="app-shell-main">
           <Outlet />
         </main>
-        <nav aria-label="Primary mobile navigation" className="app-shell-mobile-nav">
+        <nav aria-label={copy.shell.mobileNavigationLabel} className="app-shell-mobile-nav">
           <div className="grid grid-cols-4 gap-2">
             {links.map((link) => (
               <NavLink

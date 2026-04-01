@@ -96,9 +96,9 @@ describe("DashboardPage", () => {
     expect(screen.getAllByTestId("status-glyph")).toHaveLength(3);
     expect(screen.getAllByTestId("status-glyph-completed")).toHaveLength(1);
     expect(screen.getAllByTestId("status-glyph-upcoming")).toHaveLength(2);
-    expect(screen.getByRole("link", { name: /^log push workout$/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /^view workout$/i })).toHaveAttribute(
       "href",
-      "/workout/routine-upper-a",
+      expect.stringMatching(/^\/workout\/routine-upper-a\?weekStart=/),
     );
   });
 

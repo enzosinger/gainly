@@ -5,11 +5,14 @@ import { Switch } from "../components/ui/switch";
 import { useTheme } from "../components/ui/theme-provider";
 import { useGainlyStore } from "../state/gainly-store";
 import { cn } from "../lib/utils";
+import { useLanguage } from "../i18n/LanguageProvider";
+import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
 
 
 export default function ProfilePage() {
   const { viewer, routines, exercises, signOut } = useGainlyStore();
   const { theme, setTheme } = useTheme();
+  const { copy } = useLanguage();
 
   const weeklySets = routines.reduce(
     (total, routine) =>
@@ -19,25 +22,26 @@ export default function ProfilePage() {
 
   return (
     <section className="space-y-6 md:space-y-8">
-      <header className="space-y-2">
-        <p className="eyebrow">Athlete profile</p>
-        <h1 className="screen-title">Profile</h1>
-        <p className="max-w-2xl text-sm text-[hsl(var(--muted-foreground))] md:text-base">
-          Maintain a clear baseline of your current training footprint and weekly workload capacity.
-        </p>
+      <header className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div className="space-y-2">
+          <p className="eyebrow">{copy.profile.eyebrow}</p>
+          <h1 className="screen-title">{copy.profile.title}</h1>
+          <p className="max-w-2xl text-sm text-[hsl(var(--muted-foreground))] md:text-base">{copy.profile.description}</p>
+        </div>
+        <LanguageSwitcher compact className="self-start" />
       </header>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader className="pb-4">
-            <p className="eyebrow">Appearance</p>
+            <p className="eyebrow">{copy.profile.appearance}</p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <p className="text-lg font-medium tracking-tight">Dark mode</p>
+                <p className="text-lg font-medium tracking-tight">{copy.profile.darkMode}</p>
                 <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                  {theme === "dark" ? "Enhanced athlete focus" : "Maximum visibility"}
+                  {theme === "dark" ? copy.profile.enhancedFocus : copy.profile.maximumVisibility}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -50,7 +54,7 @@ export default function ProfilePage() {
               </div>
             </div>
             <div className="panel-inset flex items-center justify-between rounded-xl px-4 py-3">
-              <p className="text-sm font-medium">Follow system preference</p>
+              <p className="text-sm font-medium">{copy.profile.followSystemPreference}</p>
               <Button
                 variant="ghost"
                 size="sm"
@@ -60,7 +64,7 @@ export default function ProfilePage() {
                 )}
                 onClick={() => setTheme("system")}
               >
-                Auto
+                {copy.profile.auto}
               </Button>
             </div>
           </CardContent>
@@ -69,15 +73,15 @@ export default function ProfilePage() {
         {viewer ? (
           <Card>
             <CardHeader className="pb-4">
-              <p className="eyebrow">Account</p>
+              <p className="eyebrow">{copy.profile.account}</p>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <div className="space-y-1">
-                <p className="text-lg font-medium tracking-tight">{viewer.name ?? "Gainly athlete"}</p>
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">{viewer.email ?? "Signed in"}</p>
+                <p className="text-lg font-medium tracking-tight">{viewer.name ?? copy.profile.gainlyAthlete}</p>
+                <p className="text-sm text-[hsl(var(--muted-foreground))]">{viewer.email ?? copy.profile.signedIn}</p>
               </div>
               <Button variant="outline" className="w-full justify-center" onClick={() => void signOut()}>
-                Sign out
+                {copy.profile.signOut}
               </Button>
             </CardContent>
           </Card>
@@ -87,7 +91,7 @@ export default function ProfilePage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="pb-3">
-            <p className="eyebrow">Routines</p>
+            <p className="eyebrow">{copy.profile.routines}</p>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-semibold">{routines.length}</p>
@@ -95,7 +99,7 @@ export default function ProfilePage() {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <p className="eyebrow">Exercise library</p>
+            <p className="eyebrow">{copy.profile.exerciseLibrary}</p>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-semibold">{exercises.length}</p>
@@ -103,7 +107,7 @@ export default function ProfilePage() {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <p className="eyebrow">Weekly sets</p>
+            <p className="eyebrow">{copy.profile.weeklySets}</p>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-semibold">{weeklySets}</p>
@@ -113,4 +117,3 @@ export default function ProfilePage() {
     </section>
   );
 }
-

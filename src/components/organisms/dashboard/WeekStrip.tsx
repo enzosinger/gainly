@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../../ui/button";
+import { useLanguage } from "../../../i18n/LanguageProvider";
 
 type WeekStripProps = {
   weekLabel: string;
@@ -15,6 +16,8 @@ export default function WeekStrip({
   onNextWeek,
   canGoNext = true,
 }: WeekStripProps) {
+  const { copy } = useLanguage();
+
   return (
     <div className="panel-card space-y-4 p-4">
       <div className="flex items-center justify-between gap-3">
@@ -23,7 +26,7 @@ export default function WeekStrip({
           variant="outline"
           size="icon"
           onClick={onPreviousWeek}
-          aria-label="Previous week"
+          aria-label={copy.week.previous}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -34,7 +37,7 @@ export default function WeekStrip({
           size="icon"
           onClick={onNextWeek}
           disabled={!canGoNext}
-          aria-label="Next week"
+          aria-label={copy.week.next}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>

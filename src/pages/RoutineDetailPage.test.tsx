@@ -27,10 +27,11 @@ describe("RoutineDetailPage", () => {
 
     const disclosureId = createButton.getAttribute("aria-controls");
     expect(createButton).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("button", { name: /cancel/i })).toHaveAttribute("aria-controls", disclosureId);
+    expect(createButton).toHaveTextContent(/collapse add exercise/i);
+    expect(createButton).toHaveAttribute("aria-controls", disclosureId);
     expect(document.getElementById(disclosureId ?? "")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /cancel/i }));
+    await user.click(createButton);
 
     expect(screen.getByRole("button", { name: /create new/i })).toHaveAttribute("aria-expanded", "false");
     expect(document.getElementById(disclosureId ?? "")).not.toBeInTheDocument();
@@ -97,7 +98,7 @@ describe("RoutineDetailPage", () => {
     expect(within(techniqueMenu).getByRole("menuitem", { name: /super set/i })).toBeVisible();
 
     await user.click(screen.getByRole("menuitem", { name: /back-off set/i }));
-    expect(screen.getByText(/set 3 · backoff/i)).toBeInTheDocument();
+    expect(screen.getByText(/set 3 · back-off/i)).toBeInTheDocument();
   });
 
   it("switches the routine editor with the routine selector", async () => {

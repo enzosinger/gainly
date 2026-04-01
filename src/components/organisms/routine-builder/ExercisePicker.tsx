@@ -8,12 +8,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../..
 import { Input } from "../../ui/input";
 import { Select } from "../../ui/select";
 import { ChevronDown } from "lucide-react";
+import { useLanguage } from "../../../i18n/LanguageProvider";
+import { getMuscleGroupLabel } from "../../../i18n/copy";
 
 const muscleGroupOptions: MuscleGroup[] = ["chest", "back", "shoulders", "legs", "biceps", "triceps"];
 const pickerMuscleFilterOptions: Array<MuscleGroup | "all"> = ["all", ...muscleGroupOptions];
 
 export default function ExercisePicker({ routineId }: { routineId: string }) {
   const { exercises, addExerciseToRoutine, createExercise } = useGainlyStore();
+  const { copy, language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -70,7 +73,7 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
 
     const nextExercise = await createExercise({ name, muscleGroup, description });
     addExerciseToRoutine(routineId, nextExercise.id);
-    toast.success("Exercise added");
+    toast.success(copy.library.addedToast);
     setName("");
     setDescription("");
     setMuscleGroup("chest");
@@ -98,8 +101,8 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
       <Card className="xl:flex xl:max-h-[calc(100vh-14rem)] xl:flex-col xl:overflow-hidden">
         <CardHeader className="flex flex-col gap-4 pb-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-2 md:max-w-[18rem]">
-            <CardTitle className="text-base">Add exercise</CardTitle>
-            <CardDescription>Pull from the library or create a movement for this routine.</CardDescription>
+            <CardTitle className="text-base">{copy.library.addExercise}</CardTitle>
+            <CardDescription>{copy.library.addExerciseDescription}</CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button
@@ -111,7 +114,7 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
               aria-expanded={createOpen}
               onClick={handleCreateToggle}
             >
-              {createOpen ? "Cancel" : "Create new"}
+              {createOpen ? copy.library.collapseAdd : copy.library.createNew}
             </Button>
             <CollapsibleTrigger asChild>
               <Button
@@ -119,7 +122,7 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
                 variant="ghost"
                 size="icon"
                 className="group"
-                aria-label={isOpen ? "Collapse add exercise" : "Expand add exercise"}
+                aria-label={isOpen ? copy.library.collapseAdd : copy.library.expandAdd}
               >
                 <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
               </Button>
@@ -131,16 +134,16 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
             <CardContent className="pb-0">
               <form id={createFormId} className="panel-inset space-y-3 rounded-2xl p-4" onSubmit={handleCreate}>
                 <label className="block text-sm">
-                  <span className="block text-[hsl(var(--muted-foreground))]">Exercise name</span>
+                  <span className="block text-[hsl(var(--muted-foreground))]">{copy.exercises.nameLabel}</span>
                   <Input
                     value={name}
                     onChange={(event) => setName(event.target.value)}
                     className="mt-2"
-                    placeholder="Romanian Deadlift"
+                    placeholder={copy.exercises.namePlaceholder}
                   />
                 </label>
                 <label className="block text-sm">
-                  <span className="block text-[hsl(var(--muted-foreground))]">Muscle group</span>
+                  <span className="block text-[hsl(var(--muted-foreground))]">{copy.exercises.muscleGroupLabel}</span>
                   <Select
                     value={muscleGroup}
                     onChange={(event) => setMuscleGroup(event.target.value as MuscleGroup)}
@@ -148,22 +151,22 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
                   >
                     {muscleGroupOptions.map((option) => (
                       <option key={option} value={option}>
-                        {option}
+                        {getMuscleGroupLabel(language, option)}
                       </option>
                     ))}
                   </Select>
                 </label>
                 <label className="block text-sm">
-                  <span className="block text-[hsl(var(--muted-foreground))]">Description</span>
+                  <span className="block text-[hsl(var(--muted-foreground))]">{copy.exercises.descriptionLabel}</span>
                   <textarea
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
                     className="mt-2 flex min-h-[6rem] w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--panel))] px-3 py-2 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    placeholder="Short note about how to perform or program it"
+                    placeholder={copy.exercises.descriptionPlaceholder}
                   />
                 </label>
                 <Button type="submit" variant="default" size="sm">
-                  Save exercise
+                  {copy.exercises.createAction}
                 </Button>
               </form>
             </CardContent>
@@ -173,16 +176,16 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
               <div className="space-y-4 xl:flex xl:min-h-0 xl:flex-1 xl:flex-col">
                 <div className="grid gap-3 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
                   <label className="block text-sm">
-                    <span className="block text-[hsl(var(--muted-foreground))]">Search exercises</span>
+                    <span className="block text-[hsl(var(--muted-foreground))]">{copy.library.searchLabel}</span>
                     <Input
                       value={searchQuery}
                       onChange={(event) => setSearchQuery(event.target.value)}
                       className="mt-2"
-                      placeholder="Search by name"
+                      placeholder={copy.library.searchPlaceholder}
                     />
                   </label>
                   <label className="block text-sm">
-                    <span className="block text-[hsl(var(--muted-foreground))]">Filter by muscle group</span>
+                    <span className="block text-[hsl(var(--muted-foreground))]">{copy.library.filterLabel}</span>
                     <Select
                       value={muscleFilter}
                       onChange={(event) => setMuscleFilter(event.target.value as MuscleGroup | "all")}
@@ -190,7 +193,7 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
                     >
                       {pickerMuscleFilterOptions.map((option) => (
                         <option key={option} value={option}>
-                          {option === "all" ? "All muscle groups" : option}
+                          {option === "all" ? copy.exercises.allMuscleGroups : getMuscleGroupLabel(language, option)}
                         </option>
                       ))}
                     </Select>
@@ -198,7 +201,7 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
                 </div>
                 {filteredExerciseLabels.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-[hsl(var(--border))] px-3 py-4 text-sm text-[hsl(var(--muted-foreground))]">
-                    No exercises match these filters.
+                    {copy.library.noMatches}
                   </div>
                 ) : (
                   <div className="grid gap-2 xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:pr-1">
@@ -209,13 +212,13 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
                           type="button"
                           onClick={() => {
                             addExerciseToRoutine(routineId, exercise.id);
-                            toast.success("Exercise added");
+                            toast.success(copy.library.addedToast);
                           }}
                           className="panel-inset rounded-2xl px-3 py-3 text-left text-sm text-[hsl(var(--foreground))] transition hover:border-[hsl(var(--ring))]"
                         >
                           <span className="block font-medium">{exercise.name}</span>
                           <span className="mt-1 block text-xs text-[hsl(var(--muted-foreground))]">
-                            {exercise.muscleGroup}
+                            {getMuscleGroupLabel(language, exercise.muscleGroup)}
                             {hasDuplicateName ? ` · #${occurrenceCount}` : ""}
                           </span>
                         </button>

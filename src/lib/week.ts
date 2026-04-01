@@ -15,14 +15,14 @@ export function getMondayWeekStart(timestamp: number) {
   return date.getTime();
 }
 
-export function getWeekWindow(timestamp: number = Date.now()): WeekWindow {
+export function getWeekWindow(timestamp: number = Date.now(), locale = "en-US"): WeekWindow {
   const start = getMondayWeekStart(timestamp);
   const endExclusive = addDays(start, 7);
-  const startLabel = new Intl.DateTimeFormat("en-US", {
+  const startLabel = new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "numeric",
   }).format(start);
-  const endLabel = new Intl.DateTimeFormat("en-US", {
+  const endLabel = new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "numeric",
   }).format(addDays(start, 6));
@@ -37,4 +37,3 @@ export function getWeekWindow(timestamp: number = Date.now()): WeekWindow {
 export function shiftWeekWindowStart(start: number, offsetWeeks: number) {
   return addDays(start, offsetWeeks * 7);
 }
-
