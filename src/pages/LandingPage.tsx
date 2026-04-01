@@ -1,17 +1,14 @@
 import PasswordAuthForm from "../components/auth/PasswordAuthForm";
 import gainlyLogo from "../../gainly_logo.png";
 import gainlyLogoWhite from "../../gainly_logo_white.png";
-import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
 import { useLanguage } from "../i18n/LanguageProvider";
+import { Github, MoveRight } from "lucide-react";
 
 export default function LandingPage() {
   const { copy } = useLanguage();
 
   return (
     <main className="min-h-screen bg-[hsl(var(--background))] px-4 py-4 text-[hsl(var(--foreground))] md:px-8 md:py-6">
-      <div className="absolute right-4 top-4 z-10 md:right-8 md:top-6">
-        <LanguageSwitcher compact />
-      </div>
       <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-3xl flex-col items-center justify-center gap-5 text-center md:min-h-[calc(100vh-3rem)] md:gap-6">
         <section className="w-full panel-card overflow-hidden">
           <div className="relative px-5 py-7 md:px-8 md:py-8">
@@ -29,6 +26,27 @@ export default function LandingPage() {
         </section>
         <section className="w-full max-w-xl space-y-4">
           <PasswordAuthForm />
+          <a
+            href="https://github.com/enzosinger"
+            target="_blank"
+            rel="noreferrer"
+            className="group block rounded-[1.5rem] border border-[hsl(var(--border))] bg-[linear-gradient(135deg,hsl(var(--panel))_0%,hsl(var(--background))_100%)] px-4 py-4 text-left transition-transform duration-200 hover:-translate-y-0.5"
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-2.5">
+                  <Github className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--muted-foreground))]">
+                    PROJECT AUTHOR
+                  </p>
+                  <p className="text-sm text-[hsl(var(--foreground))]">github.com/enzosinger</p>
+                </div>
+              </div>
+              <MoveRight className="h-4 w-4 text-[hsl(var(--muted-foreground))] transition-transform duration-200 group-hover:translate-x-1" />
+            </div>
+          </a>
         </section>
       </div>
     </main>
