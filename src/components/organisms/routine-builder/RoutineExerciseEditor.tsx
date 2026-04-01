@@ -1,4 +1,4 @@
-import { Trash2, X } from "lucide-react";
+import { Trash2, X, Plus } from "lucide-react";
 import type { Exercise, RoutineExercise } from "../../../types/domain";
 import TechniqueMenu from "./TechniqueMenu";
 import { Badge } from "../../ui/badge";
@@ -26,26 +26,43 @@ export default function RoutineExerciseEditor({
     <Card>
       <div className="space-y-4 p-6">
         <p className="eyebrow">Exercise {index + 1}</p>
-        <div className="flex flex-row items-start justify-between gap-3">
-          <div className="space-y-2">
-            <CardTitle className="text-base">{exercise.name}</CardTitle>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+          <div className="flex flex-1 flex-col gap-1.5">
+            <div className="flex items-center justify-between gap-2 sm:justify-start">
+              <CardTitle className="text-base font-semibold sm:text-[1.1rem]">
+                {exercise.name}
+              </CardTitle>
+              <Badge variant="outline" className="h-fit capitalize sm:hidden">
+                {exercise.muscleGroup}
+              </Badge>
+            </div>
             <CardDescription className="max-w-xl text-sm leading-6">
               {exercise.description?.trim() || "No description added yet."}
             </CardDescription>
           </div>
-          <div className="flex flex-col items-end gap-3">
-            <Badge variant="outline" className="capitalize">
+
+          <div className="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end">
+            <Badge variant="outline" className="hidden capitalize sm:inline-flex">
               {exercise.muscleGroup}
             </Badge>
-            <div className="flex flex-wrap justify-end gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => onAddSet(item.id)}>
-                Add set
+
+            <div className="flex flex-row items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="rounded-full"
+                onClick={() => onAddSet(item.id)}
+                aria-label="Add set"
+              >
+                <Plus className="h-4 w-4" />
               </Button>
               <TechniqueMenu onSelect={(technique) => onSelectTechnique(item.id, technique)} />
               <Button
                 type="button"
-                variant="ghost"
+                variant="outline"
                 size="icon"
+                className="rounded-full text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--destructive))]"
                 onClick={() => onRemove(item.id)}
                 aria-label="Remove exercise"
               >

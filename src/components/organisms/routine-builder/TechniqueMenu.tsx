@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Zap } from "lucide-react";
 import type { TechniqueType } from "../../../types/domain";
 import { Button } from "../../ui/button";
 
@@ -20,18 +21,19 @@ export default function TechniqueMenu({
       <Button
         type="button"
         variant="outline"
-        size="sm"
+        size="icon"
         className="rounded-full"
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
+        aria-label="Add technique"
       >
-        Add technique
+        <Zap className="h-4 w-4" />
       </Button>
       {open ? (
         <div
           role="menu"
-          className="panel-card absolute right-0 z-10 mt-2 min-w-44 space-y-1 rounded-2xl p-2"
+          className="panel-card absolute left-0 z-10 mt-2 min-w-44 space-y-1 rounded-2xl p-2 sm:right-0 sm:left-auto"
         >
           {menuItems.map((item) => (
             <button

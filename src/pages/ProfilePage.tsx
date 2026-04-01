@@ -11,7 +11,6 @@ export default function ProfilePage() {
   const { viewer, routines, exercises, signOut } = useGainlyStore();
   const { theme, setTheme } = useTheme();
 
-  const totalExercises = routines.reduce((total, routine) => total + routine.exercises.length, 0);
   const weeklySets = routines.reduce(
     (total, routine) =>
       total + routine.exercises.reduce((exerciseTotal, item) => exerciseTotal + item.sets.length, 0),
@@ -108,20 +107,6 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-semibold">{weeklySets}</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader className="pb-4">
-            <p className="eyebrow">Readiness note</p>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-lg font-medium tracking-tight">Total planned exercises: {totalExercises}</p>
-            <div className="panel-inset rounded-2xl px-4 py-3 text-sm text-[hsl(var(--muted-foreground))]">
-              Keep volume stable for 2-3 weeks before increasing load to preserve technique quality.
-            </div>
           </CardContent>
         </Card>
       </div>

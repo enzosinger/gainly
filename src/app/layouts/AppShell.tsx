@@ -13,7 +13,7 @@ const links = [
 const desktopNavLinkClasses =
   "rounded-md px-4 py-3 text-sm font-medium transition";
 const mobileNavLinkClasses =
-  "rounded-md px-2 py-2 text-center text-[11px] uppercase tracking-[0.16em] transition";
+  "rounded-md px-1 py-2 text-center text-[10.5px] uppercase tracking-[0.08em] transition";
 const activeNavLinkClasses = "bg-[hsl(var(--strong))] text-[hsl(var(--strong-foreground))]";
 const inactiveDesktopNavLinkClasses =
   "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--panel-inset))] hover:text-[hsl(var(--foreground))]";
