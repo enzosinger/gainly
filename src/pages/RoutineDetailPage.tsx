@@ -73,6 +73,11 @@ export default function RoutineDetailPage() {
           ) : null}
           {routine.exercises.map((item, index) => {
             const exercise = exercisesById.get(item.exerciseId);
+            const pairExerciseId = item.sets.find((set) => {
+              return set.technique === "superset" && Boolean(set.pairExerciseId);
+            })?.pairExerciseId;
+            const pairExerciseName = pairExerciseId ? exercisesById.get(pairExerciseId)?.name : undefined;
+
             if (!exercise) {
               return null;
             }
@@ -82,6 +87,7 @@ export default function RoutineDetailPage() {
                 key={item.id}
                 index={index}
                 exercise={exercise}
+                pairExerciseName={pairExerciseName}
                 item={item}
                 onAddSet={(routineExerciseId) => addSetToRoutineExercise(routine.id, routineExerciseId)}
                 onRemoveSet={(routineExerciseId, setId) =>

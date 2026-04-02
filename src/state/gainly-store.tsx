@@ -33,8 +33,9 @@ type GainlyStoreValue = {
   addTechniqueToRoutineExercise: (
     routineId: string,
     routineExerciseId: string,
-    technique: Exclude<TechniqueType, "normal">,
+    technique: Exclude<TechniqueType, "normal" | "superset">,
   ) => void;
+  addSupersetToRoutine: (routineId: string, exerciseId: string, pairExerciseId: string) => void;
   updateRoutineExerciseWarmupSets: (routineId: string, routineExerciseId: string, count: number) => void;
   updateRoutineExerciseFeederSets: (routineId: string, routineExerciseId: string, count: number) => void;
   createExercise: (input: { name: string; muscleGroup: MuscleGroup; description?: string }) => Promise<Exercise>;
@@ -143,11 +144,24 @@ function filterExercisesByMuscleGroup(exercises: Exercise[], muscleGroup: Muscle
   return exercises.filter((exercise) => exercise.muscleGroup === muscleGroup);
 }
 
-function appendSetToRoutineExercise(
-  routine: Routine,
-  routineExerciseId: string,
-  technique: TechniqueType,
-) {
+function buildNextSetForRoutineExercise(routineExercise: RoutineExercise) {
+  const supersetSet = routineExercise.sets.find((set) => set.technique === "superset" && set.pairExerciseId);
+
+  if (supersetSet) {
+    return {
+      id: `${routineExercise.id}-set-${routineExercise.sets.length + 1}`,
+      technique: "superset" as const,
+      pairExerciseId: supersetSet.pairExerciseId,
+    };
+  }
+
+  return {
+    id: `${routineExercise.id}-set-${routineExercise.sets.length + 1}`,
+    technique: "normal" as const,
+  };
+}
+
+function appendSetToRoutineExercise(routine: Routine, routineExerciseId: string, technique?: TechniqueType) {
   return {
     ...routine,
     updatedAt: Date.now(),
@@ -157,17 +171,55 @@ function appendSetToRoutineExercise(
       }
 
       const nextSetIndex = routineExercise.sets.length + 1;
-      return {
-        ...routineExercise,
-        sets: [
-          ...routineExercise.sets,
-          {
+      const nextSet = technique
+        ? {
             id: `${routineExercise.id}-set-${nextSetIndex}`,
             technique,
-          },
-        ],
+          }
+        : buildNextSetForRoutineExercise(routineExercise);
+
+      return {
+        ...routineExercise,
+        sets: [...routineExercise.sets, nextSet],
       };
     }),
+  };
+}
+
+function appendSupersetToRoutine(
+  routine: Routine,
+  exerciseId: string,
+  pairExerciseId: string,
+  existingExercises: Exercise[],
+) {
+  if (exerciseId === pairExerciseId) {
+    throw new Error("Superset requires two different exercises.");
+  }
+
+  const hasPrimaryExercise = existingExercises.some((exercise) => exercise.id === exerciseId);
+  const hasPairExercise = existingExercises.some((exercise) => exercise.id === pairExerciseId);
+
+  if (!hasPrimaryExercise || !hasPairExercise) {
+    throw new Error("Superset exercises could not be found.");
+  }
+
+  const nextIndex = routine.exercises.length + 1;
+  const supersetRoutineExercise = {
+    id: `routine-item-${exerciseId}-${pairExerciseId}-${nextIndex}`,
+    exerciseId,
+    sets: [
+      {
+        id: `set-${exerciseId}-${pairExerciseId}-${nextIndex}-1`,
+        technique: "superset" as const,
+        pairExerciseId,
+      },
+    ],
+  };
+
+  return {
+    ...routine,
+    updatedAt: Date.now(),
+    exercises: [...routine.exercises, supersetRoutineExercise],
   };
 }
 
@@ -243,7 +295,7 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
               return routine;
             }
 
-            return appendSetToRoutineExercise(routine, routineExerciseId, "normal");
+            return appendSetToRoutineExercise(routine, routineExerciseId);
           }),
         );
       },
@@ -291,7 +343,7 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
       addTechniqueToRoutineExercise: (
         routineId: string,
         routineExerciseId: string,
-        technique: Exclude<TechniqueType, "normal">,
+        technique: Exclude<TechniqueType, "normal" | "superset">,
       ) => {
         setRoutines((current) =>
           current.map((routine) => {
@@ -300,6 +352,17 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
             }
 
             return appendSetToRoutineExercise(routine, routineExerciseId, technique);
+          }),
+        );
+      },
+      addSupersetToRoutine: (routineId: string, exerciseId: string, pairExerciseId: string) => {
+        setRoutines((current) =>
+          current.map((routine) => {
+            if (routine.id !== routineId) {
+              return routine;
+            }
+
+            return appendSupersetToRoutine(routine, exerciseId, pairExerciseId, exercises);
           }),
         );
       },
@@ -450,6 +513,7 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
   const addSetToRoutineExerciseMutation = useMutation(api.routines.addSet);
   const removeExerciseFromRoutineMutation = useMutation(api.routines.removeExercise);
   const addTechniqueToRoutineExerciseMutation = useMutation(api.routines.addTechnique);
+  const addSupersetToRoutineMutation = useMutation(api.routines.addSuperset);
   const removeSetFromRoutineExerciseMutation = useMutation(api.routines.removeSet);
   const updateWarmupSetsMutation = useMutation(api.routines.updateWarmupSets);
   const updateFeederSetsMutation = useMutation(api.routines.updateFeederSets);
@@ -542,6 +606,13 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
           technique,
         });
       },
+      addSupersetToRoutine: (routineId: string, exerciseId: string, pairExerciseId: string) => {
+        void addSupersetToRoutineMutation({
+          routineId: routineId as Id<"routines">,
+          exerciseId: exerciseId as Id<"exercises">,
+          pairExerciseId: pairExerciseId as Id<"exercises">,
+        });
+      },
       updateRoutineExerciseWarmupSets: (routineId: string, routineExerciseId: string, count: number) => {
         void updateWarmupSetsMutation({
           routineId: routineId as Id<"routines">,
@@ -596,6 +667,7 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
       addExerciseToRoutineMutation,
       addSetToRoutineExerciseMutation,
       addTechniqueToRoutineExerciseMutation,
+      addSupersetToRoutineMutation,
       createExerciseMutation,
       createRoutineMutation,
       exerciseLibraryExercises,

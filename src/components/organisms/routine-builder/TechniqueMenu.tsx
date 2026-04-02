@@ -7,14 +7,13 @@ import { useLanguage } from "../../../i18n/LanguageProvider";
 export default function TechniqueMenu({
   onSelect,
 }: {
-  onSelect: (technique: Exclude<TechniqueType, "normal">) => void;
+  onSelect: (technique: Exclude<TechniqueType, "normal" | "superset">) => void;
 }) {
   const [open, setOpen] = useState(false);
   const { copy } = useLanguage();
   const menuItems = [
     { id: "backoff", label: copy.builder.techniqueMenu.backoff },
     { id: "cluster", label: copy.builder.techniqueMenu.cluster },
-    { id: "superset", label: copy.builder.techniqueMenu.superset },
   ] as const;
 
   return (

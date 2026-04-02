@@ -70,6 +70,21 @@ export default function WorkoutPage() {
     () => Object.fromEntries(exercises.map((exercise) => [exercise.id, exercise.name])),
     [exercises],
   );
+  function getWorkoutExerciseName(item: (typeof workoutRoutine.exercises)[number]) {
+    const primaryExerciseName = exercisesById.get(item.exerciseId)?.name ?? copy.exercises.exerciseEyebrow;
+    const pairExerciseId = item.sets.find((set) => set.technique === "superset" && set.pairExerciseId)?.pairExerciseId;
+
+    if (!pairExerciseId) {
+      return primaryExerciseName;
+    }
+
+    const pairExerciseName = exerciseNamesById[pairExerciseId];
+    if (!pairExerciseName) {
+      return primaryExerciseName;
+    }
+
+    return `${primaryExerciseName} + ${pairExerciseName}`;
+  }
   const currentExerciseByRoutineExerciseId = useMemo(
     () =>
       new Map(
@@ -140,7 +155,6 @@ export default function WorkoutPage() {
         {workoutRoutine.exercises.map((item) => {
           const currentExercise = currentExerciseByRoutineExerciseId.get(item.id);
           const previousExercise = previousExerciseByRoutineExerciseId.get(item.id);
-          const exercise = exercisesById.get(item.exerciseId);
 
           if (!currentExercise) {
             return null;
@@ -150,8 +164,8 @@ export default function WorkoutPage() {
             <ExerciseAccordion
               key={item.id}
               item={item}
-              name={exercise?.name ?? copy.exercises.exerciseEyebrow}
-              description={exercise?.description}
+              name={getWorkoutExerciseName(item)}
+              description={exercisesById.get(item.exerciseId)?.description}
               currentExercise={currentExercise}
               previousExercise={previousExercise}
               pairExerciseNamesById={exerciseNamesById}

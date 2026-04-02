@@ -10,6 +10,7 @@ import { getMuscleGroupLabel, getTechniqueLabel } from "../../../i18n/copy";
 
 export default function RoutineExerciseEditor({
   exercise,
+  pairExerciseName,
   item,
   index,
   onAddSet,
@@ -20,16 +21,18 @@ export default function RoutineExerciseEditor({
   onUpdateFS,
 }: {
   exercise: Exercise;
+  pairExerciseName?: string;
   item: RoutineExercise;
   index: number;
   onAddSet: (routineExerciseId: string) => void;
   onRemoveSet: (routineExerciseId: string, setId: string) => void;
   onRemove: (routineExerciseId: string) => void;
-  onSelectTechnique: (routineExerciseId: string, technique: "backoff" | "cluster" | "superset") => void;
+  onSelectTechnique: (routineExerciseId: string, technique: "backoff" | "cluster") => void;
   onUpdateWS: (routineExerciseId: string, count: number) => void;
   onUpdateFS: (routineExerciseId: string, count: number) => void;
 }) {
   const { copy, language } = useLanguage();
+  const displayName = pairExerciseName ? `${exercise.name} + ${pairExerciseName}` : exercise.name;
 
   return (
     <Card>
@@ -43,9 +46,7 @@ export default function RoutineExerciseEditor({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
           <div className="flex flex-1 flex-col gap-1.5">
             <div className="flex items-center justify-between gap-2 sm:justify-start">
-              <CardTitle className="text-base font-semibold sm:text-[1.1rem]">
-                {exercise.name}
-              </CardTitle>
+              <CardTitle className="text-base font-semibold sm:text-[1.1rem]">{displayName}</CardTitle>
             </div>
             <CardDescription className="max-w-xl text-sm leading-6">
               {exercise.description?.trim() || copy.builder.noDescription}

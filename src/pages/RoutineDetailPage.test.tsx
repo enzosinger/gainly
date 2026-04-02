@@ -74,7 +74,7 @@ describe("RoutineDetailPage", () => {
     expect(screen.queryAllByText(/unilateral|bilateral/i)).toHaveLength(0);
   });
 
-  it("starts with normal sets and lets the user add an advanced technique deliberately", async () => {
+  it("removes superset from the technique menu", async () => {
     const user = userEvent.setup();
 
     render(
@@ -95,10 +95,54 @@ describe("RoutineDetailPage", () => {
     expect(techniqueMenu).toBeVisible();
     expect(within(techniqueMenu).getByRole("menuitem", { name: /back-off set/i })).toBeVisible();
     expect(within(techniqueMenu).getByRole("menuitem", { name: /cluster set/i })).toBeVisible();
-    expect(within(techniqueMenu).getByRole("menuitem", { name: /super set/i })).toBeVisible();
+    expect(within(techniqueMenu).queryByRole("menuitem", { name: /super set/i })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("menuitem", { name: /back-off set/i }));
     expect(screen.getByText(/set 3 · back-off/i)).toBeInTheDocument();
+  });
+
+  it("creates a superset from the picker by selecting two different exercises", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/routines/routine-upper-a"]}>
+        <GainlyStoreProvider>
+          <Routes>
+            <Route path="/routines/:routineId" element={<RoutineDetailPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole("button", { name: /expand add/i }));
+    await user.click(screen.getByRole("button", { name: /add superset/i }));
+
+    expect(screen.getByText(/select the first exercise/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /barbell bench press/i }));
+    expect(screen.getByText(/select the second exercise/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /seated cable row/i }));
+
+    expect(screen.getByRole("heading", { name: /barbell bench press \+ seated cable row/i })).toBeInTheDocument();
+  });
+
+  it("appends a superset set when adding a set to a superset exercise", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/routines/routine-upper-b"]}>
+        <GainlyStoreProvider>
+          <Routes>
+            <Route path="/routines/:routineId" element={<RoutineDetailPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getAllByRole("button", { name: /add set/i })[1]);
+
+    expect(screen.getByText(/set 2 · superset/i)).toBeInTheDocument();
   });
 
   it("switches the routine editor with the routine selector", async () => {

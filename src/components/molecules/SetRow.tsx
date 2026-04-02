@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "../ui/input";
 import type { WorkoutSessionSet } from "../../types/domain";
 import { useLanguage } from "../../i18n/LanguageProvider";
@@ -69,26 +69,36 @@ function buildDraft(set: WorkoutSessionSet): DraftValues {
   };
 }
 
-function toPayload(draft: DraftValues, previousSet?: WorkoutSessionSet) {
+function toPayload(draft: DraftValues, currentSet?: WorkoutSessionSet) {
   return {
-    weightKg: parseValue(draft.weightKg) ?? previousSet?.weightKg ?? null,
-    reps: parseValue(draft.reps) ?? previousSet?.reps ?? null,
-    pairWeightKg: parseValue(draft.pairWeightKg) ?? previousSet?.pairWeightKg ?? null,
-    pairReps: parseValue(draft.pairReps) ?? previousSet?.pairReps ?? null,
+    weightKg: parseValue(draft.weightKg) ?? currentSet?.weightKg ?? null,
+    reps: parseValue(draft.reps) ?? currentSet?.reps ?? null,
+    pairWeightKg: parseValue(draft.pairWeightKg) ?? currentSet?.pairWeightKg ?? null,
+    pairReps: parseValue(draft.pairReps) ?? currentSet?.pairReps ?? null,
   };
 }
 
 export default function SetRow({ set, index, previousSet, pairExerciseName, onCommit }: SetRowProps) {
   const { copy, language } = useLanguage();
-  const [draft, setDraft] = useState<DraftValues>(() => buildDraft(set));
+  const initialDraft = buildDraft(set);
+  const [draft, setDraft] = useState<DraftValues>(initialDraft);
+  const draftRef = useRef<DraftValues>(initialDraft);
+
+  function applyDraftPatch(patch: Partial<DraftValues>) {
+    const nextDraft = { ...draftRef.current, ...patch };
+    draftRef.current = nextDraft;
+    setDraft(nextDraft);
+  }
 
   useEffect(() => {
-    setDraft(buildDraft(set));
+    const nextDraft = buildDraft(set);
+    draftRef.current = nextDraft;
+    setDraft(nextDraft);
   }, [set.id]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const payload = toPayload(draft, previousSet);
+      const payload = toPayload(draft, set);
       const originalPayload = toPayload(buildDraft(set));
 
       // Only commit if the values have actually changed from the current set data
@@ -114,7 +124,7 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
         </div>
       </div>
       <p className="text-xs text-[hsl(var(--muted-foreground))]">{formatReference(previousSet, copy)}</p>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-2 gap-3">
         <label className="space-y-1">
           <span className="block text-xs uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]">{copy.builder.weight}</span>
           <Input
@@ -126,12 +136,10 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
             placeholder={previousSet?.weightKg ? `${previousSet.weightKg}` : "kg"}
             onChange={(event) => {
               const { value } = event.currentTarget;
-              setDraft((current) => ({ ...current, weightKg: value }));
+              applyDraftPatch({ weightKg: value });
             }}
             onBlur={(event) => {
-              const nextDraft = { ...draft, weightKg: event.currentTarget.value };
-              setDraft(nextDraft);
-              onCommit(toPayload(nextDraft, previousSet));
+              applyDraftPatch({ weightKg: event.currentTarget.value });
             }}
             onKeyDown={(event) => {
               if (event.key === "Enter") {
@@ -151,12 +159,10 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
             placeholder={previousSet?.reps ? `${previousSet.reps}` : "reps"}
             onChange={(event) => {
               const { value } = event.currentTarget;
-              setDraft((current) => ({ ...current, reps: value }));
+              applyDraftPatch({ reps: value });
             }}
             onBlur={(event) => {
-              const nextDraft = { ...draft, reps: event.currentTarget.value };
-              setDraft(nextDraft);
-              onCommit(toPayload(nextDraft, previousSet));
+              applyDraftPatch({ reps: event.currentTarget.value });
             }}
             onKeyDown={(event) => {
               if (event.key === "Enter") {
@@ -176,8 +182,7 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
       ) : null}
       {set.technique === "superset" && pairExerciseName ? (
         <div className="space-y-2">
-          <p className="text-xs text-[hsl(var(--muted-foreground))]">{copy.builder.pairedWith(pairExerciseName)}</p>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-3">
             <label className="space-y-1">
               <span className="block text-xs uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]">
                 {copy.builder.pairWeight}
@@ -191,12 +196,10 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
                 placeholder={previousSet?.pairWeightKg ? `${previousSet.pairWeightKg}` : "kg"}
                 onChange={(event) => {
                   const { value } = event.currentTarget;
-                  setDraft((current) => ({ ...current, pairWeightKg: value }));
+                  applyDraftPatch({ pairWeightKg: value });
                 }}
                 onBlur={(event) => {
-                  const nextDraft = { ...draft, pairWeightKg: event.currentTarget.value };
-                  setDraft(nextDraft);
-                  onCommit(toPayload(nextDraft, previousSet));
+                  applyDraftPatch({ pairWeightKg: event.currentTarget.value });
                 }}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
@@ -218,12 +221,10 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
                 placeholder={previousSet?.pairReps ? `${previousSet.pairReps}` : "reps"}
                 onChange={(event) => {
                   const { value } = event.currentTarget;
-                  setDraft((current) => ({ ...current, pairReps: value }));
+                  applyDraftPatch({ pairReps: value });
                 }}
                 onBlur={(event) => {
-                  const nextDraft = { ...draft, pairReps: event.currentTarget.value };
-                  setDraft(nextDraft);
-                  onCommit(toPayload(nextDraft, previousSet));
+                  applyDraftPatch({ pairReps: event.currentTarget.value });
                 }}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {

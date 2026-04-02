@@ -15,10 +15,12 @@ const muscleGroupOptions: MuscleGroup[] = ["chest", "back", "shoulders", "legs",
 const pickerMuscleFilterOptions: Array<MuscleGroup | "all"> = ["all", ...muscleGroupOptions];
 
 export default function ExercisePicker({ routineId }: { routineId: string }) {
-  const { exercises, addExerciseToRoutine, createExercise } = useGainlyStore();
+  const { exercises, addExerciseToRoutine, addSupersetToRoutine, createExercise } = useGainlyStore();
   const { copy, language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [supersetMode, setSupersetMode] = useState(false);
+  const [selectedSupersetExerciseId, setSelectedSupersetExerciseId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [muscleFilter, setMuscleFilter] = useState<MuscleGroup | "all">("all");
   const [name, setName] = useState("");
@@ -29,11 +31,18 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
   useEffect(() => {
     if (!isOpen) {
       setCreateOpen(false);
+      setSupersetMode(false);
+      setSelectedSupersetExerciseId(null);
       setName("");
       setDescription("");
       setMuscleGroup("chest");
     }
   }, [isOpen]);
+
+  function resetSupersetSelection() {
+    setSupersetMode(false);
+    setSelectedSupersetExerciseId(null);
+  }
 
   const filteredExercises = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -92,8 +101,31 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
         setMuscleGroup("chest");
       }
 
+      resetSupersetSelection();
       return !current;
     });
+  }
+
+  function handleExerciseSelection(exerciseId: string) {
+    if (!supersetMode) {
+      addExerciseToRoutine(routineId, exerciseId);
+      toast.success(copy.library.addedToast);
+      return;
+    }
+
+    if (!selectedSupersetExerciseId) {
+      setSelectedSupersetExerciseId(exerciseId);
+      return;
+    }
+
+    if (selectedSupersetExerciseId === exerciseId) {
+      toast.error(copy.builder.supersetSameExercise);
+      return;
+    }
+
+    addSupersetToRoutine(routineId, selectedSupersetExerciseId, exerciseId);
+    toast.success(copy.library.addedToast);
+    resetSupersetSelection();
   }
 
   return (
@@ -199,6 +231,28 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
                     </Select>
                   </label>
                 </div>
+                {supersetMode ? (
+                  <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--panel-inset))] px-3 py-3 text-sm text-[hsl(var(--foreground))]">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <p className="font-medium">
+                          {selectedSupersetExerciseId
+                            ? copy.builder.supersetSelectSecond
+                            : copy.builder.supersetSelectFirst}
+                        </p>
+                        <p className="text-xs text-[hsl(var(--muted-foreground))]">{copy.builder.supersetInstructions}</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={resetSupersetSelection}
+                      >
+                        {copy.builder.supersetCancel}
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
                 {filteredExerciseLabels.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-[hsl(var(--border))] px-3 py-4 text-sm text-[hsl(var(--muted-foreground))]">
                     {copy.library.noMatches}
@@ -206,15 +260,17 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
                 ) : (
                   <div className="grid gap-2 xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:pr-1">
                     {filteredExerciseLabels.map(({ exercise, occurrenceCount, hasDuplicateName }) => {
+                      const isSelected = selectedSupersetExerciseId === exercise.id;
+
                       return (
                         <button
                           key={exercise.id}
                           type="button"
-                          onClick={() => {
-                            addExerciseToRoutine(routineId, exercise.id);
-                            toast.success(copy.library.addedToast);
-                          }}
-                          className="panel-inset rounded-2xl px-3 py-3 text-left text-sm text-[hsl(var(--foreground))] transition hover:border-[hsl(var(--ring))]"
+                          aria-pressed={supersetMode ? isSelected : undefined}
+                          onClick={() => handleExerciseSelection(exercise.id)}
+                          className={`panel-inset rounded-2xl px-3 py-3 text-left text-sm text-[hsl(var(--foreground))] transition hover:border-[hsl(var(--ring))] ${
+                            isSelected ? "border-[hsl(var(--ring))] bg-[hsl(var(--accent))]" : ""
+                          }`}
                         >
                           <span className="block font-medium">{exercise.name}</span>
                           <span className="mt-1 block text-xs text-[hsl(var(--muted-foreground))]">
@@ -226,6 +282,28 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
                     })}
                   </div>
                 )}
+                <div className="pt-2">
+                  <Button
+                    type="button"
+                    variant={supersetMode ? "outline" : "secondary"}
+                    className="w-full"
+                    onClick={() => {
+                      if (supersetMode) {
+                        resetSupersetSelection();
+                        return;
+                      }
+
+                      setCreateOpen(false);
+                      setSupersetMode(true);
+                      setSelectedSupersetExerciseId(null);
+                      if (!isOpen) {
+                        setIsOpen(true);
+                      }
+                    }}
+                  >
+                    {supersetMode ? copy.builder.supersetCancel : copy.builder.addSuperset}
+                  </Button>
+                </div>
               </div>
             ) : null}
           </CardContent>

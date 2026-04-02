@@ -141,6 +141,22 @@ function cloneUpdatedSessionSet(
   return Object.fromEntries(Object.entries(nextSet).filter(([, value]) => value !== undefined)) as typeof nextSet;
 }
 
+function syncSessionSetWithRoutineSet(
+  existingSessionSet: Doc<"workoutSessions">["exercises"][number]["sets"][number],
+  routineSet: Doc<"routines">["exercises"][number]["sets"][number],
+) {
+  return {
+    ...existingSessionSet,
+    technique: routineSet.technique,
+    backoffPercent: routineSet.backoffPercent,
+    clusterBlocks: routineSet.clusterBlocks,
+    clusterRepRange: routineSet.clusterRepRange,
+    pairExerciseId: routineSet.pairExerciseId,
+    pairWeightKg: existingSessionSet.pairWeightKg ?? routineSet.pairWeightKg,
+    pairReps: existingSessionSet.pairReps ?? routineSet.pairReps,
+  };
+}
+
 export const sessionForRoutineWeek = query({
   args: {
     routineId: v.id("routines"),
@@ -318,7 +334,7 @@ export const progressSummaries = query({
   },
 });
 
-function syncSessionWithRoutine(
+export function syncSessionWithRoutine(
   existingExercises: Doc<"workoutSessions">["exercises"],
   routine: Doc<"routines">,
 ) {
@@ -339,16 +355,7 @@ function syncSessionWithRoutine(
 
         if (existingSessionSet) {
           // Keep logged data but sync prescriptive fields
-          return {
-            ...existingSessionSet,
-            technique: routineSet.technique,
-            backoffPercent: routineSet.backoffPercent,
-            clusterBlocks: routineSet.clusterBlocks,
-            clusterRepRange: routineSet.clusterRepRange,
-            pairExerciseId: routineSet.pairExerciseId,
-            pairWeightKg: routineSet.pairWeightKg,
-            pairReps: routineSet.pairReps,
-          };
+          return syncSessionSetWithRoutineSet(existingSessionSet, routineSet);
         }
 
         // New set added to an existing exercise

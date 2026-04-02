@@ -1,6 +1,27 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
 import { requireCurrentUserId, requireExercise, requireRoutine } from "./lib";
+
+function buildNextSetForRoutineExercise(routineExercise: {
+  id: string;
+  sets: Array<{ technique: "normal" | "backoff" | "cluster" | "superset"; pairExerciseId?: Id<"exercises"> }>;
+}) {
+  const supersetSet = routineExercise.sets.find((set) => set.technique === "superset" && set.pairExerciseId);
+
+  if (supersetSet) {
+    return {
+      id: `${routineExercise.id}-set-${routineExercise.sets.length + 1}`,
+      technique: "superset" as const,
+      pairExerciseId: supersetSet.pairExerciseId,
+    };
+  }
+
+  return {
+    id: `${routineExercise.id}-set-${routineExercise.sets.length + 1}`,
+    technique: "normal" as const,
+  };
+}
 
 export const create = mutation({
   args: {
@@ -136,16 +157,9 @@ export const addSet = mutation({
         return routineExercise;
       }
 
-      const nextSetIndex = routineExercise.sets.length + 1;
       return {
         ...routineExercise,
-        sets: [
-          ...routineExercise.sets,
-          {
-            id: `${routineExercise.id}-set-${nextSetIndex}`,
-            technique: "normal" as const,
-          },
-        ],
+        sets: [...routineExercise.sets, buildNextSetForRoutineExercise(routineExercise)],
       };
     });
 
@@ -182,6 +196,46 @@ export const addTechnique = mutation({
         ],
       };
     });
+
+    await ctx.db.patch(routine._id, {
+      exercises: nextExercises,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const addSuperset = mutation({
+  args: {
+    routineId: v.id("routines"),
+    exerciseId: v.id("exercises"),
+    pairExerciseId: v.id("exercises"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireCurrentUserId(ctx);
+
+    if (args.exerciseId === args.pairExerciseId) {
+      throw new Error("Superset requires two different exercises.");
+    }
+
+    const routine = await requireRoutine(ctx, userId, args.routineId);
+    await requireExercise(ctx, userId, args.exerciseId);
+    await requireExercise(ctx, userId, args.pairExerciseId);
+
+    const nextIndex = routine.exercises.length + 1;
+    const nextExercises: typeof routine.exercises = [
+      ...routine.exercises,
+      {
+        id: `routine-item-${String(args.exerciseId)}-${String(args.pairExerciseId)}-${nextIndex}`,
+        exerciseId: args.exerciseId,
+        sets: [
+          {
+            id: `set-${String(args.exerciseId)}-${String(args.pairExerciseId)}-${nextIndex}-1`,
+            technique: "superset",
+            pairExerciseId: args.pairExerciseId,
+          },
+        ],
+      },
+    ];
 
     await ctx.db.patch(routine._id, {
       exercises: nextExercises,
@@ -271,4 +325,3 @@ export const updateFeederSets = mutation({
     await ctx.db.patch(args.routineId, { exercises: nextExercises, updatedAt: Date.now() });
   },
 });
-

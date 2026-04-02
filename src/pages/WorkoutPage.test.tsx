@@ -125,6 +125,55 @@ const previousWeekHistory = {
   hasHistory: false,
 };
 
+const activeSupersetSession = {
+  _id: "session-routine-upper-b",
+  routineId: "routine-upper-b",
+  status: "in_progress" as const,
+  startedAt: 1711800000000,
+  updatedAt: 1711800000000,
+  exercises: [
+    {
+      id: "session-exercise-shoulder-press",
+      routineExerciseId: "routine-upper-b-shoulder-press",
+      exerciseId: "ex-dumbbell-shoulder-press",
+      position: 0,
+      sets: [
+        {
+          id: "session-set-shoulder-press-1",
+          templateSetId: "set-upper-b-press-1",
+          technique: "normal" as const,
+          reps: 10,
+        },
+      ],
+    },
+    {
+      id: "session-exercise-arms",
+      routineExerciseId: "routine-upper-b-arms",
+      exerciseId: "ex-incline-dumbbell-curl",
+      position: 1,
+      sets: [
+        {
+          id: "session-set-arms-1",
+          templateSetId: "set-upper-b-arms-1",
+          technique: "superset" as const,
+          weightKg: 20,
+          reps: 10,
+          pairExerciseId: "ex-cable-triceps-pushdown",
+          pairWeightKg: 22.5,
+          pairReps: 12,
+        },
+      ],
+    },
+  ],
+};
+
+const currentSupersetHistory = {
+  routineId: "routine-upper-b",
+  latestCompletedSession: null,
+  previousCompletedSession: null,
+  hasHistory: false,
+};
+
 vi.mock("convex/react", async () => {
   const actual = await vi.importActual<typeof import("convex/react")>("convex/react");
 
@@ -180,6 +229,14 @@ describe("WorkoutPage", () => {
     mockUseQuery.mockImplementation((_query, args) => {
       queryCallIndex += 1;
 
+      if (args?.routineId === "routine-upper-b") {
+        if (queryCallIndex % 2 === 0) {
+          return currentSupersetHistory;
+        }
+
+        return activeSupersetSession;
+      }
+
       if (queryCallIndex % 2 === 0) {
         if (args.weekStart === previousWeekWindow.start) {
           return previousWeekHistory;
@@ -231,15 +288,17 @@ describe("WorkoutPage", () => {
     fireEvent.change(firstWeightInput, { target: { value: "85" } });
     fireEvent.blur(firstWeightInput);
 
-    await waitFor(() =>
-      expect(mockUpdateWorkoutSet).toHaveBeenCalledWith({
-        sessionId: "session-routine-upper-a",
-        setId: "session-set-bench-1",
-        weightKg: 85,
-        reps: 6,
-        pairWeightKg: null,
-        pairReps: null,
-      }),
+    await waitFor(
+      () =>
+        expect(mockUpdateWorkoutSet).toHaveBeenCalledWith({
+          sessionId: "session-routine-upper-a",
+          setId: "session-set-bench-1",
+          weightKg: 85,
+          reps: 6,
+          pairWeightKg: null,
+          pairReps: null,
+        }),
+      { timeout: 2500 },
     );
 
     await user.click(screen.getByRole("button", { name: /complete session/i }));
@@ -247,5 +306,158 @@ describe("WorkoutPage", () => {
     expect(mockCompleteSession).toHaveBeenCalledWith({
       sessionId: "session-routine-upper-a",
     });
+  });
+
+  it("shows the full superset name in the workout log header", () => {
+    render(
+      <MemoryRouter initialEntries={["/workout/routine-upper-b"]}>
+        <GainlyStoreProvider>
+          <Routes>
+            <Route path="/workout/:routineId" element={<WorkoutPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
+    );
+
+    expect(
+      screen.getByRole("button", {
+        name: /incline dumbbell curl \+ cable triceps pushdown/i,
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("preserves paired superset values when editing the primary side", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/workout/routine-upper-b"]}>
+        <GainlyStoreProvider>
+          <SeedWorkoutExerciseDescription />
+          <Routes>
+            <Route path="/workout/:routineId" element={<WorkoutPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
+    );
+
+    const supersetButton = screen.getByRole("button", {
+      name: /incline dumbbell curl \+ cable triceps pushdown/i,
+    });
+    await user.click(supersetButton);
+
+    const supersetSection = supersetButton.closest("section");
+    expect(supersetSection).not.toBeNull();
+
+    const primaryWeightInput = within(supersetSection as HTMLElement).getAllByRole("spinbutton")[0];
+    fireEvent.change(primaryWeightInput, { target: { value: "25" } });
+    fireEvent.blur(primaryWeightInput);
+
+    await waitFor(
+      () =>
+        expect(mockUpdateWorkoutSet).toHaveBeenCalledWith({
+          sessionId: "session-routine-upper-b",
+          setId: "session-set-arms-1",
+          weightKg: 25,
+          reps: 10,
+          pairWeightKg: 22.5,
+          pairReps: 12,
+        }),
+      { timeout: 2500 },
+    );
+  });
+
+  it("saves the full superset payload after rapid edits across both sides", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/workout/routine-upper-b"]}>
+        <GainlyStoreProvider>
+          <SeedWorkoutExerciseDescription />
+          <Routes>
+            <Route path="/workout/:routineId" element={<WorkoutPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
+    );
+
+    const supersetButton = screen.getByRole("button", {
+      name: /incline dumbbell curl \+ cable triceps pushdown/i,
+    });
+    await user.click(supersetButton);
+
+    const supersetSection = supersetButton.closest("section");
+    expect(supersetSection).not.toBeNull();
+
+    const [weightInput, repsInput, pairWeightInput, pairRepsInput] = within(
+      supersetSection as HTMLElement,
+    ).getAllByRole("spinbutton");
+
+    fireEvent.change(weightInput, { target: { value: "25" } });
+    fireEvent.blur(weightInput);
+    fireEvent.change(repsInput, { target: { value: "11" } });
+    fireEvent.blur(repsInput);
+    fireEvent.change(pairWeightInput, { target: { value: "30" } });
+    fireEvent.blur(pairWeightInput);
+    fireEvent.change(pairRepsInput, { target: { value: "14" } });
+    fireEvent.blur(pairRepsInput);
+
+    await waitFor(
+      () =>
+        expect(mockUpdateWorkoutSet).toHaveBeenCalledWith({
+          sessionId: "session-routine-upper-b",
+          setId: "session-set-arms-1",
+          weightKg: 25,
+          reps: 11,
+          pairWeightKg: 30,
+          pairReps: 14,
+        }),
+      { timeout: 2500 },
+    );
+  });
+
+  it("preserves primary superset values when editing the paired side", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/workout/routine-upper-b"]}>
+        <GainlyStoreProvider>
+          <SeedWorkoutExerciseDescription />
+          <Routes>
+            <Route path="/workout/:routineId" element={<WorkoutPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
+    );
+
+    const supersetButton = screen.getByRole("button", {
+      name: /incline dumbbell curl \+ cable triceps pushdown/i,
+    });
+    await user.click(supersetButton);
+
+    const supersetSection = supersetButton.closest("section");
+    expect(supersetSection).not.toBeNull();
+
+    const pairInputs = within(supersetSection as HTMLElement).getAllByRole("spinbutton");
+    const pairWeightInput = pairInputs[2];
+    const pairRepsInput = pairInputs[3];
+
+    fireEvent.change(pairWeightInput, { target: { value: "24" } });
+    fireEvent.blur(pairWeightInput);
+
+    fireEvent.change(pairRepsInput, { target: { value: "14" } });
+    fireEvent.blur(pairRepsInput);
+
+    await waitFor(
+      () =>
+        expect(mockUpdateWorkoutSet).toHaveBeenCalledWith({
+          sessionId: "session-routine-upper-b",
+          setId: "session-set-arms-1",
+          weightKg: 20,
+          reps: 10,
+          pairWeightKg: 24,
+          pairReps: 14,
+        }),
+      { timeout: 2500 },
+    );
   });
 });
