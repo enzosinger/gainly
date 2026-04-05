@@ -9,8 +9,15 @@ import {
   syncWorkoutSessionWithRoutine,
   updateWorkoutSessionSet,
 } from "./workoutSessionStructure";
+import { hydrateRoutine } from "./routineStructure";
 import { listProgressSummaries, listWeeklyRoutineSummaries } from "./routineSummary";
 import { refreshRoutineSummaryDocs } from "./routineSummary";
+import type {
+  RoutineExerciseSetStructure,
+  RoutineExerciseStructure,
+  WorkoutSessionExerciseStructure,
+  WorkoutSessionSetStructure,
+} from "./structureTypes";
 
 const workoutSetPatchValidator = v.object({
   sessionId: v.id("workoutSessions"),
@@ -27,7 +34,7 @@ function buildSessionEntityId(prefix: string, parts: string[]) {
 
 function buildSessionSet(
   routineExerciseId: string,
-  set: Doc<"routines">["exercises"][number]["sets"][number],
+  set: RoutineExerciseSetStructure,
   index: number,
 ) {
   return {
@@ -44,7 +51,7 @@ function buildSessionSet(
 }
 
 function buildSessionExercise(
-  routineExercise: Doc<"routines">["exercises"][number],
+  routineExercise: RoutineExerciseStructure,
   index: number,
 ) {
   return {
@@ -59,8 +66,8 @@ function buildSessionExercise(
 }
 
 function syncSessionSetWithRoutineSet(
-  existingSessionSet: Doc<"workoutSessions">["exercises"][number]["sets"][number],
-  routineSet: Doc<"routines">["exercises"][number]["sets"][number],
+  existingSessionSet: WorkoutSessionSetStructure,
+  routineSet: RoutineExerciseSetStructure,
 ) {
   return {
     ...existingSessionSet,
@@ -75,8 +82,8 @@ function syncSessionSetWithRoutineSet(
 }
 
 export function syncSessionWithRoutine(
-  existingExercises: Doc<"workoutSessions">["exercises"],
-  routine: Doc<"routines">,
+  existingExercises: WorkoutSessionExerciseStructure[],
+  routine: { exercises: RoutineExerciseStructure[] },
 ) {
   const sessionExercisesByRoutineId = new Map(existingExercises.map((ex) => [ex.routineExerciseId, ex]));
 
@@ -215,9 +222,10 @@ export const ensureSessionForRoutineWeek = mutation({
       .first();
 
     const routine = await requireRoutine(ctx, userId, args.routineId);
+    const hydratedRoutine = await hydrateRoutine(ctx, routine);
 
     if (existingSession) {
-      const syncedSession = await syncWorkoutSessionWithRoutine(ctx, existingSession, routine);
+      const syncedSession = await syncWorkoutSessionWithRoutine(ctx, existingSession, hydratedRoutine);
       if (syncedSession.status === "completed") {
         await refreshRoutineSummaryDocs(ctx, syncedSession);
       }
@@ -225,7 +233,7 @@ export const ensureSessionForRoutineWeek = mutation({
     }
 
     const now = Date.now();
-    return await createWorkoutSessionFromRoutine(ctx, routine, args.weekStart, now);
+    return await createWorkoutSessionFromRoutine(ctx, hydratedRoutine, args.weekStart, now);
   },
 });
 

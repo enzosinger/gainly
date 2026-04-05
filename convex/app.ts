@@ -1,6 +1,8 @@
 import { mutation, query } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { requireCurrentUserId } from "./lib";
 import { starterExercises, starterRoutines } from "./seed";
+import { writeRoutineStructure } from "./routineStructure";
 
 export const viewer = query({
   args: {},
@@ -32,7 +34,7 @@ export const ensureStarterData = mutation({
     }
 
     const now = Date.now();
-    const exerciseIdByKey = new Map<string, any>();
+    const exerciseIdByKey = new Map<string, Id<"exercises">>();
 
     for (const exercise of starterExercises) {
       const exerciseId = await ctx.db.insert("exercises", {
@@ -45,7 +47,7 @@ export const ensureStarterData = mutation({
     }
 
     for (const [index, routine] of starterRoutines.entries()) {
-      await ctx.db.insert("routines", {
+      const routineId = await ctx.db.insert("routines", {
         userId,
         name: routine.name,
         completed: routine.completed,
@@ -53,9 +55,17 @@ export const ensureStarterData = mutation({
         position: index,
         createdAt: now,
         updatedAt: now,
-        exercises: routine.exercises.map((item) => ({
+      });
+
+      await writeRoutineStructure(
+        ctx,
+        {
+          _id: routineId,
+          userId,
+        },
+        routine.exercises.map((item) => ({
           id: item.id,
-          exerciseId: exerciseIdByKey.get(item.exerciseKey),
+          exerciseId: exerciseIdByKey.get(item.exerciseKey)!,
           sets: item.sets.map((set) => ({
             id: set.id,
             technique: set.technique,
@@ -69,7 +79,7 @@ export const ensureStarterData = mutation({
             pairReps: set.pairReps,
           })),
         })),
-      });
+      );
     }
 
     return { seeded: true };

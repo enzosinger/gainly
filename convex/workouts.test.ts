@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { Doc } from "./_generated/dataModel";
 import type { Id } from "./_generated/dataModel";
+import type { RoutineExerciseStructure, WorkoutSessionExerciseStructure } from "./structureTypes";
 import { syncSessionWithRoutine } from "./workouts";
 
 describe("syncSessionWithRoutine", () => {
   it("preserves logged superset pair values when the routine template has no pair data", () => {
-    const existingExercises = [
+    const existingExercises: WorkoutSessionExerciseStructure[] = [
       {
         id: "session-exercise-1",
         routineExerciseId: "routine-exercise-1",
@@ -26,17 +26,9 @@ describe("syncSessionWithRoutine", () => {
           },
         ],
       },
-    ] as Doc<"workoutSessions">["exercises"];
+    ];
 
     const routine = {
-      _id: "routine-1" as Id<"routines">,
-      userId: "user-1" as Id<"users">,
-      name: "Test Routine",
-      completed: false,
-      deltaPercent: 0,
-      position: 0,
-      createdAt: 0,
-      updatedAt: 0,
       exercises: [
         {
           id: "routine-exercise-1",
@@ -50,7 +42,7 @@ describe("syncSessionWithRoutine", () => {
           ],
         },
       ],
-    } as Doc<"routines">;
+    } satisfies { exercises: RoutineExerciseStructure[] };
 
     const syncedExercises = syncSessionWithRoutine(existingExercises, routine);
 

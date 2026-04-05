@@ -1,5 +1,10 @@
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
+import type {
+  RoutineExerciseSetStructure,
+  RoutineExerciseStructure,
+  RoutineStructure,
+} from "./structureTypes";
 
 async function listRoutineExerciseRows(ctx: QueryCtx | MutationCtx, userId: Id<"users">, routineId: Id<"routines">) {
   return await ctx.db
@@ -19,50 +24,68 @@ async function listRoutineExerciseSetRows(
     .collect();
 }
 
-function buildRoutineExerciseMap(
+function buildRoutineExercises(
   exerciseRows: Array<Doc<"routineExercises">>,
   setRows: Array<Doc<"routineExerciseSets">>,
-) {
-  const setsByExerciseId = new Map<string, Array<Doc<"routineExerciseSets">>>();
+): RoutineStructure["exercises"] {
+  const setsByExercisePublicId = new Map<string, Array<Doc<"routineExerciseSets">>>();
 
   for (const setRow of setRows) {
-    const sets = setsByExerciseId.get(setRow.routineExercisePublicId) ?? [];
+    const sets = setsByExercisePublicId.get(setRow.routineExercisePublicId) ?? [];
     sets.push(setRow);
-    setsByExerciseId.set(setRow.routineExercisePublicId, sets);
+    setsByExercisePublicId.set(setRow.routineExercisePublicId, sets);
   }
 
-  return exerciseRows.map((exerciseRow) => ({
-    id: exerciseRow.publicId,
-    exerciseId: exerciseRow.exerciseId,
-    warmupSets: exerciseRow.warmupSets,
-    feederSets: exerciseRow.feederSets,
-    sets: (setsByExerciseId.get(exerciseRow.publicId) ?? [])
-      .slice()
-      .sort((left, right) => left.position - right.position)
-      .map((setRow) => ({
-        id: setRow.publicId,
-        technique: setRow.technique,
-        backoffPercent: setRow.backoffPercent,
-        clusterBlocks: setRow.clusterBlocks,
-        clusterRepRange: setRow.clusterRepRange,
-        pairExerciseId: setRow.pairExerciseId,
-        pairWeightKg: setRow.pairWeightKg,
-        pairReps: setRow.pairReps,
-      })),
-  }));
+  return exerciseRows
+    .slice()
+    .sort((left, right) => left.position - right.position)
+    .map((exerciseRow): RoutineExerciseStructure => ({
+      id: exerciseRow.publicId,
+      exerciseId: exerciseRow.exerciseId,
+      warmupSets: exerciseRow.warmupSets,
+      feederSets: exerciseRow.feederSets,
+      sets: (setsByExercisePublicId.get(exerciseRow.publicId) ?? [])
+        .slice()
+        .sort((left, right) => left.position - right.position)
+        .map(
+          (setRow): RoutineExerciseSetStructure => ({
+            id: setRow.publicId,
+            technique: setRow.technique,
+            backoffPercent: setRow.backoffPercent,
+            clusterBlocks: setRow.clusterBlocks,
+            clusterRepRange: setRow.clusterRepRange,
+            pairExerciseId: setRow.pairExerciseId,
+            pairWeightKg: setRow.pairWeightKg,
+            pairReps: setRow.pairReps,
+          }),
+        ),
+    }));
 }
 
-async function ensureRoutineRows(
-  ctx: MutationCtx,
-  routine: Doc<"routines">,
-): Promise<Array<Doc<"routineExercises">>> {
+async function listRoutineStructure(ctx: QueryCtx | MutationCtx, routine: Doc<"routines">) {
   const exerciseRows = await listRoutineExerciseRows(ctx, routine.userId, routine._id);
-  if (exerciseRows.length > 0) {
-    return exerciseRows;
-  }
+  const setRows = await listRoutineExerciseSetRows(ctx, routine.userId, routine._id);
+  return buildRoutineExercises(exerciseRows, setRows);
+}
 
+export async function hydrateRoutine(
+  ctx: QueryCtx | MutationCtx,
+  routine: Doc<"routines">,
+): Promise<Doc<"routines"> & RoutineStructure> {
+  return {
+    ...routine,
+    exercises: await listRoutineStructure(ctx, routine),
+  };
+}
+
+export async function writeRoutineStructure(
+  ctx: MutationCtx,
+  routine: Pick<Doc<"routines">, "_id" | "userId">,
+  exercises: RoutineStructure["exercises"],
+) {
   const now = Date.now();
-  for (const [position, exercise] of routine.exercises.entries()) {
+
+  for (const [position, exercise] of exercises.entries()) {
     await ctx.db.insert("routineExercises", {
       userId: routine.userId,
       routineId: routine._id,
@@ -94,95 +117,6 @@ async function ensureRoutineRows(
       });
     }
   }
-
-  return await listRoutineExerciseRows(ctx, routine.userId, routine._id);
-}
-
-export async function hydrateRoutine(ctx: QueryCtx | MutationCtx, routine: Doc<"routines">) {
-  const exerciseRows = await listRoutineExerciseRows(ctx, routine.userId, routine._id);
-  if (exerciseRows.length === 0) {
-    return routine;
-  }
-
-  const setRows = await listRoutineExerciseSetRows(ctx, routine.userId, routine._id);
-  return {
-    ...routine,
-    exercises: buildRoutineExerciseMap(exerciseRows, setRows),
-  };
-}
-
-export async function seedRoutineRowsFromLegacy(ctx: MutationCtx, routine: Doc<"routines">) {
-  await ensureRoutineRows(ctx, routine);
-}
-
-export async function upsertRoutineRowsFromLegacy(ctx: MutationCtx, routine: Doc<"routines">) {
-  const exerciseRows = await listRoutineExerciseRows(ctx, routine.userId, routine._id);
-  const setRows = await listRoutineExerciseSetRows(ctx, routine.userId, routine._id);
-  const exerciseRowByPublicId = new Map(exerciseRows.map((row) => [row.publicId, row]));
-  const setRowByPublicId = new Map(setRows.map((row) => [row.publicId, row]));
-  const now = Date.now();
-
-  for (const [position, exercise] of routine.exercises.entries()) {
-    const existingExerciseRow = exerciseRowByPublicId.get(exercise.id);
-
-    if (existingExerciseRow) {
-      await ctx.db.patch(existingExerciseRow._id, {
-        exerciseId: exercise.exerciseId,
-        position,
-        warmupSets: exercise.warmupSets,
-        feederSets: exercise.feederSets,
-        updatedAt: now,
-      });
-    } else {
-      await ctx.db.insert("routineExercises", {
-        userId: routine.userId,
-        routineId: routine._id,
-        publicId: exercise.id,
-        exerciseId: exercise.exerciseId,
-        position,
-        warmupSets: exercise.warmupSets,
-        feederSets: exercise.feederSets,
-        createdAt: now,
-        updatedAt: now,
-      });
-    }
-
-    for (const [setPosition, set] of exercise.sets.entries()) {
-      const existingSetRow = setRowByPublicId.get(set.id);
-
-      if (existingSetRow) {
-        await ctx.db.patch(existingSetRow._id, {
-          routineExercisePublicId: exercise.id,
-          position: setPosition,
-          technique: set.technique,
-          backoffPercent: set.backoffPercent,
-          clusterBlocks: set.clusterBlocks,
-          clusterRepRange: set.clusterRepRange,
-          pairExerciseId: set.pairExerciseId,
-          pairWeightKg: set.pairWeightKg,
-          pairReps: set.pairReps,
-          updatedAt: now,
-        });
-      } else {
-        await ctx.db.insert("routineExerciseSets", {
-          userId: routine.userId,
-          routineId: routine._id,
-          routineExercisePublicId: exercise.id,
-          publicId: set.id,
-          position: setPosition,
-          technique: set.technique,
-          backoffPercent: set.backoffPercent,
-          clusterBlocks: set.clusterBlocks,
-          clusterRepRange: set.clusterRepRange,
-          pairExerciseId: set.pairExerciseId,
-          pairWeightKg: set.pairWeightKg,
-          pairReps: set.pairReps,
-          createdAt: now,
-          updatedAt: now,
-        });
-      }
-    }
-  }
 }
 
 function buildRoutineExercisePublicId(
@@ -199,13 +133,8 @@ function buildRoutineSetPublicId(routineExerciseId: string, nextIndex: number) {
   return `${routineExerciseId}-set-${nextIndex}`;
 }
 
-async function persistRoutineFallback(ctx: MutationCtx, routine: Doc<"routines">) {
-  const hydrated = await hydrateRoutine(ctx, routine);
-  await ctx.db.patch(routine._id, {
-    exercises: hydrated.exercises,
-    updatedAt: Date.now(),
-  });
-  return hydrated;
+async function refreshRoutine(ctx: MutationCtx, routine: Doc<"routines">) {
+  return await hydrateRoutine(ctx, routine);
 }
 
 export async function addRoutineExercise(
@@ -213,7 +142,7 @@ export async function addRoutineExercise(
   routine: Doc<"routines">,
   exerciseId: Id<"exercises">,
 ) {
-  const exerciseRows = await ensureRoutineRows(ctx, routine);
+  const exerciseRows = await listRoutineExerciseRows(ctx, routine.userId, routine._id);
   const nextIndex = exerciseRows.reduce((maxPosition, exerciseRow) => Math.max(maxPosition, exerciseRow.position), -1) + 1;
   const now = Date.now();
   const routineExerciseId = buildRoutineExercisePublicId(exerciseId, nextIndex + 1);
@@ -239,7 +168,11 @@ export async function addRoutineExercise(
     updatedAt: now,
   });
 
-  return await persistRoutineFallback(ctx, routine);
+  await ctx.db.patch(routine._id, {
+    updatedAt: now,
+  });
+
+  return await refreshRoutine(ctx, { ...routine, updatedAt: now });
 }
 
 export async function addRoutineSuperset(
@@ -248,7 +181,7 @@ export async function addRoutineSuperset(
   exerciseId: Id<"exercises">,
   pairExerciseId: Id<"exercises">,
 ) {
-  const exerciseRows = await ensureRoutineRows(ctx, routine);
+  const exerciseRows = await listRoutineExerciseRows(ctx, routine.userId, routine._id);
   const nextIndex = exerciseRows.reduce((maxPosition, exerciseRow) => Math.max(maxPosition, exerciseRow.position), -1) + 1;
   const now = Date.now();
   const routineExerciseId = buildRoutineExercisePublicId(exerciseId, nextIndex + 1, pairExerciseId);
@@ -275,7 +208,11 @@ export async function addRoutineSuperset(
     updatedAt: now,
   });
 
-  return await persistRoutineFallback(ctx, routine);
+  await ctx.db.patch(routine._id, {
+    updatedAt: now,
+  });
+
+  return await refreshRoutine(ctx, { ...routine, updatedAt: now });
 }
 
 export async function addRoutineSet(
@@ -284,7 +221,7 @@ export async function addRoutineSet(
   routineExerciseId: string,
   technique?: "normal" | "backoff" | "cluster" | "superset",
 ) {
-  const exerciseRows = await ensureRoutineRows(ctx, routine);
+  const exerciseRows = await listRoutineExerciseRows(ctx, routine.userId, routine._id);
   const setRows = await listRoutineExerciseSetRows(ctx, routine.userId, routine._id);
   const targetExercise = exerciseRows.find((exerciseRow) => exerciseRow.publicId === routineExerciseId);
   if (!targetExercise) {
@@ -312,7 +249,11 @@ export async function addRoutineSet(
     updatedAt: now,
   });
 
-  return await persistRoutineFallback(ctx, routine);
+  await ctx.db.patch(routine._id, {
+    updatedAt: now,
+  });
+
+  return await refreshRoutine(ctx, { ...routine, updatedAt: now });
 }
 
 export async function removeRoutineExercise(
@@ -320,10 +261,11 @@ export async function removeRoutineExercise(
   routine: Doc<"routines">,
   routineExerciseId: string,
 ) {
-  const exerciseRows = await ensureRoutineRows(ctx, routine);
+  const now = Date.now();
+  const exerciseRows = await listRoutineExerciseRows(ctx, routine.userId, routine._id);
   const targetExercise = exerciseRows.find((exerciseRow) => exerciseRow.publicId === routineExerciseId);
   if (!targetExercise) {
-    throw new Error("Routine exercise not found.");
+    return false;
   }
 
   const setRows = await listRoutineExerciseSetRows(ctx, routine.userId, routine._id);
@@ -345,12 +287,16 @@ export async function removeRoutineExercise(
     remainingExercises.map((exerciseRow) =>
       ctx.db.patch(exerciseRow._id, {
         position: exerciseRow.position,
-        updatedAt: Date.now(),
+        updatedAt: now,
       }),
     ),
   );
 
-  return await persistRoutineFallback(ctx, routine);
+  await ctx.db.patch(routine._id, {
+    updatedAt: now,
+  });
+
+  return await refreshRoutine(ctx, { ...routine, updatedAt: now });
 }
 
 export async function removeRoutineSet(
@@ -359,8 +305,14 @@ export async function removeRoutineSet(
   routineExerciseId: string,
   setId: string,
 ) {
-  const exerciseRows = await ensureRoutineRows(ctx, routine);
-  const targetExercise = exerciseRows.find((exerciseRow) => exerciseRow.publicId === routineExerciseId);
+  const now = Date.now();
+  const targetExercise = await ctx.db
+    .query("routineExercises")
+    .withIndex("by_user_routine_publicId", (q) =>
+      q.eq("userId", routine.userId).eq("routineId", routine._id).eq("publicId", routineExerciseId),
+    )
+    .unique();
+
   if (!targetExercise) {
     throw new Error("Routine exercise not found.");
   }
@@ -388,12 +340,16 @@ export async function removeRoutineSet(
     remainingSets.map((setRow, position) =>
       ctx.db.patch(setRow._id, {
         position,
-        updatedAt: Date.now(),
+        updatedAt: now,
       }),
     ),
   );
 
-  return await persistRoutineFallback(ctx, routine);
+  await ctx.db.patch(routine._id, {
+    updatedAt: now,
+  });
+
+  return await refreshRoutine(ctx, { ...routine, updatedAt: now });
 }
 
 export async function updateRoutineWarmupSets(
@@ -402,7 +358,7 @@ export async function updateRoutineWarmupSets(
   routineExerciseId: string,
   warmupSets: number,
 ) {
-  await ensureRoutineRows(ctx, routine);
+  const now = Date.now();
   const targetExercise = await ctx.db
     .query("routineExercises")
     .withIndex("by_user_routine_publicId", (q) =>
@@ -416,10 +372,14 @@ export async function updateRoutineWarmupSets(
 
   await ctx.db.patch(targetExercise._id, {
     warmupSets,
-    updatedAt: Date.now(),
+    updatedAt: now,
   });
 
-  return await persistRoutineFallback(ctx, routine);
+  await ctx.db.patch(routine._id, {
+    updatedAt: now,
+  });
+
+  return await refreshRoutine(ctx, { ...routine, updatedAt: now });
 }
 
 export async function updateRoutineFeederSets(
@@ -428,7 +388,7 @@ export async function updateRoutineFeederSets(
   routineExerciseId: string,
   feederSets: number,
 ) {
-  await ensureRoutineRows(ctx, routine);
+  const now = Date.now();
   const targetExercise = await ctx.db
     .query("routineExercises")
     .withIndex("by_user_routine_publicId", (q) =>
@@ -442,10 +402,14 @@ export async function updateRoutineFeederSets(
 
   await ctx.db.patch(targetExercise._id, {
     feederSets,
-    updatedAt: Date.now(),
+    updatedAt: now,
   });
 
-  return await persistRoutineFallback(ctx, routine);
+  await ctx.db.patch(routine._id, {
+    updatedAt: now,
+  });
+
+  return await refreshRoutine(ctx, { ...routine, updatedAt: now });
 }
 
 export async function addRoutineTechnique(

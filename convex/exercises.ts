@@ -4,8 +4,6 @@ import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
 import { requireCurrentUserId, requireExercise } from "./lib";
 import { refreshRoutineSummaryDocs } from "./routineSummary";
-import { seedRoutineRowsFromLegacy } from "./routineStructure";
-import { seedWorkoutSessionRowsFromLegacy } from "./workoutSessionStructure";
 import { exerciseDescriptionValidator, muscleGroupValidator } from "./validators";
 
 function normalizeExerciseDescription(description?: string) {
@@ -18,23 +16,14 @@ async function removeExerciseFromRoutine(
   routine: Doc<"routines">,
   exerciseId: Id<"exercises">,
 ) {
-  let routineExerciseRows = await ctx.db
+  const routineExerciseRows = await ctx.db
     .query("routineExercises")
     .withIndex("by_user_routine_position", (q) => q.eq("userId", routine.userId).eq("routineId", routine._id))
     .collect();
 
-  if (routineExerciseRows.length === 0 && routine.exercises.some((routineExercise) => routineExercise.exerciseId === exerciseId)) {
-    await seedRoutineRowsFromLegacy(ctx, routine);
-    routineExerciseRows = await ctx.db
-      .query("routineExercises")
-      .withIndex("by_user_routine_position", (q) => q.eq("userId", routine.userId).eq("routineId", routine._id))
-      .collect();
-  }
-
   const removedRoutineExerciseRows = routineExerciseRows.filter((routineExerciseRow) => routineExerciseRow.exerciseId === exerciseId);
-  const nextRoutineExercises = routine.exercises.filter((routineExercise) => routineExercise.exerciseId !== exerciseId);
 
-  if (removedRoutineExerciseRows.length === 0 && nextRoutineExercises.length === routine.exercises.length) {
+  if (removedRoutineExerciseRows.length === 0) {
     return false;
   }
 
@@ -66,13 +55,6 @@ async function removeExerciseFromRoutine(
     );
   }
 
-  if (nextRoutineExercises.length !== routine.exercises.length) {
-    await ctx.db.patch(routine._id, {
-      exercises: nextRoutineExercises,
-      updatedAt: Date.now(),
-    });
-  }
-
   return true;
 }
 
@@ -81,23 +63,14 @@ async function removeExerciseFromSession(
   session: Doc<"workoutSessions">,
   exerciseId: Id<"exercises">,
 ) {
-  let sessionExerciseRows = await ctx.db
+  const sessionExerciseRows = await ctx.db
     .query("workoutSessionExercises")
     .withIndex("by_user_session_position", (q) => q.eq("userId", session.userId).eq("sessionId", session._id))
     .collect();
 
-  if (sessionExerciseRows.length === 0 && session.exercises.some((sessionExercise) => sessionExercise.exerciseId === exerciseId)) {
-    await seedWorkoutSessionRowsFromLegacy(ctx, session);
-    sessionExerciseRows = await ctx.db
-      .query("workoutSessionExercises")
-      .withIndex("by_user_session_position", (q) => q.eq("userId", session.userId).eq("sessionId", session._id))
-      .collect();
-  }
-
   const removedSessionExerciseRows = sessionExerciseRows.filter((sessionExerciseRow) => sessionExerciseRow.exerciseId === exerciseId);
-  const nextSessionExercises = session.exercises.filter((sessionExercise) => sessionExercise.exerciseId !== exerciseId);
 
-  if (removedSessionExerciseRows.length === 0 && nextSessionExercises.length === session.exercises.length) {
+  if (removedSessionExerciseRows.length === 0) {
     return false;
   }
 
@@ -127,13 +100,6 @@ async function removeExerciseFromSession(
         }),
       ),
     );
-  }
-
-  if (nextSessionExercises.length !== session.exercises.length) {
-    await ctx.db.patch(session._id, {
-      exercises: nextSessionExercises,
-      updatedAt: Date.now(),
-    });
   }
 
   return true;

@@ -1,11 +1,13 @@
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { refreshRoutineSummaryDocs } from "./routineSummary";
-
-type RoutineExercise = Doc<"routines">["exercises"][number];
-type RoutineExerciseSet = RoutineExercise["sets"][number];
-type WorkoutSessionExercise = Doc<"workoutSessions">["exercises"][number];
-type WorkoutSessionSet = WorkoutSessionExercise["sets"][number];
+import type {
+  RoutineExerciseSetStructure,
+  RoutineExerciseStructure,
+  WorkoutSessionExerciseStructure,
+  WorkoutSessionSetStructure,
+  WorkoutSessionStructure,
+} from "./structureTypes";
 
 function createSessionEntityId(prefix: string, parts: string[]) {
   return `${prefix}-${parts.join("-")}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -36,8 +38,9 @@ async function listWorkoutSessionSetRows(
 function buildWorkoutSessionExercises(
   exerciseRows: Array<Doc<"workoutSessionExercises">>,
   setRows: Array<Doc<"workoutSessionSets">>,
-) {
+): WorkoutSessionStructure["exercises"] {
   const setsByExercisePublicId = new Map<string, Array<Doc<"workoutSessionSets">>>();
+
   for (const setRow of setRows) {
     const sets = setsByExercisePublicId.get(setRow.sessionExercisePublicId) ?? [];
     sets.push(setRow);
@@ -47,7 +50,7 @@ function buildWorkoutSessionExercises(
   return exerciseRows
     .slice()
     .sort((left, right) => left.position - right.position)
-    .map((exerciseRow) => ({
+    .map((exerciseRow): WorkoutSessionExerciseStructure => ({
       id: exerciseRow.publicId,
       routineExerciseId: exerciseRow.routineExercisePublicId,
       exerciseId: exerciseRow.exerciseId,
@@ -57,181 +60,43 @@ function buildWorkoutSessionExercises(
       sets: (setsByExercisePublicId.get(exerciseRow.publicId) ?? [])
         .slice()
         .sort((left, right) => left.position - right.position)
-        .map((setRow) => ({
-          id: setRow.publicId,
-          templateSetId: setRow.templateSetPublicId,
-          technique: setRow.technique,
-          weightKg: setRow.weightKg,
-          reps: setRow.reps,
-          backoffPercent: setRow.backoffPercent,
-          clusterBlocks: setRow.clusterBlocks,
-          clusterRepRange: setRow.clusterRepRange,
-          pairExerciseId: setRow.pairExerciseId,
-          pairWeightKg: setRow.pairWeightKg,
-          pairReps: setRow.pairReps,
-        })),
+        .map(
+          (setRow): WorkoutSessionSetStructure => ({
+            id: setRow.publicId,
+            templateSetId: setRow.templateSetPublicId,
+            technique: setRow.technique,
+            weightKg: setRow.weightKg,
+            reps: setRow.reps,
+            backoffPercent: setRow.backoffPercent,
+            clusterBlocks: setRow.clusterBlocks,
+            clusterRepRange: setRow.clusterRepRange,
+            pairExerciseId: setRow.pairExerciseId,
+            pairWeightKg: setRow.pairWeightKg,
+            pairReps: setRow.pairReps,
+          }),
+        ),
     }));
 }
 
-async function ensureSessionRowsFromLegacy(ctx: MutationCtx, session: Doc<"workoutSessions">) {
+async function listWorkoutSessionStructure(ctx: QueryCtx | MutationCtx, session: Doc<"workoutSessions">) {
   const exerciseRows = await listWorkoutSessionExerciseRows(ctx, session.userId, session._id);
-  if (exerciseRows.length > 0) {
-    return exerciseRows;
-  }
-
-  const now = Date.now();
-  for (const [position, exercise] of session.exercises.entries()) {
-    await ctx.db.insert("workoutSessionExercises", {
-      userId: session.userId,
-      sessionId: session._id,
-      routineId: session.routineId,
-      publicId: exercise.id,
-      routineExercisePublicId: exercise.routineExerciseId,
-      exerciseId: exercise.exerciseId,
-      position,
-      warmupSets: exercise.warmupSets,
-      feederSets: exercise.feederSets,
-      createdAt: now,
-      updatedAt: now,
-    });
-
-    for (const [setPosition, set] of exercise.sets.entries()) {
-      await ctx.db.insert("workoutSessionSets", {
-        userId: session.userId,
-        sessionId: session._id,
-        sessionExercisePublicId: exercise.id,
-        routineExercisePublicId: exercise.routineExerciseId,
-        publicId: set.id,
-        templateSetPublicId: set.templateSetId,
-        position: setPosition,
-        technique: set.technique,
-        weightKg: set.weightKg,
-        reps: set.reps,
-        backoffPercent: set.backoffPercent,
-        clusterBlocks: set.clusterBlocks,
-        clusterRepRange: set.clusterRepRange,
-        pairExerciseId: set.pairExerciseId,
-        pairWeightKg: set.pairWeightKg,
-        pairReps: set.pairReps,
-        createdAt: now,
-        updatedAt: now,
-      });
-    }
-  }
-
-  return await listWorkoutSessionExerciseRows(ctx, session.userId, session._id);
-}
-
-async function persistWorkoutSessionFallback(ctx: MutationCtx, session: Doc<"workoutSessions">) {
-  const hydrated = await hydrateWorkoutSession(ctx, session);
-  await ctx.db.patch(session._id, {
-    exercises: hydrated.exercises,
-    updatedAt: Date.now(),
-  });
-  return hydrated;
-}
-
-export async function hydrateWorkoutSession(ctx: QueryCtx | MutationCtx, session: Doc<"workoutSessions">) {
-  const exerciseRows = await listWorkoutSessionExerciseRows(ctx, session.userId, session._id);
-  if (exerciseRows.length === 0) {
-    return session;
-  }
-
   const setRows = await listWorkoutSessionSetRows(ctx, session.userId, session._id);
+  return buildWorkoutSessionExercises(exerciseRows, setRows);
+}
+
+export async function hydrateWorkoutSession(
+  ctx: QueryCtx | MutationCtx,
+  session: Doc<"workoutSessions">,
+): Promise<Doc<"workoutSessions"> & WorkoutSessionStructure> {
   return {
     ...session,
-    exercises: buildWorkoutSessionExercises(exerciseRows, setRows),
+    exercises: await listWorkoutSessionStructure(ctx, session),
   };
-}
-
-export async function seedWorkoutSessionRowsFromLegacy(ctx: MutationCtx, session: Doc<"workoutSessions">) {
-  await ensureSessionRowsFromLegacy(ctx, session);
-}
-
-export async function upsertWorkoutSessionRowsFromLegacy(ctx: MutationCtx, session: Doc<"workoutSessions">) {
-  const exerciseRows = await listWorkoutSessionExerciseRows(ctx, session.userId, session._id);
-  const setRows = await listWorkoutSessionSetRows(ctx, session.userId, session._id);
-  const exerciseRowByPublicId = new Map(exerciseRows.map((row) => [row.publicId, row]));
-  const setRowByPublicId = new Map(setRows.map((row) => [row.publicId, row]));
-  const now = Date.now();
-
-  for (const [position, exercise] of session.exercises.entries()) {
-    const existingExerciseRow = exerciseRowByPublicId.get(exercise.id);
-
-    if (existingExerciseRow) {
-      await ctx.db.patch(existingExerciseRow._id, {
-        routineExercisePublicId: exercise.routineExerciseId,
-        exerciseId: exercise.exerciseId,
-        position,
-        warmupSets: exercise.warmupSets,
-        feederSets: exercise.feederSets,
-        updatedAt: now,
-      });
-    } else {
-      await ctx.db.insert("workoutSessionExercises", {
-        userId: session.userId,
-        sessionId: session._id,
-        routineId: session.routineId,
-        publicId: exercise.id,
-        routineExercisePublicId: exercise.routineExerciseId,
-        exerciseId: exercise.exerciseId,
-        position,
-        warmupSets: exercise.warmupSets,
-        feederSets: exercise.feederSets,
-        createdAt: now,
-        updatedAt: now,
-      });
-    }
-
-    for (const [setPosition, set] of exercise.sets.entries()) {
-      const existingSetRow = setRowByPublicId.get(set.id);
-
-      if (existingSetRow) {
-        await ctx.db.patch(existingSetRow._id, {
-          sessionExercisePublicId: exercise.id,
-          routineExercisePublicId: exercise.routineExerciseId,
-          templateSetPublicId: set.templateSetId,
-          position: setPosition,
-          technique: set.technique,
-          weightKg: set.weightKg,
-          reps: set.reps,
-          backoffPercent: set.backoffPercent,
-          clusterBlocks: set.clusterBlocks,
-          clusterRepRange: set.clusterRepRange,
-          pairExerciseId: set.pairExerciseId,
-          pairWeightKg: set.pairWeightKg,
-          pairReps: set.pairReps,
-          updatedAt: now,
-        });
-      } else {
-        await ctx.db.insert("workoutSessionSets", {
-          userId: session.userId,
-          sessionId: session._id,
-          sessionExercisePublicId: exercise.id,
-          routineExercisePublicId: exercise.routineExerciseId,
-          publicId: set.id,
-          templateSetPublicId: set.templateSetId,
-          position: setPosition,
-          technique: set.technique,
-          weightKg: set.weightKg,
-          reps: set.reps,
-          backoffPercent: set.backoffPercent,
-          clusterBlocks: set.clusterBlocks,
-          clusterRepRange: set.clusterRepRange,
-          pairExerciseId: set.pairExerciseId,
-          pairWeightKg: set.pairWeightKg,
-          pairReps: set.pairReps,
-          createdAt: now,
-          updatedAt: now,
-        });
-      }
-    }
-  }
 }
 
 function buildWorkoutSessionSet(
   routineExerciseId: string,
-  set: RoutineExerciseSet,
+  set: RoutineExerciseSetStructure,
   index: number,
 ) {
   return {
@@ -247,7 +112,7 @@ function buildWorkoutSessionSet(
   };
 }
 
-function buildWorkoutSessionExercise(routineExercise: RoutineExercise, index: number) {
+function buildWorkoutSessionExercise(routineExercise: RoutineExerciseStructure, index: number) {
   return {
     id: createSessionEntityId("session-exercise", [routineExercise.id, String(index + 1)]),
     routineExerciseId: routineExercise.id,
@@ -261,7 +126,7 @@ function buildWorkoutSessionExercise(routineExercise: RoutineExercise, index: nu
 
 export async function createWorkoutSessionFromRoutine(
   ctx: MutationCtx,
-  routine: Doc<"routines">,
+  routine: Doc<"routines"> & { exercises: RoutineExerciseStructure[] },
   weekStart: number,
   now: number,
 ) {
@@ -272,7 +137,6 @@ export async function createWorkoutSessionFromRoutine(
     startedAt: now,
     updatedAt: now,
     weekStart,
-    exercises: [],
   });
 
   for (const [position, routineExercise] of routine.exercises.entries()) {
@@ -318,20 +182,19 @@ export async function createWorkoutSessionFromRoutine(
     throw new Error("Workout session could not be created.");
   }
 
-  return await persistWorkoutSessionFallback(ctx, session);
+  return await hydrateWorkoutSession(ctx, session);
 }
 
 export async function syncWorkoutSessionWithRoutine(
   ctx: MutationCtx,
   session: Doc<"workoutSessions">,
-  routine: Doc<"routines">,
+  routine: Doc<"routines"> & { exercises: RoutineExerciseStructure[] },
 ) {
-  const exerciseRows = await ensureSessionRowsFromLegacy(ctx, session);
+  const exerciseRows = await listWorkoutSessionExerciseRows(ctx, session.userId, session._id);
   const setRows = await listWorkoutSessionSetRows(ctx, session.userId, session._id);
   const exerciseRowsByRoutineExerciseId = new Map(exerciseRows.map((row) => [row.routineExercisePublicId, row]));
   const setRowsByTemplateSetId = new Map(setRows.map((row) => [row.templateSetPublicId, row]));
   const keptExerciseIds = new Set<string>();
-  const nextExercises: WorkoutSessionExercise[] = [];
   const now = Date.now();
 
   for (const [position, routineExercise] of routine.exercises.entries()) {
@@ -365,25 +228,9 @@ export async function syncWorkoutSessionWithRoutine(
       });
     }
 
-    const nextSets: WorkoutSessionSet[] = [];
     for (const [setPosition, routineSet] of routineExercise.sets.entries()) {
       const existingSetRow = setRowsByTemplateSetId.get(routineSet.id);
       const sessionSetPublicId = existingSetRow?.publicId ?? createSessionEntityId("session-set", [routineExercise.id, String(setPosition + 1)]);
-      const nextSet = {
-        id: sessionSetPublicId,
-        templateSetId: routineSet.id,
-        technique: routineSet.technique,
-        weightKg: existingSetRow?.weightKg,
-        reps: existingSetRow?.reps,
-        backoffPercent: routineSet.backoffPercent,
-        clusterBlocks: routineSet.clusterBlocks,
-        clusterRepRange: routineSet.clusterRepRange,
-        pairExerciseId: routineSet.pairExerciseId,
-        pairWeightKg: existingSetRow?.pairWeightKg ?? routineSet.pairWeightKg,
-        pairReps: existingSetRow?.pairReps ?? routineSet.pairReps,
-      };
-
-      nextSets.push(nextSet);
 
       if (existingSetRow) {
         await ctx.db.patch(existingSetRow._id, {
@@ -424,16 +271,6 @@ export async function syncWorkoutSessionWithRoutine(
         !nextTemplateSetIds.has(setRow.templateSetPublicId),
     );
     await Promise.all(removedSetRows.map((setRow) => ctx.db.delete(setRow._id)));
-
-    nextExercises.push({
-      id: sessionExercisePublicId,
-      routineExerciseId: routineExercise.id,
-      exerciseId: routineExercise.exerciseId,
-      position,
-      sets: nextSets,
-      warmupSets: routineExercise.warmupSets,
-      feederSets: routineExercise.feederSets,
-    });
   }
 
   const removedExerciseRows = exerciseRows.filter((row) => !keptExerciseIds.has(row.publicId));
@@ -446,7 +283,6 @@ export async function syncWorkoutSessionWithRoutine(
   );
 
   await ctx.db.patch(session._id, {
-    exercises: nextExercises,
     updatedAt: now,
   });
 
@@ -469,7 +305,6 @@ export async function updateWorkoutSessionSet(
     pairReps?: number | null;
   },
 ) {
-  await ensureSessionRowsFromLegacy(ctx, session);
   const targetSet = await ctx.db
     .query("workoutSessionSets")
     .withIndex("by_user_session_publicId", (q) =>
@@ -495,12 +330,22 @@ export async function updateWorkoutSessionSet(
     patchFields.pairReps = patch.pairReps ?? undefined;
   }
 
+  const now = Date.now();
   await ctx.db.patch(targetSet._id, {
     ...patchFields,
-    updatedAt: Date.now(),
+    updatedAt: now,
   });
 
-  return await persistWorkoutSessionFallback(ctx, session);
+  await ctx.db.patch(session._id, {
+    updatedAt: now,
+  });
+
+  const refreshedSession = await ctx.db.get(session._id);
+  if (!refreshedSession) {
+    throw new Error("Workout session not found.");
+  }
+
+  return await hydrateWorkoutSession(ctx, refreshedSession);
 }
 
 export async function completeWorkoutSession(
@@ -508,7 +353,7 @@ export async function completeWorkoutSession(
   session: Doc<"workoutSessions">,
 ) {
   if (session.status === "completed") {
-    return session;
+    return await hydrateWorkoutSession(ctx, session);
   }
 
   const now = Date.now();

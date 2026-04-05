@@ -1,9 +1,7 @@
 import { paginationOptsValidator } from "convex/server";
-import { internalMutation } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
+import { internalMutation } from "./_generated/server";
 import { refreshRoutineSummaryDocs } from "./routineSummary";
-import { upsertRoutineRowsFromLegacy } from "./routineStructure";
-import { upsertWorkoutSessionRowsFromLegacy } from "./workoutSessionStructure";
 
 function getMondayWeekStart(timestamp: number) {
   const date = new Date(timestamp);
@@ -12,6 +10,11 @@ function getMondayWeekStart(timestamp: number) {
   date.setHours(0, 0, 0, 0);
   date.setDate(date.getDate() - mondayOffset);
   return date.getTime();
+}
+
+function stripLegacyExercises<T extends { _id: unknown; _creationTime: unknown; exercises?: unknown }>(doc: T) {
+  const { _id, _creationTime, exercises: _legacyExercises, ...rest } = doc;
+  return rest;
 }
 
 export const backfillWeekStart = internalMutation({
@@ -35,42 +38,52 @@ export const backfillWeekStart = internalMutation({
   },
 });
 
-export const backfillNormalizedRoutines = internalMutation({
+export const cleanupLegacyRoutineEmbeds = internalMutation({
   args: {
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
     const page = await ctx.db.query("routines").paginate(args.paginationOpts);
-    let processed = 0;
+    let cleaned = 0;
 
     for (const routine of page.page) {
-      await upsertRoutineRowsFromLegacy(ctx, routine);
-      processed++;
+      if (!("exercises" in routine)) {
+        continue;
+      }
+
+      await ctx.db.replace(routine._id, stripLegacyExercises(routine as Doc<"routines"> & { exercises: unknown }));
+      cleaned++;
     }
 
     return {
-      processed,
+      processed: page.page.length,
+      cleaned,
       isDone: page.isDone,
       continueCursor: page.continueCursor,
     };
   },
 });
 
-export const backfillNormalizedWorkoutSessions = internalMutation({
+export const cleanupLegacyWorkoutSessionEmbeds = internalMutation({
   args: {
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
     const page = await ctx.db.query("workoutSessions").paginate(args.paginationOpts);
-    let processed = 0;
+    let cleaned = 0;
 
     for (const session of page.page) {
-      await upsertWorkoutSessionRowsFromLegacy(ctx, session);
-      processed++;
+      if (!("exercises" in session)) {
+        continue;
+      }
+
+      await ctx.db.replace(session._id, stripLegacyExercises(session as Doc<"workoutSessions"> & { exercises: unknown }));
+      cleaned++;
     }
 
     return {
-      processed,
+      processed: page.page.length,
+      cleaned,
       isDone: page.isDone,
       continueCursor: page.continueCursor,
     };

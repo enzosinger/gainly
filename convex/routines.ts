@@ -13,6 +13,7 @@ import {
   removeRoutineSet,
   updateRoutineFeederSets,
   updateRoutineWarmupSets,
+  writeRoutineStructure,
 } from "./routineStructure";
 import { deleteRoutineSummaries } from "./routineSummary";
 
@@ -43,10 +44,15 @@ export const create = mutation({
       position,
       createdAt: now,
       updatedAt: now,
-      exercises: [],
     });
 
-    return await ctx.db.get(routineId);
+    const routine = await ctx.db.get(routineId);
+    if (!routine) {
+      throw new Error("Routine could not be created.");
+    }
+
+    await writeRoutineStructure(ctx, routine, []);
+    return await hydrateRoutine(ctx, routine);
   },
 });
 
