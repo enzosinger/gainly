@@ -38,3 +38,17 @@ export async function requireExercise(
 
   return exercise;
 }
+
+export async function requireWorkoutSession(
+  ctx: QueryCtx | MutationCtx,
+  userId: Id<"users">,
+  sessionId: Id<"workoutSessions">,
+): Promise<Doc<"workoutSessions">> {
+  const session = await ctx.db.get(sessionId);
+
+  if (!session || session.userId !== userId) {
+    throw new Error("Workout session not found.");
+  }
+
+  return session;
+}

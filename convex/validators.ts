@@ -64,3 +64,91 @@ export const routineExerciseValidator = v.object({
   warmupSets: v.optional(v.number()),
   feederSets: v.optional(v.number()),
 });
+
+export const routineExerciseRowValidator = v.object({
+  userId: v.id("users"),
+  routineId: v.id("routines"),
+  publicId: v.string(),
+  exerciseId: v.id("exercises"),
+  position: v.number(),
+  warmupSets: v.optional(v.number()),
+  feederSets: v.optional(v.number()),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+});
+
+export const routineExerciseSetRowValidator = v.object({
+  userId: v.id("users"),
+  routineId: v.id("routines"),
+  routineExercisePublicId: v.string(),
+  publicId: v.string(),
+  position: v.number(),
+  technique: techniqueTypeValidator,
+  backoffPercent: v.optional(v.number()),
+  clusterBlocks: v.optional(v.number()),
+  clusterRepRange: v.optional(v.string()),
+  pairExerciseId: v.optional(v.id("exercises")),
+  pairWeightKg: v.optional(v.number()),
+  pairReps: v.optional(v.number()),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+});
+
+export const workoutSessionExerciseRowValidator = v.object({
+  userId: v.id("users"),
+  sessionId: v.id("workoutSessions"),
+  routineId: v.id("routines"),
+  publicId: v.string(),
+  routineExercisePublicId: v.string(),
+  exerciseId: v.id("exercises"),
+  position: v.number(),
+  warmupSets: v.optional(v.number()),
+  feederSets: v.optional(v.number()),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+});
+
+export const workoutSessionSetRowValidator = v.object({
+  userId: v.id("users"),
+  sessionId: v.id("workoutSessions"),
+  sessionExercisePublicId: v.string(),
+  routineExercisePublicId: v.string(),
+  publicId: v.string(),
+  templateSetPublicId: v.string(),
+  position: v.number(),
+  technique: techniqueTypeValidator,
+  weightKg: v.optional(v.number()),
+  reps: v.optional(v.number()),
+  backoffPercent: v.optional(v.number()),
+  clusterBlocks: v.optional(v.number()),
+  clusterRepRange: v.optional(v.string()),
+  pairExerciseId: v.optional(v.id("exercises")),
+  pairWeightKg: v.optional(v.number()),
+  pairReps: v.optional(v.number()),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+});
+
+export const routineWeekSummaryValidator = v.object({
+  userId: v.id("users"),
+  routineId: v.id("routines"),
+  weekStart: v.number(),
+  completed: v.boolean(),
+  hasHistory: v.boolean(),
+  deltaPercent: v.number(),
+  lastCompletedAt: v.optional(v.number()),
+  latestScore: v.number(),
+  previousScore: v.number(),
+  updatedAt: v.number(),
+});
+
+export const routineProgressSummaryValidator = v.object({
+  userId: v.id("users"),
+  routineId: v.id("routines"),
+  hasHistory: v.boolean(),
+  deltaPercent: v.number(),
+  lastCompletedAt: v.optional(v.number()),
+  latestCompletedSessionId: v.optional(v.id("workoutSessions")),
+  previousCompletedSessionId: v.optional(v.id("workoutSessions")),
+  updatedAt: v.number(),
+});

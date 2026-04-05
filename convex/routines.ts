@@ -1,27 +1,20 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
+import type { MutationCtx } from "./_generated/server";
 import { requireCurrentUserId, requireExercise, requireRoutine } from "./lib";
-
-function buildNextSetForRoutineExercise(routineExercise: {
-  id: string;
-  sets: Array<{ technique: "normal" | "backoff" | "cluster" | "superset"; pairExerciseId?: Id<"exercises"> }>;
-}) {
-  const supersetSet = routineExercise.sets.find((set) => set.technique === "superset" && set.pairExerciseId);
-
-  if (supersetSet) {
-    return {
-      id: `${routineExercise.id}-set-${routineExercise.sets.length + 1}`,
-      technique: "superset" as const,
-      pairExerciseId: supersetSet.pairExerciseId,
-    };
-  }
-
-  return {
-    id: `${routineExercise.id}-set-${routineExercise.sets.length + 1}`,
-    technique: "normal" as const,
-  };
-}
+import {
+  addRoutineExercise,
+  addRoutineSet,
+  addRoutineSuperset,
+  addRoutineTechnique,
+  hydrateRoutine,
+  removeRoutineExercise,
+  removeRoutineSet,
+  updateRoutineFeederSets,
+  updateRoutineWarmupSets,
+} from "./routineStructure";
+import { deleteRoutineSummaries } from "./routineSummary";
 
 export const create = mutation({
   args: {
@@ -61,11 +54,12 @@ export const list = query({
   args: {},
   handler: async (ctx) => {
     const userId = await requireCurrentUserId(ctx);
-
-    return await ctx.db
+    const routines = await ctx.db
       .query("routines")
       .withIndex("by_user_position", (q) => q.eq("userId", userId))
       .collect();
+
+    return await Promise.all(routines.map((routine) => hydrateRoutine(ctx, routine)));
   },
 });
 
@@ -97,6 +91,40 @@ export const reorder = mutation({
   },
 });
 
+async function deleteRoutineRows(ctx: MutationCtx, userId: Id<"users">, routineId: Id<"routines">) {
+  const routineExercises = await ctx.db
+    .query("routineExercises")
+    .withIndex("by_user_routine_position", (q) => q.eq("userId", userId).eq("routineId", routineId))
+    .collect();
+  const routineExerciseSets = await ctx.db
+    .query("routineExerciseSets")
+    .withIndex("by_user_routine_position", (q) => q.eq("userId", userId).eq("routineId", routineId))
+    .collect();
+  const sessions = await ctx.db
+    .query("workoutSessions")
+    .withIndex("by_user_routine_weekStart", (q) => q.eq("userId", userId).eq("routineId", routineId))
+    .collect();
+
+  for (const session of sessions) {
+    const sessionExercises = await ctx.db
+      .query("workoutSessionExercises")
+      .withIndex("by_user_session_position", (q) => q.eq("userId", userId).eq("sessionId", session._id))
+      .collect();
+    const sessionSets = await ctx.db
+      .query("workoutSessionSets")
+      .withIndex("by_user_session_publicId", (q) => q.eq("userId", userId).eq("sessionId", session._id))
+      .collect();
+
+    await Promise.all(sessionSets.map((set) => ctx.db.delete(set._id)));
+    await Promise.all(sessionExercises.map((exercise) => ctx.db.delete(exercise._id)));
+    await ctx.db.delete(session._id);
+  }
+
+  await Promise.all(routineExerciseSets.map((set) => ctx.db.delete(set._id)));
+  await Promise.all(routineExercises.map((exercise) => ctx.db.delete(exercise._id)));
+  await deleteRoutineSummaries(ctx, userId, routineId);
+}
+
 export const remove = mutation({
   args: {
     routineId: v.id("routines"),
@@ -105,14 +133,7 @@ export const remove = mutation({
     const userId = await requireCurrentUserId(ctx);
     await requireRoutine(ctx, userId, args.routineId);
 
-    const sessions = await ctx.db
-      .query("workoutSessions")
-      .withIndex("by_user_routine_weekStart", (q) =>
-        q.eq("userId", userId).eq("routineId", args.routineId),
-      )
-      .collect();
-
-    await Promise.all(sessions.map((session) => ctx.db.delete(session._id)));
+    await deleteRoutineRows(ctx, userId, args.routineId);
     await ctx.db.delete(args.routineId);
   },
 });
@@ -127,20 +148,7 @@ export const addExercise = mutation({
     const routine = await requireRoutine(ctx, userId, args.routineId);
     await requireExercise(ctx, userId, args.exerciseId);
 
-    const nextIndex = routine.exercises.length + 1;
-    const nextExercises: typeof routine.exercises = [
-      ...routine.exercises,
-      {
-        id: `routine-item-${String(args.exerciseId)}-${nextIndex}`,
-        exerciseId: args.exerciseId,
-        sets: [{ id: `set-${String(args.exerciseId)}-${nextIndex}-1`, technique: "normal" }],
-      },
-    ];
-
-    await ctx.db.patch(routine._id, {
-      exercises: nextExercises,
-      updatedAt: Date.now(),
-    });
+    return await addRoutineExercise(ctx, routine, args.exerciseId);
   },
 });
 
@@ -152,21 +160,7 @@ export const addSet = mutation({
   handler: async (ctx, args) => {
     const userId = await requireCurrentUserId(ctx);
     const routine = await requireRoutine(ctx, userId, args.routineId);
-    const nextExercises: typeof routine.exercises = routine.exercises.map((routineExercise) => {
-      if (routineExercise.id !== args.routineExerciseId) {
-        return routineExercise;
-      }
-
-      return {
-        ...routineExercise,
-        sets: [...routineExercise.sets, buildNextSetForRoutineExercise(routineExercise)],
-      };
-    });
-
-    await ctx.db.patch(routine._id, {
-      exercises: nextExercises,
-      updatedAt: Date.now(),
-    });
+    return await addRoutineSet(ctx, routine, args.routineExerciseId);
   },
 });
 
@@ -179,28 +173,7 @@ export const addTechnique = mutation({
   handler: async (ctx, args) => {
     const userId = await requireCurrentUserId(ctx);
     const routine = await requireRoutine(ctx, userId, args.routineId);
-    const nextExercises: typeof routine.exercises = routine.exercises.map((routineExercise) => {
-      if (routineExercise.id !== args.routineExerciseId) {
-        return routineExercise;
-      }
-
-      const nextSetIndex = routineExercise.sets.length + 1;
-      return {
-        ...routineExercise,
-        sets: [
-          ...routineExercise.sets,
-          {
-            id: `${routineExercise.id}-set-${nextSetIndex}`,
-            technique: args.technique,
-          },
-        ],
-      };
-    });
-
-    await ctx.db.patch(routine._id, {
-      exercises: nextExercises,
-      updatedAt: Date.now(),
-    });
+    return await addRoutineTechnique(ctx, routine, args.routineExerciseId, args.technique);
   },
 });
 
@@ -221,26 +194,7 @@ export const addSuperset = mutation({
     await requireExercise(ctx, userId, args.exerciseId);
     await requireExercise(ctx, userId, args.pairExerciseId);
 
-    const nextIndex = routine.exercises.length + 1;
-    const nextExercises: typeof routine.exercises = [
-      ...routine.exercises,
-      {
-        id: `routine-item-${String(args.exerciseId)}-${String(args.pairExerciseId)}-${nextIndex}`,
-        exerciseId: args.exerciseId,
-        sets: [
-          {
-            id: `set-${String(args.exerciseId)}-${String(args.pairExerciseId)}-${nextIndex}-1`,
-            technique: "superset",
-            pairExerciseId: args.pairExerciseId,
-          },
-        ],
-      },
-    ];
-
-    await ctx.db.patch(routine._id, {
-      exercises: nextExercises,
-      updatedAt: Date.now(),
-    });
+    return await addRoutineSuperset(ctx, routine, args.exerciseId, args.pairExerciseId);
   },
 });
 
@@ -252,11 +206,7 @@ export const removeExercise = mutation({
   handler: async (ctx, args) => {
     const userId = await requireCurrentUserId(ctx);
     const routine = await requireRoutine(ctx, userId, args.routineId);
-
-    await ctx.db.patch(routine._id, {
-      exercises: routine.exercises.filter((routineExercise) => routineExercise.id !== args.routineExerciseId),
-      updatedAt: Date.now(),
-    });
+    return await removeRoutineExercise(ctx, routine, args.routineExerciseId);
   },
 });
 
@@ -269,22 +219,7 @@ export const removeSet = mutation({
   handler: async (ctx, args) => {
     const userId = await requireCurrentUserId(ctx);
     const routine = await requireRoutine(ctx, userId, args.routineId);
-
-    const nextExercises = routine.exercises.map((routineExercise) => {
-      if (routineExercise.id !== args.routineExerciseId) {
-        return routineExercise;
-      }
-
-      return {
-        ...routineExercise,
-        sets: routineExercise.sets.filter((set) => set.id !== args.setId),
-      };
-    });
-
-    await ctx.db.patch(routine._id, {
-      exercises: nextExercises,
-      updatedAt: Date.now(),
-    });
+    return await removeRoutineSet(ctx, routine, args.routineExerciseId, args.setId);
   },
 });
 
@@ -297,13 +232,7 @@ export const updateWarmupSets = mutation({
   handler: async (ctx, args) => {
     const userId = await requireCurrentUserId(ctx);
     const routine = await requireRoutine(ctx, userId, args.routineId);
-    const nextExercises = routine.exercises.map((ex) => {
-      if (ex.id === args.routineExerciseId) {
-        return { ...ex, warmupSets: args.warmupSets };
-      }
-      return ex;
-    });
-    await ctx.db.patch(args.routineId, { exercises: nextExercises, updatedAt: Date.now() });
+    return await updateRoutineWarmupSets(ctx, routine, args.routineExerciseId, args.warmupSets);
   },
 });
 
@@ -316,12 +245,6 @@ export const updateFeederSets = mutation({
   handler: async (ctx, args) => {
     const userId = await requireCurrentUserId(ctx);
     const routine = await requireRoutine(ctx, userId, args.routineId);
-    const nextExercises = routine.exercises.map((ex) => {
-      if (ex.id === args.routineExerciseId) {
-        return { ...ex, feederSets: args.feederSets };
-      }
-      return ex;
-    });
-    await ctx.db.patch(args.routineId, { exercises: nextExercises, updatedAt: Date.now() });
+    return await updateRoutineFeederSets(ctx, routine, args.routineExerciseId, args.feederSets);
   },
 });

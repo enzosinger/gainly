@@ -14,9 +14,12 @@ import type * as exercises from "../exercises.js";
 import type * as http from "../http.js";
 import type * as lib from "../lib.js";
 import type * as migrations from "../migrations.js";
+import type * as routineStructure from "../routineStructure.js";
+import type * as routineSummary from "../routineSummary.js";
 import type * as routines from "../routines.js";
 import type * as seed from "../seed.js";
 import type * as validators from "../validators.js";
+import type * as workoutSessionStructure from "../workoutSessionStructure.js";
 import type * as workouts from "../workouts.js";
 
 import type {
@@ -32,9 +35,12 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   lib: typeof lib;
   migrations: typeof migrations;
+  routineStructure: typeof routineStructure;
+  routineSummary: typeof routineSummary;
   routines: typeof routines;
   seed: typeof seed;
   validators: typeof validators;
+  workoutSessionStructure: typeof workoutSessionStructure;
   workouts: typeof workouts;
 }>;
 
