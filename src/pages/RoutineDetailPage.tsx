@@ -5,6 +5,7 @@ import RoutineExerciseEditor from "../components/organisms/routine-builder/Routi
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Select } from "../components/ui/select";
+import { Skeleton } from "../components/ui/skeleton";
 import { useGainlyStore } from "../state/gainly-store";
 import { useLanguage } from "../i18n/LanguageProvider";
 
@@ -12,6 +13,7 @@ export default function RoutineDetailPage() {
   const {
     routines,
     exercises,
+    isLoading,
     addSetToRoutineExercise,
     removeSetFromRoutineExercise,
     removeExerciseFromRoutine,
@@ -24,6 +26,43 @@ export default function RoutineDetailPage() {
   const navigate = useNavigate();
   const routine = useMemo(() => routines.find((item) => item.id === routineId) ?? null, [routineId, routines]);
   const exercisesById = useMemo(() => new Map(exercises.map((exercise) => [exercise.id, exercise])), [exercises]);
+
+  if (isLoading) {
+    return (
+      <section className="space-y-6 md:space-y-8" aria-busy="true">
+        <header className="space-y-4">
+          <div className="space-y-2">
+            <p className="eyebrow">{copy.routineDetail.eyebrow}</p>
+            <h1 className="screen-title">{copy.app.loading}</h1>
+            <p className="max-w-2xl text-sm text-[hsl(var(--muted-foreground))] md:text-base">
+              {copy.routineDetail.description}
+            </p>
+          </div>
+          <Skeleton className="h-11 w-full max-w-xs rounded-md" />
+        </header>
+
+        <div className="space-y-4">
+          <Card role="status" aria-label={copy.app.loading}>
+            <CardContent className="space-y-4 p-6">
+              <Skeleton className="h-4 w-44" />
+              <Skeleton className="h-9 w-64" />
+              <Skeleton className="h-4 w-80" />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="space-y-3 p-6">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-24 w-full rounded-2xl" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+    );
+  }
 
   if (!routine) {
     return (

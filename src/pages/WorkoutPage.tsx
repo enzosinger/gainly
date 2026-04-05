@@ -6,12 +6,14 @@ import type { Id } from "../../convex/_generated/dataModel";
 import WeekStrip from "../components/organisms/dashboard/WeekStrip";
 import ExerciseAccordion from "../components/organisms/logger/ExerciseAccordion";
 import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { Skeleton } from "../components/ui/skeleton";
 import { useGainlyStore } from "../state/gainly-store";
 import { getMondayWeekStart, getWeekWindow, shiftWeekWindowStart } from "../lib/week";
 import { useLanguage } from "../i18n/LanguageProvider";
 
 export default function WorkoutPage() {
-  const { routines, exercises } = useGainlyStore();
+  const { routines, exercises, isLoading } = useGainlyStore();
   const { copy, locale } = useLanguage();
   const { routineId } = useParams();
   const navigate = useNavigate();
@@ -41,6 +43,18 @@ export default function WorkoutPage() {
       : "skip",
   );
   const requestedRoutineIdRef = useRef<string | null>(null);
+  const weekNavigation = (
+    <WeekStrip
+      weekLabel={weekWindow.label}
+      onPreviousWeek={() => {
+        setSearchParams({ weekStart: String(shiftWeekWindowStart(weekWindow.start, -1)) });
+      }}
+      onNextWeek={() => {
+        setSearchParams({ weekStart: String(shiftWeekWindowStart(weekWindow.start, 1)) });
+      }}
+      canGoNext={weekWindow.start < currentWeekStart}
+    />
+  );
 
   const routineUpdatedAt = workoutRoutine?.updatedAt;
 
@@ -104,18 +118,30 @@ export default function WorkoutPage() {
     [weekHistory],
   );
 
-  const weekNavigation = (
-    <WeekStrip
-      weekLabel={weekWindow.label}
-      onPreviousWeek={() => {
-        setSearchParams({ weekStart: String(shiftWeekWindowStart(weekWindow.start, -1)) });
-      }}
-      onNextWeek={() => {
-        setSearchParams({ weekStart: String(shiftWeekWindowStart(weekWindow.start, 1)) });
-      }}
-      canGoNext={weekWindow.start < currentWeekStart}
-    />
-  );
+  if (isLoading) {
+    return (
+      <section className="space-y-6 md:space-y-8" aria-busy="true">
+        {weekNavigation}
+        <header className="space-y-2">
+          <h1 className="screen-title">{copy.workout.title}</h1>
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">{copy.workout.description}</p>
+        </header>
+        <Card role="status" aria-label={copy.app.loading}>
+          <CardContent className="space-y-4 p-6">
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-56" />
+              <Skeleton className="h-4 w-72" />
+            </div>
+            <div className="space-y-3">
+              <Skeleton className="h-36 w-full rounded-2xl" />
+              <Skeleton className="h-36 w-full rounded-2xl" />
+              <Skeleton className="h-36 w-full rounded-2xl" />
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+    );
+  }
 
   if (!workoutRoutine) {
     return (

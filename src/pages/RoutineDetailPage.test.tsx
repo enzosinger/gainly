@@ -1,10 +1,56 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { afterEach, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import RoutineDetailPage from "./RoutineDetailPage";
 import { GainlyStoreProvider } from "../state/gainly-store";
+import * as gainlyStore from "../state/gainly-store";
 
 describe("RoutineDetailPage", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("shows a loading state while the routine editor hydrates", () => {
+    vi.spyOn(gainlyStore, "useGainlyStore").mockReturnValue({
+      viewer: null,
+      isLoading: true,
+      exercises: [],
+      exerciseLibraryExercises: [],
+      exerciseLibraryMuscleGroupFilter: "all",
+      setExerciseLibraryMuscleGroupFilter: vi.fn(),
+      routines: [],
+      expandedExerciseId: null,
+      setExpandedExerciseId: vi.fn(),
+      createRoutine: vi.fn(),
+      deleteRoutine: vi.fn(),
+      reorderRoutines: vi.fn(),
+      addExerciseToRoutine: vi.fn(),
+      addSetToRoutineExercise: vi.fn(),
+      removeSetFromRoutineExercise: vi.fn(),
+      removeExerciseFromRoutine: vi.fn(),
+      addTechniqueToRoutineExercise: vi.fn(),
+      addSupersetToRoutine: vi.fn(),
+      updateRoutineExerciseWarmupSets: vi.fn(),
+      updateRoutineExerciseFeederSets: vi.fn(),
+      createExercise: vi.fn(),
+      updateExercise: vi.fn(),
+      deleteExercise: vi.fn(),
+      signOut: vi.fn(),
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/routines/routine-upper-a"]}>
+        <Routes>
+          <Route path="/routines/:routineId" element={<RoutineDetailPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole("status", { name: /connecting to your training workspace/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /routine not found/i })).not.toBeInTheDocument();
+  });
+
   it("reflects the create-exercise disclosure open state accessibly", async () => {
     const user = userEvent.setup();
 

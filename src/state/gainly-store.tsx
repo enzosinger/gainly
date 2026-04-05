@@ -16,6 +16,7 @@ import type { Id } from "../../convex/_generated/dataModel";
 
 type GainlyStoreValue = {
   viewer: { id: string; name: string | null; email: string | null } | null;
+  isLoading: boolean;
   exercises: Exercise[];
   exerciseLibraryExercises: Exercise[];
   exerciseLibraryMuscleGroupFilter: MuscleGroup | "all";
@@ -236,6 +237,7 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
   const value = useMemo(
     () => ({
       viewer: null,
+      isLoading: false,
       exercises,
       exerciseLibraryExercises,
       exerciseLibraryMuscleGroupFilter,
@@ -500,9 +502,9 @@ function mapRoutineDoc(routine: {
 
 export function ConvexGainlyStoreProvider({ children }: { children: React.ReactNode }) {
   const viewer = useQuery(api.app.viewer, {});
-  const exerciseDocs = useQuery(api.exercises.list, {}) ?? [];
-  const routineDocs = useQuery(api.routines.list, {}) ?? [];
-  const progressSummaries = useQuery(api.workouts.progressSummaries, {}) ?? [];
+  const exerciseDocs = useQuery(api.exercises.list, {});
+  const routineDocs = useQuery(api.routines.list, {});
+  const progressSummaries = useQuery(api.workouts.progressSummaries, {});
   const createRoutineMutation = useMutation(api.routines.create);
   const deleteRoutineMutation = useMutation(api.routines.remove);
   const createExerciseMutation = useMutation(api.exercises.create);
@@ -520,34 +522,42 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
   const { signOut } = useAuthActions();
   const [expandedExerciseId, setExpandedExerciseId] = useState<string | null>(null);
   const [exerciseLibraryMuscleGroupFilter, setExerciseLibraryMuscleGroupFilter] = useState<MuscleGroup | "all">("all");
-  const filteredExerciseDocs =
-    useQuery(
-      api.exercises.list,
-      exerciseLibraryMuscleGroupFilter === "all"
-        ? "skip"
-        : { muscleGroup: exerciseLibraryMuscleGroupFilter },
-    ) ?? [];
+  const filteredExerciseDocsQuery = useQuery(
+    api.exercises.list,
+    exerciseLibraryMuscleGroupFilter === "all"
+      ? "skip"
+      : { muscleGroup: exerciseLibraryMuscleGroupFilter },
+  );
 
-  const exercises = useMemo(() => exerciseDocs.map(mapExerciseDoc), [exerciseDocs]);
+  const isLoading =
+    viewer === undefined ||
+    exerciseDocs === undefined ||
+    routineDocs === undefined ||
+    progressSummaries === undefined ||
+    (exerciseLibraryMuscleGroupFilter !== "all" && filteredExerciseDocsQuery === undefined);
+
+  const exercises = useMemo(() => exerciseDocs?.map(mapExerciseDoc) ?? [], [exerciseDocs]);
   const exerciseLibraryExercises = useMemo(
     () =>
       exerciseLibraryMuscleGroupFilter === "all"
         ? exercises
-        : filteredExerciseDocs.map(mapExerciseDoc),
-    [exerciseLibraryMuscleGroupFilter, exercises, filteredExerciseDocs],
+        : (filteredExerciseDocsQuery ?? []).map(mapExerciseDoc),
+    [exerciseLibraryMuscleGroupFilter, exercises, filteredExerciseDocsQuery],
   );
   const progressSummaryByRoutineId = useMemo(
-    () => new Map(progressSummaries.map((summary) => [summary.routineId, summary])),
+    () => new Map((progressSummaries ?? []).map((summary) => [summary.routineId, summary])),
     [progressSummaries],
   );
   const routines = useMemo(
-    () => routineDocs.map((routine) => mapRoutineDoc(routine, progressSummaryByRoutineId.get(routine._id))),
+    () =>
+      (routineDocs ?? []).map((routine) => mapRoutineDoc(routine, progressSummaryByRoutineId.get(routine._id))),
     [progressSummaryByRoutineId, routineDocs],
   );
 
   const value = useMemo<GainlyStoreValue>(
     () => ({
       viewer: viewer ? { id: viewer.id, name: viewer.name, email: viewer.email } : null,
+      isLoading,
       exercises,
       exerciseLibraryExercises,
       exerciseLibraryMuscleGroupFilter,
@@ -670,6 +680,7 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
       addSupersetToRoutineMutation,
       createExerciseMutation,
       createRoutineMutation,
+      isLoading,
       exerciseLibraryExercises,
       exerciseLibraryMuscleGroupFilter,
       deleteExerciseMutation,

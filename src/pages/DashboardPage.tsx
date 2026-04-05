@@ -7,11 +7,12 @@ import WeekStrip from "../components/organisms/dashboard/WeekStrip";
 import WeeklyRoutineList from "../components/organisms/dashboard/WeeklyRoutineList";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
+import { Skeleton } from "../components/ui/skeleton";
 import { useGainlyStore } from "../state/gainly-store";
 import { useLanguage } from "../i18n/LanguageProvider";
 
 export default function DashboardPage() {
-  const { routines } = useGainlyStore();
+  const { routines, isLoading } = useGainlyStore();
   const { copy, locale } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const currentWeekStart = getMondayWeekStart(Date.now());
@@ -23,11 +24,48 @@ export default function DashboardPage() {
   const weekWindow = getWeekWindow(selectedWeekStart, locale);
   const weeklySummaries = useQuery(api.workouts.weeklyRoutineSummaries, {
     weekStart: weekWindow.start,
-  }) ?? [];
+  });
   const summariesByRoutineId = useMemo(
-    () => new Map(weeklySummaries.map((summary) => [summary.routineId, summary])),
+    () => new Map((weeklySummaries ?? []).map((summary) => [summary.routineId, summary])),
     [weeklySummaries],
   );
+
+  if (isLoading || weeklySummaries === undefined) {
+    return (
+      <section className="space-y-6 md:space-y-8" aria-busy="true">
+        <header className="space-y-3">
+          <p className="eyebrow">{copy.dashboard.eyebrow}</p>
+          <h1 className="screen-title">{copy.dashboard.title}</h1>
+          <p className="max-w-2xl text-sm text-[hsl(var(--muted-foreground))] md:text-base">
+            {copy.dashboard.description}
+          </p>
+        </header>
+        <WeekStrip
+          weekLabel={weekWindow.label}
+          onPreviousWeek={() => {
+            setSearchParams({ weekStart: String(shiftWeekWindowStart(weekWindow.start, -1)) });
+          }}
+          onNextWeek={() => {
+            setSearchParams({ weekStart: String(shiftWeekWindowStart(weekWindow.start, 1)) });
+          }}
+          canGoNext={weekWindow.start < currentWeekStart}
+        />
+        <Card role="status" aria-label={copy.app.loading}>
+          <CardContent className="space-y-4 p-6">
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+            <div className="space-y-3">
+              <Skeleton className="h-28 w-full rounded-2xl" />
+              <Skeleton className="h-28 w-full rounded-2xl" />
+              <Skeleton className="h-28 w-full rounded-2xl" />
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+    );
+  }
 
   return (
     <section className="space-y-6 md:space-y-8">

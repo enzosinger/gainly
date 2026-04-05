@@ -5,6 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import WorkoutPage from "./WorkoutPage";
 import { GainlyStoreProvider, useGainlyStore } from "../state/gainly-store";
+import * as gainlyStore from "../state/gainly-store";
 import { getWeekWindow, shiftWeekWindowStart } from "../lib/week";
 
 const mockEnsureActiveSession = vi.fn();
@@ -246,6 +247,46 @@ describe("WorkoutPage", () => {
       }
       return activeSession;
     });
+  });
+
+  it("shows a loading state while workout data hydrates", () => {
+    vi.spyOn(gainlyStore, "useGainlyStore").mockReturnValue({
+      viewer: null,
+      isLoading: true,
+      exercises: [],
+      exerciseLibraryExercises: [],
+      exerciseLibraryMuscleGroupFilter: "all",
+      setExerciseLibraryMuscleGroupFilter: vi.fn(),
+      routines: [],
+      expandedExerciseId: null,
+      setExpandedExerciseId: vi.fn(),
+      createRoutine: vi.fn(),
+      deleteRoutine: vi.fn(),
+      reorderRoutines: vi.fn(),
+      addExerciseToRoutine: vi.fn(),
+      addSetToRoutineExercise: vi.fn(),
+      removeSetFromRoutineExercise: vi.fn(),
+      removeExerciseFromRoutine: vi.fn(),
+      addTechniqueToRoutineExercise: vi.fn(),
+      addSupersetToRoutine: vi.fn(),
+      updateRoutineExerciseWarmupSets: vi.fn(),
+      updateRoutineExerciseFeederSets: vi.fn(),
+      createExercise: vi.fn(),
+      updateExercise: vi.fn(),
+      deleteExercise: vi.fn(),
+      signOut: vi.fn(),
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/workout/routine-upper-a"]}>
+        <Routes>
+          <Route path="/workout/:routineId" element={<WorkoutPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole("status", { name: /connecting to your training workspace/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /push workout/i })).not.toBeInTheDocument();
   });
 
   it("shows week-scoped previous session references and saves edited set values", async () => {

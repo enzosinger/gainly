@@ -15,11 +15,12 @@ import {
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
+import { Skeleton } from "../components/ui/skeleton";
 import { useGainlyStore } from "../state/gainly-store";
 import { useLanguage } from "../i18n/LanguageProvider";
 
 export default function RoutinesPage() {
-  const { routines, createRoutine, deleteRoutine } = useGainlyStore();
+  const { routines, createRoutine, deleteRoutine, isLoading } = useGainlyStore();
   const { copy } = useLanguage();
   const navigate = useNavigate();
   const [createOpen, setCreateOpen] = useState(false);
@@ -64,6 +65,44 @@ export default function RoutinesPage() {
   }
 
   const pendingDeleteRoutine = routines.find((routine) => routine.id === pendingDeleteRoutineId) ?? null;
+
+  if (isLoading) {
+    return (
+      <section className="space-y-6 md:space-y-8" aria-busy="true">
+        <header className="space-y-3">
+          <p className="eyebrow">{copy.routines.eyebrow}</p>
+          <h1 className="screen-title">{copy.routines.title}</h1>
+          <p className="max-w-2xl text-sm text-[hsl(var(--muted-foreground))] md:text-base">
+            {copy.routines.description}
+          </p>
+        </header>
+
+        <Card role="status" aria-label={copy.app.loading}>
+          <CardContent className="space-y-4 p-6">
+            <div className="flex items-center justify-between gap-3">
+              <Skeleton className="h-4 w-44" />
+              <Skeleton className="h-9 w-28 rounded-md" />
+            </div>
+            <div className="grid gap-4 md:gap-5 xl:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Card key={index} className="min-h-[11rem]">
+                  <CardContent className="space-y-4 p-4">
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                    </div>
+                    <Skeleton className="h-6 w-40" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-32" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+    );
+  }
 
   return (
     <section className="space-y-6 md:space-y-8">
