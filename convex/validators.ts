@@ -47,24 +47,6 @@ export const workoutSessionSetValidator = v.object({
   pairReps: v.optional(v.number()),
 });
 
-export const workoutSessionExerciseValidator = v.object({
-  id: v.string(),
-  routineExerciseId: v.string(),
-  exerciseId: v.id("exercises"),
-  position: v.number(),
-  sets: v.array(workoutSessionSetValidator),
-  warmupSets: v.optional(v.number()),
-  feederSets: v.optional(v.number()),
-});
-
-export const routineExerciseValidator = v.object({
-  id: v.string(),
-  exerciseId: v.id("exercises"),
-  sets: v.array(setEntryValidator),
-  warmupSets: v.optional(v.number()),
-  feederSets: v.optional(v.number()),
-});
-
 export const routineExerciseRowValidator = v.object({
   userId: v.id("users"),
   routineId: v.id("routines"),

@@ -6,11 +6,9 @@ import {
   muscleGroupValidator,
   routineExerciseRowValidator,
   routineExerciseSetRowValidator,
-  routineExerciseValidator,
   routineProgressSummaryValidator,
   routineWeekSummaryValidator,
   workoutSessionExerciseRowValidator,
-  workoutSessionExerciseValidator,
   workoutSessionSetRowValidator,
   workoutSessionStatusValidator,
 } from "./validators";
@@ -65,8 +63,6 @@ export default defineSchema({
     completed: v.boolean(),
     deltaPercent: v.number(),
     position: v.number(),
-    // Deprecated legacy embed retained temporarily until Phase 4 cleanup runs in live environments.
-    exercises: v.optional(v.array(routineExerciseValidator)),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -80,8 +76,6 @@ export default defineSchema({
     completedAt: v.optional(v.number()),
     updatedAt: v.number(),
     weekStart: v.optional(v.number()), // Will be required after migration
-    // Deprecated legacy embed retained temporarily until Phase 4 cleanup runs in live environments.
-    exercises: v.optional(v.array(workoutSessionExerciseValidator)),
   })
     .index("by_user", ["userId"])
     .index("by_user_routine_weekStart", ["userId", "routineId", "weekStart"])

@@ -12,11 +12,6 @@ function getMondayWeekStart(timestamp: number) {
   return date.getTime();
 }
 
-function stripLegacyExercises<T extends { _id: unknown; _creationTime: unknown; exercises?: unknown }>(doc: T) {
-  const { _id, _creationTime, exercises: _legacyExercises, ...rest } = doc;
-  return rest;
-}
-
 export const backfillWeekStart = internalMutation({
   args: {},
   handler: async (ctx) => {
@@ -35,58 +30,6 @@ export const backfillWeekStart = internalMutation({
     }
 
     return { updated: count };
-  },
-});
-
-export const cleanupLegacyRoutineEmbeds = internalMutation({
-  args: {
-    paginationOpts: paginationOptsValidator,
-  },
-  handler: async (ctx, args) => {
-    const page = await ctx.db.query("routines").paginate(args.paginationOpts);
-    let cleaned = 0;
-
-    for (const routine of page.page) {
-      if (!("exercises" in routine)) {
-        continue;
-      }
-
-      await ctx.db.replace(routine._id, stripLegacyExercises(routine as Doc<"routines"> & { exercises: unknown }));
-      cleaned++;
-    }
-
-    return {
-      processed: page.page.length,
-      cleaned,
-      isDone: page.isDone,
-      continueCursor: page.continueCursor,
-    };
-  },
-});
-
-export const cleanupLegacyWorkoutSessionEmbeds = internalMutation({
-  args: {
-    paginationOpts: paginationOptsValidator,
-  },
-  handler: async (ctx, args) => {
-    const page = await ctx.db.query("workoutSessions").paginate(args.paginationOpts);
-    let cleaned = 0;
-
-    for (const session of page.page) {
-      if (!("exercises" in session)) {
-        continue;
-      }
-
-      await ctx.db.replace(session._id, stripLegacyExercises(session as Doc<"workoutSessions"> & { exercises: unknown }));
-      cleaned++;
-    }
-
-    return {
-      processed: page.page.length,
-      cleaned,
-      isDone: page.isDone,
-      continueCursor: page.continueCursor,
-    };
   },
 });
 
