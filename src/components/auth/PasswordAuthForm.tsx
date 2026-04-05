@@ -4,8 +4,36 @@ import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { useLanguage } from "../../i18n/LanguageProvider";
+import type { Copy } from "../../i18n/copy";
 
 type AuthMode = "signIn" | "signUp";
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function isValidEmail(email: string) {
+  return emailPattern.test(email);
+}
+
+function getAuthErrorMessage(error: unknown, mode: AuthMode, copy: Copy) {
+  const message = error instanceof Error ? error.message.toLowerCase() : "";
+
+  if (message.includes("already exists")) {
+    return copy.auth.accountExists;
+  }
+
+  if (message.includes("invalid credentials")) {
+    return copy.auth.signInFailed;
+  }
+
+  if (message.includes("invalid password")) {
+    return copy.auth.invalidPassword;
+  }
+
+  if (mode === "signUp") {
+    return copy.auth.signUpFailed;
+  }
+
+  return copy.auth.genericError;
+}
 
 export default function PasswordAuthForm() {
   const { signIn } = useAuthActions();
@@ -18,17 +46,25 @@ export default function PasswordAuthForm() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setIsSubmitting(true);
     setErrorMessage(null);
+
+    const trimmedEmail = email.trim();
+
+    if (!isValidEmail(trimmedEmail)) {
+      setErrorMessage(copy.auth.invalidEmail);
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
       const formData = new FormData();
-      formData.set("email", email);
+      formData.set("email", trimmedEmail);
       formData.set("password", password);
       formData.set("flow", mode);
       await signIn("password", formData);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : copy.auth.genericError);
+      setErrorMessage(getAuthErrorMessage(error, mode, copy));
     } finally {
       setIsSubmitting(false);
     }
@@ -40,7 +76,7 @@ export default function PasswordAuthForm() {
         <CardTitle>{mode === "signIn" ? copy.auth.welcomeBack : copy.auth.createAccount}</CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <form className="space-y-3" onSubmit={handleSubmit}>
+        <form className="space-y-3" onSubmit={handleSubmit} noValidate>
           <label className="block text-sm">
             <span className="block text-[hsl(var(--muted-foreground))]">{copy.auth.email}</span>
             <Input
@@ -64,7 +100,12 @@ export default function PasswordAuthForm() {
             />
           </label>
           {errorMessage ? (
-            <div className="rounded-2xl border border-[hsl(var(--border))] px-3 py-2 text-sm text-[hsl(var(--muted-foreground))]">
+            <div
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
+              className="rounded-2xl border border-[hsl(var(--border))] px-3 py-2 text-sm text-[hsl(var(--muted-foreground))]"
+            >
               {errorMessage}
             </div>
           ) : null}
