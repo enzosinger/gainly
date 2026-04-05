@@ -1,4 +1,4 @@
-import { mutation } from "./_generated/server";
+import { internalMutation } from "./_generated/server";
 
 function getMondayWeekStart(timestamp: number) {
   const date = new Date(timestamp);
@@ -9,7 +9,7 @@ function getMondayWeekStart(timestamp: number) {
   return date.getTime();
 }
 
-export const backfillWeekStart = mutation({
+export const backfillWeekStart = internalMutation({
   args: {},
   handler: async (ctx) => {
     // This is a one-time migration to populate the weekStart field.

@@ -64,6 +64,7 @@ Do not use this skill for:
 - **Escalate when reality changes:** Pause when new evidence changes the impact surface or risk profile.
 - **No false completion:** Writing code does not mean the task is complete.
 - **Primary-agent review ownership:** Delegating implementation does not transfer post-implementation review, artifact ownership, or completion authority away from the primary agent.
+- **Worker scope limit:** The spawned worker agent implements only; it does not own review, verification evidence, or completion decisions.
 
 ## Inputs
 
@@ -190,6 +191,7 @@ Before leaving implementation:
 - ensure relevant tests or validation updates are included when needed
 - ensure deviations are documented
 - ensure the task is ready for downstream review and verification artifacts
+- do not begin review or verification artifacts until the worker agent has explicitly stated that implementation is complete
 
 Implementation should hand off cleanly into:
 - focused review and validation for L1

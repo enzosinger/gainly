@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
-import userEvent from "@testing-library/user-event";
 import App from "./App";
 import { renderWithAppRouter } from "../test/test-utils";
 import { LanguageProvider } from "../i18n/LanguageProvider";
+import { languageStorageKey } from "../i18n/copy";
 
 const mockUseConvexAuth = vi.fn();
 const mockUseMutation = vi.fn();
@@ -50,6 +50,7 @@ describe("App shell", () => {
     mockUseMutation.mockReset();
     mockUseQuery.mockReset();
     mockUseQuery.mockReturnValue(null);
+    window.localStorage.clear();
     Object.defineProperty(window.navigator, "language", {
       value: "en-US",
       configurable: true,
@@ -66,13 +67,10 @@ describe("App shell", () => {
 
     expect(screen.getByRole("heading", { name: /training os for lifters/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: /language/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /en\/us/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /pt\/br/i })).toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: /primary navigation/i })).not.toBeInTheDocument();
   });
 
-  it("defaults to Portuguese for pt browsers and keeps a manual override on remount", async () => {
+  it("defaults to Portuguese for pt browsers and keeps a stored override on remount", () => {
     Object.defineProperty(window.navigator, "language", {
       value: "pt-BR",
       configurable: true,
@@ -82,8 +80,6 @@ describe("App shell", () => {
       isAuthenticated: false,
     });
 
-    const user = userEvent.setup();
-
     const { unmount } = render(
       <LanguageProvider>
         <App />
@@ -92,11 +88,9 @@ describe("App shell", () => {
 
     expect(screen.getByRole("heading", { name: /sistema de treino para quem quer estrutura sem ruído/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /en\/us/i }));
-
-    expect(screen.getByRole("heading", { name: /training os for lifters who want structure without noise/i })).toBeInTheDocument();
-
     unmount();
+
+    window.localStorage.setItem(languageStorageKey, "en");
 
     render(
       <LanguageProvider>

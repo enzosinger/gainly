@@ -194,8 +194,8 @@ If blocked, do not proceed.
 
 Approval requirements:
 - **L0 / L1:** proceed according to normal task flow unless explicit approval is otherwise required
-- **L2:** obtain user approval before coding
-- **L3:** obtain explicit user approval before coding
+- **L2:** obtain user review and approval of `QUALITY_GATE_PLAN.md` before coding
+- **L3:** obtain explicit user review and approval of `QUALITY_GATE_PLAN.md` before coding
 
 Do not start implementation for L2 or L3 before approval is obtained.
 
@@ -208,6 +208,8 @@ Execution rule:
 - keep orchestration and downstream governance in the primary agent
 - keep post-implementation review ownership in the primary agent, including review execution, artifact generation, and final readiness decisions
 - only bypass the `gpt-5.4-mini` implementation delegation when the user explicitly overrides the model choice
+- while the worker is implementing, the primary agent must not compete with the worker on the same implementation work and must instead use that time for non-overlapping coordination, review preparation, or verification prep
+- the worker is not responsible for post-implementation review, verification evidence, or completion decisions
 
 Implementation must:
 - follow the approved plan
@@ -228,6 +230,7 @@ Select the required reviews based on risk and task type.
 
 The primary agent remains responsible for this step even when Step 7 was delegated.
 Delegated implementation does not transfer authority to approve the change, close findings, or declare the task complete.
+The primary agent must wait for the worker agent to explicitly signal implementation completion before beginning review or verification artifacts.
 
 Minimum review requirements:
 

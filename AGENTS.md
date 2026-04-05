@@ -312,9 +312,11 @@ During implementation:
 - stop and surface scope drift if the task expands beyond the approved plan
 - execute the implementation phase through a spawned worker agent using model `gpt-5.4-mini` by default
 - only skip the ``gpt-5.4-mini` implementation delegation when the user explicitly overrides that model choice
+- while the worker is implementing, keep the primary agent active on non-overlapping work and preparation for downstream review and verification
+- do not duplicate the worker's implementation effort or delegate review and verification work back to the worker
 
 ### Reviews and Verification
-After implementation:
+After the worker agent has explicitly finished implementation:
 - keep post-implementation review ownership with the primary agent, even when code implementation was delegated to a worker agent
 - run the required specialized reviews for the task’s risk level
 - create `REVIEW_REPORT.md` when required
@@ -343,11 +345,12 @@ Formal gate files are optional unless risk escalates.
 ### L2
 Before implementation:
 - create `QUALITY_GATE_PLAN.md`
+- have the user review and approve `QUALITY_GATE_PLAN.md` before implementation
 - include risk level and classification rationale
 - assess performance, scalability, security, observability, API impact, data/query impact, cache impact, concurrency concerns, testing strategy, rollback strategy, and open questions
 - end with either `Gate Status: Ready for Approval` or `Gate Status: Blocked`
 
-Do not begin implementation until the gate is ready and user approval is obtained.
+Do not begin implementation until the gate is ready, the user has reviewed `QUALITY_GATE_PLAN.md`, and user approval is obtained.
 
 After implementation:
 - create `REVIEW_REPORT.md`
@@ -357,7 +360,7 @@ Do not mark the task complete without both files and without resolving blockers.
 
 ### L3
 All L2 requirements apply, plus:
-- explicit user approval is required
+- explicit user review and approval of `QUALITY_GATE_PLAN.md` is required before implementation
 - mandatory specialized reviews must run
 - provide an explicit final summary of residual risks and rollout caveats
 
