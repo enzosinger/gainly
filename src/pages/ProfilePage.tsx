@@ -8,7 +8,6 @@ import { cn } from "../lib/utils";
 import { useLanguage } from "../i18n/LanguageProvider";
 import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
 
-
 export default function ProfilePage() {
   const { viewer, routines, exercises, signOut } = useGainlyStore();
   const { theme, setTheme } = useTheme();
@@ -26,7 +25,6 @@ export default function ProfilePage() {
         <div className="space-y-2">
           <p className="eyebrow">{copy.profile.eyebrow}</p>
           <h1 className="screen-title">{copy.profile.title}</h1>
-          <p className="max-w-2xl text-sm text-[hsl(var(--muted-foreground))] md:text-base">{copy.profile.description}</p>
         </div>
         <LanguageSwitcher compact className="self-start" />
       </header>

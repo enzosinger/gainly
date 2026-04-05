@@ -6,13 +6,13 @@ import { MemoryRouter } from "react-router-dom";
 import { GainlyStoreProvider } from "../state/gainly-store";
 
 describe("ProfilePage", () => {
-  it("shares the supporting copy treatment used by the other task 4 page headers", () => {
+  it("shares the header title treatment used by the other task 4 page headers", () => {
     const exercisesView = render(
       <GainlyStoreProvider>
         <ExercisesPage />
       </GainlyStoreProvider>,
     );
-    const exercisesClassName = screen.getByText(/keep the shared movement catalog tidy/i).className;
+    const exercisesClassName = screen.getByRole("heading", { level: 1 }).className;
     exercisesView.unmount();
 
     const routinesView = render(
@@ -20,11 +20,9 @@ describe("ProfilePage", () => {
         <GainlyStoreProvider>
           <RoutinesPage />
         </GainlyStoreProvider>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
-    const routinesClassName = screen.getByText(
-      /create new routines here, then open one to refine its exercises and set structure/i,
-    ).className;
+    const routinesClassName = screen.getByRole("heading", { level: 1 }).className;
     routinesView.unmount();
 
     render(
@@ -33,12 +31,10 @@ describe("ProfilePage", () => {
       </GainlyStoreProvider>,
     );
 
-    expect(screen.getByRole("group", { name: /language/i })).toBeInTheDocument();
-    const supportingCopy = screen.getByText(
-      /maintain a clear baseline of your current training footprint/i,
-    );
+    const profileTitle = screen.getByRole("heading", { level: 1 });
 
-    expect(supportingCopy.className).toBe(exercisesClassName);
-    expect(supportingCopy.className).toBe(routinesClassName);
+    expect(screen.getByRole("group", { name: /language/i })).toBeInTheDocument();
+    expect(profileTitle.className).toBe(exercisesClassName);
+    expect(profileTitle.className).toBe(routinesClassName);
   });
 });
