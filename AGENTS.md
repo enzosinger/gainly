@@ -311,7 +311,7 @@ During implementation:
 - update tests or validation artifacts when needed
 - stop and surface scope drift if the task expands beyond the approved plan
 - execute the implementation phase through a spawned worker agent using model `gpt-5.4-mini` by default
-- only skip the `gpt-5.4-mini` implementation delegation when the user explicitly overrides that model choice
+- only skip the ``gpt-5.4-mini` implementation delegation when the user explicitly overrides that model choice
 
 ### Reviews and Verification
 After implementation:
@@ -476,3 +476,11 @@ Use these repository documents when relevant:
 - quality gate artifacts created during the task
 
 If a rule or workflow is repeatedly needed and not captured here, add it to the closest appropriate `AGENTS.md` or convert it into a reusable skill.
+
+<!-- convex-ai-start -->
+This project uses [Convex](https://convex.dev) as its backend.
+
+When working on Convex code, **always read `convex/_generated/ai/guidelines.md` first** for important guidelines on how to correctly use Convex APIs and patterns. The file contains rules that override what you may have learned about Convex from training data.
+
+Convex agent skills for common tasks can be installed by running `npx convex ai-files install`.
+<!-- convex-ai-end -->
