@@ -2,13 +2,14 @@
 
 ## Purpose
 
-`gainly` is a full-stack training app built with React, Vite, and Convex. It enables users to plan and execute workout routines with real-time persistence and multi-device synchronization.
+`gainly` is a full-stack training app built with React 19, Vite, TypeScript, and Convex. It enables users to plan and execute workout routines with real-time persistence and multi-device synchronization.
 
 ## Stack
 
 - **Backend/Data**: [Convex](https://www.convex.dev/) via [`convex/`](/Users/enzosinger/Desktop/repos/gainly/convex)
 - **Authentication**: [`@convex-dev/auth`](https://labs.convex.dev/auth) setup in [`convex/auth.ts`](/Users/enzosinger/Desktop/repos/gainly/convex/auth.ts)
 - **Frontend**: Vite + React 19 + TypeScript
+- **Architecture**: [`docs/sources/architecture.md`](/Users/enzosinger/Desktop/repos/gainly/docs/sources/architecture.md)
 - **Routing**: `react-router-dom` browser router in [`src/app/router.tsx`](/Users/enzosinger/Desktop/repos/gainly/src/app/router.tsx)
 - **Styling**: Tailwind CSS plus custom globals in [`src/styles/globals.css`](/Users/enzosinger/Desktop/repos/gainly/src/styles/globals.css)
 - **Icons**: `lucide-react`
@@ -16,12 +17,13 @@
 
 ## App Entry And Composition
 
-- App bootstrap happens in [`src/main.tsx`](/Users/enzosinger/Desktop/repos/gainly/src/main.tsx), which wraps the application with `ConvexAuthProvider`.
+- App bootstrap happens in [`src/main.tsx`](/Users/enzosinger/Desktop/repos/gainly/src/main.tsx), which wraps the application with `LanguageProvider`, `ThemeProvider`, and `ConvexAuthProvider`.
 - [`src/app/App.tsx`](/Users/enzosinger/Desktop/repos/gainly/src/app/App.tsx) handles authentication states and provides the `ConvexGainlyStoreProvider`.
 - [`src/app/router.tsx`](/Users/enzosinger/Desktop/repos/gainly/src/app/router.tsx) defines the main routes:
   - `/` dashboard
   - `/workout/:routineId?`
   - `/routines`
+  - `/routines/:routineId`
   - `/exercises`
   - `/profile`
 - [`src/app/layouts/AppShell.tsx`](/Users/enzosinger/Desktop/repos/gainly/src/app/layouts/AppShell.tsx) provides the shared shell and navigation.
@@ -53,5 +55,6 @@ Use repository-native commands:
 
 - Historical notes: [`docs/superpowers`](/Users/enzosinger/Desktop/repos/gainly/docs/superpowers).
 - RPI source docs: [`docs/sources`](/Users/enzosinger/Desktop/repos/gainly/docs/sources).
-  - [frontend.md](file:///Users/enzosinger/Desktop/repos/gainly/docs/sources/frontend.md)
-  - [backend.md](file:///Users/enzosinger/Desktop/repos/gainly/docs/sources/backend.md)
+  - [architecture.md](/Users/enzosinger/Desktop/repos/gainly/docs/sources/architecture.md)
+  - [frontend.md](/Users/enzosinger/Desktop/repos/gainly/docs/sources/frontend.md)
+  - [backend.md](/Users/enzosinger/Desktop/repos/gainly/docs/sources/backend.md)

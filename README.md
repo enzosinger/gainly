@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./gainly_logo_white.png" />
-    <img src="./gainly_logo.png" alt="Gainly" width="280" />
+    <source media="(prefers-color-scheme: dark)" srcset="./public/gainly_logo_white.png" />
+    <img src="./public/gainly_logo.png" alt="Gainly" width="280" />
   </picture>
 </p>
 
@@ -193,16 +193,6 @@ Mobile view captures live in `./docs/screenshots` and are referenced directly be
   </tr>
 </table>
 
-### Convex Best Practices Used Here
-
-- validate every function argument with `v.*` or project validators
-- check user identity server-side with `ctx.auth.getUserIdentity()`
-- keep schema and indexes explicit in `convex/schema.ts`
-- prefer bounded reads and indexed queries
-- keep multi-entity writes atomic inside a single mutation
-- separate public and internal Convex functions
-- use typed `Id<...>` references instead of raw strings
-
 ### Local Development
 
 #### Requirements
@@ -232,29 +222,6 @@ npm test
 npm run test:run
 npm run preview
 ```
-
-### Deploy
-
-#### Convex backend
-
-Use the Convex CLI to deploy the backend:
-
-```bash
-npx convex deploy
-```
-
-If you are deploying to production, use the production target configured in your Convex workflow and keep `CONVEX_SITE_URL` aligned with that deployment.
-
-#### Frontend
-
-This repository includes a `vercel.json` rewrite so the SPA can be deployed on Vercel with client-side routing support.
-
-Recommended deployment flow:
-
-1. build the app with `npm run build`
-2. set `VITE_CONVEX_URL` in the hosting provider
-3. deploy the built static frontend
-4. verify the deployed frontend points to the correct Convex deployment
 
 ### Project Structure
 
@@ -454,16 +421,6 @@ As capturas de mobile view ficam em `./docs/screenshots` e são consumidas diret
   </tr>
 </table>
 
-### Boas práticas de Convex aplicadas aqui
-
-- validação de argumentos com `v.*` e validadores do projeto
-- checagem de identidade no servidor com `ctx.auth.getUserIdentity()`
-- schema e índices explícitos em `convex/schema.ts`
-- consultas limitadas e indexadas
-- mutações atômicas para mudanças em múltiplas entidades
-- separação entre funções públicas e internas
-- uso de `Id<...>` tipado em vez de strings soltas
-
 ### Desenvolvimento local
 
 #### Pré-requisitos
@@ -493,29 +450,6 @@ npm test
 npm run test:run
 npm run preview
 ```
-
-### Deploy
-
-#### Backend Convex
-
-Faça o deploy do backend com:
-
-```bash
-npx convex deploy
-```
-
-Se o deploy for em produção, mantenha `CONVEX_SITE_URL` alinhado ao ambiente publicado.
-
-#### Frontend
-
-Este repositório já inclui `vercel.json` com rewrite para SPA, então o frontend pode ser publicado em Vercel com suporte a roteamento client-side.
-
-Fluxo recomendado:
-
-1. gerar a build com `npm run build`
-2. configurar `VITE_CONVEX_URL` no provedor de hospedagem
-3. publicar os arquivos estáticos do frontend
-4. validar se o frontend aponta para o deployment correto do Convex
 
 ### Estrutura do projeto
 

@@ -1,7 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { cn } from "../../lib/utils";
-import gainlyLogo from "../../../gainly_logo.png";
-import gainlyLogoWhite from "../../../gainly_logo_white.png";
 import { useLanguage } from "../../i18n/LanguageProvider";
 
 const desktopNavLinkClasses =
@@ -27,8 +25,8 @@ export default function AppShell() {
       <aside className="app-shell-sidebar hidden md:flex md:flex-col">
         <div className="flex h-full flex-col px-6 py-8">
           <div className="space-y-3">
-            <img src={gainlyLogo} alt="Gainly" className="h-[4.5rem] w-auto dark:hidden" />
-            <img src={gainlyLogoWhite} alt="Gainly" className="hidden h-[4.5rem] w-auto dark:block" />
+            <img src="/gainly_logo.png" alt="Gainly" className="h-[4.5rem] w-auto dark:hidden" />
+            <img src="/gainly_logo_white.png" alt="Gainly" className="hidden h-[4.5rem] w-auto dark:block" />
           </div>
 
           <nav aria-label={copy.shell.navigationLabel} className="mt-10 flex flex-col gap-2">
