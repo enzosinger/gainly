@@ -94,4 +94,19 @@ describe("PasswordAuthForm", () => {
       /use at least 8 characters for your password/i,
     );
   });
+
+  it("shows a generic message when sign-up attempts are rate limited", async () => {
+    const user = userEvent.setup();
+    mockSignIn.mockRejectedValueOnce(new Error("Too many sign-up attempts."));
+    renderForm();
+
+    await user.click(screen.getByRole("button", { name: /need an account/i }));
+    await user.type(screen.getByLabelText(/email/i), "test@example.com");
+    await user.type(screen.getByLabelText(/password/i), "password123");
+    await user.click(screen.getByRole("button", { name: /create account/i }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      /something went wrong\. please try again\./i,
+    );
+  });
 });

@@ -5,3 +5,6 @@ dist
 .worktrees
 *.tsbuildinfo
 .env.local
+QUALITY_GATE_PLAN.md
+VERIFICATION_EVIDENCE.md
+REVIEW_REPORT.md

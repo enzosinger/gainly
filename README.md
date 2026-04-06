@@ -10,7 +10,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Convex](https://img.shields.io/badge/Convex-Backend-111827?logo=convex&logoColor=white)](https://convex.dev/)
 [![Vitest](https://img.shields.io/badge/Vitest-Testing-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
-[![License](https://img.shields.io/badge/License-Unlicensed-lightgrey)](#license)
+[![License](https://img.shields.io/badge/License-MIT-green)](#license)
 
 ---
 
@@ -271,7 +271,7 @@ Recommended deployment flow:
 
 ### License
 
-This repository does not declare a license. Add one before distributing the project publicly.
+This project is licensed under the [MIT License](./LICENSE). You may use, copy, modify, merge, publish, distribute, sublicense, and sell copies of the software, provided the copyright notice and license text are included.
 
 ---
 
@@ -532,4 +532,4 @@ Fluxo recomendado:
 
 ### Licença
 
-Este repositório não declara licença. Adicione uma antes de distribuir o projeto publicamente.
+Este projeto está licenciado sob a [MIT License](./LICENSE). Você pode usar, copiar, modificar, mesclar, publicar, distribuir, sublicenciar e vender cópias do software, desde que mantenha o aviso de copyright e o texto da licença.

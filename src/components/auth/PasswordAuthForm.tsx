@@ -16,6 +16,10 @@ function isValidEmail(email: string) {
 function getAuthErrorMessage(error: unknown, mode: AuthMode, copy: Copy) {
   const message = error instanceof Error ? error.message.toLowerCase() : "";
 
+  if (message.includes("too many")) {
+    return copy.auth.genericError;
+  }
+
   if (message.includes("already exists")) {
     return copy.auth.accountExists;
   }
