@@ -18,6 +18,10 @@
 
 `gainly` is a full-stack training app for lifters who want structure without noise. It combines workout planning, exercise library management, session logging, and weekly progress tracking with real-time persistence through Convex.
 
+<p align="center">
+  <img src="./docs/screenshots/gainly_1.png" alt="Gainly app preview 1" width="900" />
+</p>
+
 ### What it does
 
 - sign in and sign up with email and password
@@ -38,6 +42,10 @@
 - index-driven Convex schema for predictable reads
 - bilingual UI and theme preferences stored on the client
 - practical screens focused on the training workflow
+
+<p align="center">
+  <img src="./docs/screenshots/gainly_2.png" alt="Gainly app preview 2" width="900" />
+</p>
 
 ### Stack
 
@@ -104,94 +112,9 @@
 - change language
 - sign out
 
-### Screenshots
-
-Mobile view captures live in `./docs/screenshots` and are referenced directly below.
-
-#### Dashboard
-
-<table>
-  <tr>
-    <td align="center">
-      <img src="./docs/screenshots/dashboard.png" alt="Dashboard light mode" width="320" />
-      <br />
-      Light
-    </td>
-    <td align="center">
-      <img src="./docs/screenshots/dashboard-dark.png" alt="Dashboard dark mode" width="320" />
-      <br />
-      Dark
-    </td>
-  </tr>
-</table>
-
-#### Routines
-
-<table>
-  <tr>
-    <td align="center">
-      <img src="./docs/screenshots/routines.png" alt="Routines light mode" width="320" />
-      <br />
-      Light
-    </td>
-    <td align="center">
-      <img src="./docs/screenshots/routines-dark.png" alt="Routines dark mode" width="320" />
-      <br />
-      Dark
-    </td>
-  </tr>
-</table>
-
-#### Routine Builder
-
-<table>
-  <tr>
-    <td align="center">
-      <img src="./docs/screenshots/routine-builder.png" alt="Routine builder light mode" width="320" />
-      <br />
-      Light
-    </td>
-    <td align="center">
-      <img src="./docs/screenshots/routine-builder-dark.png" alt="Routine builder dark mode" width="320" />
-      <br />
-      Dark
-    </td>
-  </tr>
-</table>
-
-#### Workout Logger
-
-<table>
-  <tr>
-    <td align="center">
-      <img src="./docs/screenshots/workout.png" alt="Workout logger light mode" width="320" />
-      <br />
-      Light
-    </td>
-    <td align="center">
-      <img src="./docs/screenshots/workout-dark.png" alt="Workout logger dark mode" width="320" />
-      <br />
-      Dark
-    </td>
-  </tr>
-</table>
-
-#### Profile
-
-<table>
-  <tr>
-    <td align="center">
-      <img src="./docs/screenshots/profile.png" alt="Profile light mode" width="320" />
-      <br />
-      Light
-    </td>
-    <td align="center">
-      <img src="./docs/screenshots/profile_dark.png" alt="Profile dark mode" width="320" />
-      <br />
-      Dark
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="./docs/screenshots/gainly_3.png" alt="Gainly app preview 3" width="900" />
+</p>
 
 ### Local Development
 
@@ -246,6 +169,10 @@ This project is licensed under the [MIT License](./LICENSE). You may use, copy, 
 
 `gainly` é um app full-stack para treino e acompanhamento de performance, construído para quem quer organizar o treino com estrutura, sem depender de planilhas ou anotações soltas. O sistema combina planejamento de rotinas, biblioteca de exercícios, registro de sessões e acompanhamento semanal com persistência reativa via Convex.
 
+<p align="center">
+  <img src="./docs/screenshots/gainly_1.png" alt="Prévia do Gainly 1" width="900" />
+</p>
+
 ### O que o app faz
 
 - autenticação com e-mail e senha
@@ -266,6 +193,10 @@ This project is licensed under the [MIT License](./LICENSE). You may use, copy, 
 - schema Convex orientado a índices para leituras previsíveis
 - interface bilíngue e preferências de tema persistidas no cliente
 - telas pensadas para fluxo real de treino
+
+<p align="center">
+  <img src="./docs/screenshots/gainly_2.png" alt="Prévia do Gainly 2" width="900" />
+</p>
 
 ### Stack
 
@@ -332,94 +263,9 @@ This project is licensed under the [MIT License](./LICENSE). You may use, copy, 
 - troca de idioma
 - sign out
 
-### Screenshots
-
-As capturas de mobile view ficam em `./docs/screenshots` e são consumidas diretamente abaixo.
-
-#### Dashboard
-
-<table>
-  <tr>
-    <td align="center">
-      <img src="./docs/screenshots/dashboard.png" alt="Dashboard modo claro" width="320" />
-      <br />
-      Claro
-    </td>
-    <td align="center">
-      <img src="./docs/screenshots/dashboard-dark.png" alt="Dashboard modo escuro" width="320" />
-      <br />
-      Escuro
-    </td>
-  </tr>
-</table>
-
-#### Rotinas
-
-<table>
-  <tr>
-    <td align="center">
-      <img src="./docs/screenshots/routines.png" alt="Rotinas modo claro" width="320" />
-      <br />
-      Claro
-    </td>
-    <td align="center">
-      <img src="./docs/screenshots/routines-dark.png" alt="Rotinas modo escuro" width="320" />
-      <br />
-      Escuro
-    </td>
-  </tr>
-</table>
-
-#### Builder
-
-<table>
-  <tr>
-    <td align="center">
-      <img src="./docs/screenshots/routine-builder.png" alt="Builder modo claro" width="320" />
-      <br />
-      Claro
-    </td>
-    <td align="center">
-      <img src="./docs/screenshots/routine-builder-dark.png" alt="Builder modo escuro" width="320" />
-      <br />
-      Escuro
-    </td>
-  </tr>
-</table>
-
-#### Workout
-
-<table>
-  <tr>
-    <td align="center">
-      <img src="./docs/screenshots/workout.png" alt="Workout modo claro" width="320" />
-      <br />
-      Claro
-    </td>
-    <td align="center">
-      <img src="./docs/screenshots/workout-dark.png" alt="Workout modo escuro" width="320" />
-      <br />
-      Escuro
-    </td>
-  </tr>
-</table>
-
-#### Perfil
-
-<table>
-  <tr>
-    <td align="center">
-      <img src="./docs/screenshots/profile.png" alt="Perfil modo claro" width="320" />
-      <br />
-      Claro
-    </td>
-    <td align="center">
-      <img src="./docs/screenshots/profile_dark.png" alt="Perfil modo escuro" width="320" />
-      <br />
-      Escuro
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="./docs/screenshots/gainly_3.png" alt="Prévia do Gainly 3" width="900" />
+</p>
 
 ### Desenvolvimento local
 
