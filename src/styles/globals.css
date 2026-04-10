@@ -30,7 +30,28 @@ body {
   @apply min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] antialiased transition-colors duration-300;
 }
 
+@keyframes landing-reveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
 
+@keyframes landing-image {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -8px, 0);
+  }
+}
+
+/* Landing page presentation helpers */
 @layer components {
   .app-shell-sidebar {
     @apply min-h-screen border-r;
@@ -69,6 +90,46 @@ body {
     @apply text-3xl font-semibold tracking-tight md:text-4xl;
     color: hsl(var(--foreground));
   }
+
+  .landing-reveal {
+    opacity: 0;
+    animation: landing-reveal 720ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: var(--landing-delay, 0ms);
+  }
+
+  .landing-image {
+    animation: landing-image 10s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+  }
+
+  .landing-slogan-surface {
+    background-color: hsl(var(--panel));
+  }
+
+  .dark .landing-slogan-surface {
+    background-color: #090909;
+  }
+
+  .landing-slogan-overlay {
+    background-image:
+      radial-gradient(circle at 50% 42%, rgba(0, 0, 0, 0.02), transparent 34%),
+      radial-gradient(circle at 50% 50%, transparent 58%, rgba(0, 0, 0, 0.08) 100%),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.01), rgba(0, 0, 0, 0.045));
+  }
+
+  .landing-slogan-image {
+    filter: invert(1) drop-shadow(0 22px 54px rgba(0, 0, 0, 0.48));
+  }
+
+  .dark .landing-slogan-image {
+    filter: drop-shadow(0 22px 54px rgba(0, 0, 0, 0.48));
+  }
+
+  .dark .landing-slogan-overlay {
+    background-image:
+      radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.03), transparent 34%),
+      radial-gradient(circle at 50% 50%, transparent 58%, rgba(255, 255, 255, 0.07) 100%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+  }
 }
 
 @layer utilities {
@@ -79,5 +140,15 @@ body {
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none; /* Chrome, Safari and Opera */
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .landing-reveal,
+    .landing-image {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

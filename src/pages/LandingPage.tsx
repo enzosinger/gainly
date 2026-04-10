@@ -1,51 +1,73 @@
 import PasswordAuthForm from "../components/auth/PasswordAuthForm";
-import { useLanguage } from "../i18n/LanguageProvider";
 import { Github, MoveRight } from "lucide-react";
+import { useLanguage } from "../i18n/LanguageProvider";
 
 export default function LandingPage() {
   const { copy } = useLanguage();
 
   return (
-    <main className="min-h-screen bg-[hsl(var(--background))] px-4 py-4 text-[hsl(var(--foreground))] md:px-8 md:py-6">
-      <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-3xl flex-col items-center justify-center gap-5 text-center md:min-h-[calc(100vh-3rem)] md:gap-6">
-        <section className="w-full panel-card overflow-hidden">
-          <div className="relative px-5 py-7 md:px-8 md:py-8">
-            <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-br from-[hsl(var(--panel))] via-[hsl(var(--panel-inset))] to-[hsl(var(--background))]" />
-            <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-3">
-              <img src="/gainly_logo.png" alt="Gainly" className="h-[4.75rem] w-auto transition-opacity md:h-[5.5rem] dark:hidden" />
-              <img src="/gainly_logo_white.png" alt="Gainly" className="hidden h-[4.75rem] w-auto transition-opacity md:h-[5.5rem] dark:block" />
+    <main className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      <div className="grid min-h-screen lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+        <section className="landing-reveal flex min-h-screen flex-col bg-[hsl(var(--background))] px-6 py-6 sm:px-8 lg:px-10 lg:py-8" style={{ ["--landing-delay" as string]: "0ms" }}>
+          <div className="flex items-center lg:hidden">
+            <img src="/gainly_logo.png" alt="Gainly" className="h-14 w-auto dark:hidden lg:h-14" />
+            <img src="/gainly_logo_white.png" alt="Gainly" className="hidden h-14 w-auto dark:block lg:h-14" />
+          </div>
 
-              <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">{copy.landing.title}</h1>
-              <p className="max-w-xl text-sm text-[hsl(var(--muted-foreground))] md:text-base">
-                {copy.landing.description}
-              </p>
+          <div className="flex flex-1 items-start justify-center py-6 lg:items-center lg:py-0">
+            <div className="w-full max-w-md space-y-4">
+              <div className="landing-reveal space-y-2 text-left lg:text-left" style={{ ["--landing-delay" as string]: "120ms" }}>
+                <h1 className="text-3xl font-semibold tracking-tight text-[hsl(var(--foreground))]">
+                  {copy.landing.title}
+                </h1>
+                <p className="text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+                  {copy.landing.description}
+                </p>
+              </div>
+
+              <div className="landing-reveal" style={{ ["--landing-delay" as string]: "220ms" }}>
+                <PasswordAuthForm />
+              </div>
+
+              <a
+                href="https://github.com/enzosinger"
+                target="_blank"
+                rel="noreferrer"
+                className="landing-reveal group flex items-center justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--panel))] px-4 py-3 text-left transition-colors duration-200 hover:bg-[hsl(var(--panel-inset))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2"
+                style={{ ["--landing-delay" as string]: "300ms" }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-2.5 transition-transform duration-200 group-hover:scale-[1.03]">
+                    <Github className="h-4 w-4" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--muted-foreground))]">
+                      PROJECT AUTHOR
+                    </p>
+                    <p className="text-sm text-[hsl(var(--foreground))]">github.com/enzosinger</p>
+                  </div>
+                </div>
+                <MoveRight className="h-4 w-4 shrink-0 text-[hsl(var(--muted-foreground))] transition-transform duration-200 group-hover:translate-x-1" />
+              </a>
             </div>
           </div>
         </section>
-        <section className="w-full max-w-xl space-y-4">
-          <PasswordAuthForm />
-          <a
-            href="https://github.com/enzosinger"
-            target="_blank"
-            rel="noreferrer"
-            className="group block rounded-[1.5rem] border border-[hsl(var(--border))] bg-[linear-gradient(135deg,hsl(var(--panel))_0%,hsl(var(--background))_100%)] px-4 py-4 text-left transition-transform duration-200 hover:-translate-y-0.5"
+
+        <aside className="landing-slogan-surface relative isolate hidden min-h-screen overflow-hidden border-l border-[hsl(var(--border))] lg:flex lg:items-center lg:justify-center">
+          <div className="landing-slogan-overlay absolute inset-0 z-0" />
+          <div
+            className="landing-reveal relative z-10 flex h-full w-full items-center justify-center p-10 xl:p-14"
+            style={{ ["--landing-delay" as string]: "180ms" }}
           >
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-2.5">
-                  <Github className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--muted-foreground))]">
-                    PROJECT AUTHOR
-                  </p>
-                  <p className="text-sm text-[hsl(var(--foreground))]">github.com/enzosinger</p>
-                </div>
-              </div>
-              <MoveRight className="h-4 w-4 text-[hsl(var(--muted-foreground))] transition-transform duration-200 group-hover:translate-x-1" />
+            <div className="landing-image flex w-full max-w-[68rem] items-center justify-center">
+              <img
+                src="/gainly_no_bg.png"
+                alt="Gainly slogan"
+                className="landing-slogan-image max-h-[78vh] w-[102%] max-w-[58rem] -translate-y-[4%] object-contain object-center transform-gpu"
+              />
             </div>
-          </a>
-        </section>
+          </div>
+        </aside>
       </div>
     </main>
   );
