@@ -79,4 +79,41 @@ describe("buildPlannedWeeklyVolume", () => {
       { muscleGroup: "triceps", plannedSets: 0, status: "low" },
     ]);
   });
+
+  it("counts each superset set for both the primary and paired exercise muscle groups", () => {
+    const exercises: Exercise[] = [
+      { id: "ex-chest", name: "Chest Press", muscleGroup: "chest" },
+      { id: "ex-triceps", name: "Pushdown", muscleGroup: "triceps" },
+    ];
+    const routines: Routine[] = [
+      {
+        id: "routine-1",
+        name: "Push",
+        completed: false,
+        deltaPercent: 0,
+        exercises: [
+          {
+            id: "routine-1-superset",
+            exerciseId: "ex-chest",
+            sets: [
+              { id: "set-1", technique: "superset", pairExerciseId: "ex-triceps" },
+              { id: "set-2", technique: "superset", pairExerciseId: "ex-triceps" },
+              { id: "set-3", technique: "superset", pairExerciseId: "ex-triceps" },
+            ],
+          },
+        ],
+      },
+    ];
+
+    expect(buildPlannedWeeklyVolume(routines, exercises)).toEqual([
+      { muscleGroup: "chest", plannedSets: 3, status: "low" },
+      { muscleGroup: "back", plannedSets: 0, status: "low" },
+      { muscleGroup: "shoulders", plannedSets: 0, status: "low" },
+      { muscleGroup: "quads", plannedSets: 0, status: "low" },
+      { muscleGroup: "hamstrings", plannedSets: 0, status: "low" },
+      { muscleGroup: "calves", plannedSets: 0, status: "low" },
+      { muscleGroup: "biceps", plannedSets: 0, status: "low" },
+      { muscleGroup: "triceps", plannedSets: 3, status: "low" },
+    ]);
+  });
 });

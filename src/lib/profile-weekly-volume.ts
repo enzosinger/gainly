@@ -40,6 +40,24 @@ export function buildPlannedWeeklyVolume(routines: Routine[], exercises: Exercis
         muscleGroup,
         (plannedSetsByMuscleGroup.get(muscleGroup) ?? 0) + routineExercise.sets.length,
       );
+
+      for (const set of routineExercise.sets) {
+        if (set.technique !== "superset" || !set.pairExerciseId) {
+          continue;
+        }
+
+        const pairExercise = exerciseById.get(set.pairExerciseId);
+
+        if (!pairExercise) {
+          continue;
+        }
+
+        const pairMuscleGroup = normalizeMuscleGroup(pairExercise.muscleGroup);
+        plannedSetsByMuscleGroup.set(
+          pairMuscleGroup,
+          (plannedSetsByMuscleGroup.get(pairMuscleGroup) ?? 0) + 1,
+        );
+      }
     }
   }
 
