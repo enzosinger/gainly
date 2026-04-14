@@ -45,10 +45,6 @@ export default function AppShell() {
               </NavLink>
             ))}
           </nav>
-          <div className="panel-inset mt-auto p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-[hsl(var(--muted-foreground))]">{copy.shell.modeLabel}</p>
-            <p className="mt-2 text-sm font-medium text-[hsl(var(--foreground))]">{copy.shell.modeValue}</p>
-          </div>
         </div>
       </aside>
       <div className="flex min-h-screen flex-col">
