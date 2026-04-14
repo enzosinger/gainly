@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import type { MuscleGroup } from "../../../types/domain";
 import { useGainlyStore } from "../../../state/gainly-store";
+import { MUSCLE_GROUP_FILTER_OPTIONS, MUSCLE_GROUPS } from "../../../../lib/muscle-groups";
 import { Button } from "../../ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../../ui/collapsible";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../ui/card";
@@ -10,9 +11,6 @@ import { Select } from "../../ui/select";
 import { ChevronDown } from "lucide-react";
 import { useLanguage } from "../../../i18n/LanguageProvider";
 import { getMuscleGroupLabel } from "../../../i18n/copy";
-
-const muscleGroupOptions: MuscleGroup[] = ["chest", "back", "shoulders", "legs", "biceps", "triceps"];
-const pickerMuscleFilterOptions: Array<MuscleGroup | "all"> = ["all", ...muscleGroupOptions];
 
 export default function ExercisePicker({ routineId }: { routineId: string }) {
   const { exercises, addExerciseToRoutine, addSupersetToRoutine, createExercise } = useGainlyStore();
@@ -181,7 +179,7 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
                     onChange={(event) => setMuscleGroup(event.target.value as MuscleGroup)}
                     className="mt-2"
                   >
-                    {muscleGroupOptions.map((option) => (
+                    {MUSCLE_GROUPS.map((option) => (
                       <option key={option} value={option}>
                         {getMuscleGroupLabel(language, option)}
                       </option>
@@ -223,7 +221,7 @@ export default function ExercisePicker({ routineId }: { routineId: string }) {
                       onChange={(event) => setMuscleFilter(event.target.value as MuscleGroup | "all")}
                       className="mt-2"
                     >
-                      {pickerMuscleFilterOptions.map((option) => (
+                      {MUSCLE_GROUP_FILTER_OPTIONS.map((option) => (
                         <option key={option} value={option}>
                           {option === "all" ? copy.exercises.allMuscleGroups : getMuscleGroupLabel(language, option)}
                         </option>

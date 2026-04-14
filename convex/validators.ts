@@ -1,12 +1,14 @@
 import { v } from "convex/values";
+import { ALL_MUSCLE_GROUPS } from "../lib/muscle-groups";
 
 export const muscleGroupValidator = v.union(
-  v.literal("chest"),
-  v.literal("back"),
-  v.literal("shoulders"),
-  v.literal("legs"),
-  v.literal("biceps"),
-  v.literal("triceps"),
+  ...(
+    ALL_MUSCLE_GROUPS.map((muscleGroup) => v.literal(muscleGroup)) as [
+      ReturnType<typeof v.literal>,
+      ReturnType<typeof v.literal>,
+      ...ReturnType<typeof v.literal>[],
+    ]
+  ),
 );
 
 export const exerciseDescriptionValidator = v.optional(v.string());

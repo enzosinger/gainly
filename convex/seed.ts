@@ -34,7 +34,7 @@ export const starterExercises: StarterExercise[] = [
   { key: "barbell-bench-press", name: "Barbell Bench Press", muscleGroup: "chest" },
   { key: "seated-cable-row", name: "Seated Cable Row", muscleGroup: "back" },
   { key: "dumbbell-shoulder-press", name: "Dumbbell Shoulder Press", muscleGroup: "shoulders" },
-  { key: "barbell-back-squat", name: "Barbell Back Squat", muscleGroup: "legs" },
+  { key: "barbell-back-squat", name: "Barbell Back Squat", muscleGroup: "quads" },
   { key: "incline-dumbbell-curl", name: "Incline Dumbbell Curl", muscleGroup: "biceps" },
   { key: "cable-triceps-pushdown", name: "Cable Triceps Pushdown", muscleGroup: "triceps" },
 ];

@@ -120,6 +120,29 @@ describe("RoutineDetailPage", () => {
     expect(screen.queryAllByText(/unilateral|bilateral/i)).toHaveLength(0);
   });
 
+  it("uses the shared lower-body taxonomy in the routine builder create form", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/routines/routine-upper-a"]}>
+        <GainlyStoreProvider>
+          <Routes>
+            <Route path="/routines/:routineId" element={<RoutineDetailPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole("button", { name: /create new/i }));
+
+    const muscleGroupSelect = screen.getByRole("combobox", { name: /muscle group/i });
+
+    expect(within(muscleGroupSelect).getByRole("option", { name: /^quads$/i })).toBeInTheDocument();
+    expect(within(muscleGroupSelect).getByRole("option", { name: /^hamstrings$/i })).toBeInTheDocument();
+    expect(within(muscleGroupSelect).getByRole("option", { name: /^calves$/i })).toBeInTheDocument();
+    expect(within(muscleGroupSelect).queryByRole("option", { name: /^legs$/i })).not.toBeInTheDocument();
+  });
+
   it("removes superset from the technique menu", async () => {
     const user = userEvent.setup();
 

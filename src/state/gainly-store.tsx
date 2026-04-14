@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { mockExercises } from "../data/mockExercises";
 import { mockRoutines } from "../data/mockRoutines";
+import { normalizeMuscleGroup } from "../../lib/muscle-groups";
 import type {
   Exercise,
   Routine,
@@ -55,6 +56,13 @@ function normalizeExerciseDescription(description?: string) {
   return trimmedDescription ? trimmedDescription : undefined;
 }
 
+function normalizeExerciseMuscleGroup(exercise: Exercise): Exercise {
+  return {
+    ...exercise,
+    muscleGroup: normalizeMuscleGroup(exercise.muscleGroup),
+  };
+}
+
 function buildCreatedExercise(
   currentExercises: Exercise[],
   input: { name: string; muscleGroup: MuscleGroup; description?: string },
@@ -77,7 +85,7 @@ function buildCreatedExercise(
   return {
     id: nextId,
     name: trimmedName,
-    muscleGroup: input.muscleGroup,
+    muscleGroup: normalizeMuscleGroup(input.muscleGroup),
     description: normalizeExerciseDescription(input.description),
   };
 }
@@ -110,7 +118,7 @@ function buildUpdatedExercise(
   return {
     ...existingExercise,
     name: trimmedName,
-    muscleGroup: input.muscleGroup,
+    muscleGroup: normalizeMuscleGroup(input.muscleGroup),
     description,
   };
 }
@@ -225,7 +233,7 @@ function appendSupersetToRoutine(
 }
 
 export function GainlyStoreProvider({ children }: { children: React.ReactNode }) {
-  const [exercises, setExercises] = useState(mockExercises);
+  const [exercises, setExercises] = useState(() => mockExercises.map(normalizeExerciseMuscleGroup));
   const [routines, setRoutines] = useState(mockRoutines);
   const [expandedExerciseId, setExpandedExerciseId] = useState<string | null>(null);
   const [exerciseLibraryMuscleGroupFilter, setExerciseLibraryMuscleGroupFilter] = useState<MuscleGroup | "all">("all");
@@ -463,16 +471,24 @@ export function useGainlyStore() {
   return value;
 }
 
+function normalizeExerciseMuscleGroupValue(muscleGroup: unknown): MuscleGroup {
+  if (typeof muscleGroup !== "string") {
+    return "quads";
+  }
+
+  return normalizeMuscleGroup(muscleGroup as MuscleGroup);
+}
+
 function mapExerciseDoc(exercise: {
   _id: Id<"exercises">;
   name: string;
-  muscleGroup: MuscleGroup;
+  muscleGroup: unknown;
   description?: string;
 }): Exercise {
   return {
     id: exercise._id,
     name: exercise.name,
-    muscleGroup: exercise.muscleGroup,
+    muscleGroup: normalizeExerciseMuscleGroupValue(exercise.muscleGroup),
     description: exercise.description,
   };
 }

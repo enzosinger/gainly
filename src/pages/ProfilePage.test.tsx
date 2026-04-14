@@ -37,4 +37,26 @@ describe("ProfilePage", () => {
     expect(profileTitle.className).toBe(exercisesClassName);
     expect(profileTitle.className).toBe(routinesClassName);
   });
+
+  it("renders the current-week volume section with one card per canonical muscle group", () => {
+    render(
+      <GainlyStoreProvider>
+        <ProfilePage />
+      </GainlyStoreProvider>,
+    );
+
+    expect(
+      screen.getByRole("heading", {
+        level: 2,
+        name: "Current week volume",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("heading", {
+        level: 3,
+      }).map((heading) => heading.textContent),
+    ).toEqual(["chest", "back", "shoulders", "quads", "hamstrings", "calves", "biceps", "triceps"]);
+    expect(screen.getAllByText("Low volume")).toHaveLength(8);
+    expect(screen.queryByText("Weekly sets")).not.toBeInTheDocument();
+  });
 });

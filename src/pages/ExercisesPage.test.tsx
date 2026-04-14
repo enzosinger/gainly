@@ -77,6 +77,30 @@ describe("ExercisesPage", () => {
     expect(screen.getByRole("heading", { name: /seated cable row/i })).toBeInTheDocument();
   });
 
+  it("reuses the shared lower-body taxonomy in the filter chips and exercise form", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <GainlyStoreProvider>
+        <ExercisesPage />
+      </GainlyStoreProvider>,
+    );
+
+    expect(screen.getByRole("button", { name: /^quads$/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^hamstrings$/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^calves$/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^legs$/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /create exercise/i }));
+
+    const muscleGroupSelect = screen.getByRole("combobox", { name: /muscle group/i });
+
+    expect(within(muscleGroupSelect).getByRole("option", { name: /^quads$/i })).toBeInTheDocument();
+    expect(within(muscleGroupSelect).getByRole("option", { name: /^hamstrings$/i })).toBeInTheDocument();
+    expect(within(muscleGroupSelect).getByRole("option", { name: /^calves$/i })).toBeInTheDocument();
+    expect(within(muscleGroupSelect).queryByRole("option", { name: /^legs$/i })).not.toBeInTheDocument();
+  });
+
   it("creates a new library exercise directly on the exercises page", async () => {
     const user = userEvent.setup();
 
@@ -89,7 +113,7 @@ describe("ExercisesPage", () => {
     await user.click(screen.getByRole("button", { name: /create exercise/i }));
 
     await user.type(screen.getByRole("textbox", { name: /exercise name/i }), "Romanian Deadlift");
-    await user.selectOptions(screen.getByRole("combobox", { name: /muscle group/i }), "legs");
+    await user.selectOptions(screen.getByRole("combobox", { name: /muscle group/i }), "quads");
     await user.type(
       screen.getByRole("textbox", { name: /description/i }),
       "Hinge with soft knees and keep the bar close.",
@@ -99,7 +123,7 @@ describe("ExercisesPage", () => {
     const createdExerciseCard = screen.getByRole("heading", { name: /romanian deadlift/i }).closest(".panel-card");
 
     expect(createdExerciseCard).not.toBeNull();
-    expect(within(createdExerciseCard as HTMLElement).getByText(/legs/i)).toBeInTheDocument();
+    expect(within(createdExerciseCard as HTMLElement).getByText(/quads/i)).toBeInTheDocument();
     expect(
       within(createdExerciseCard as HTMLElement).getByText(/hinge with soft knees and keep the bar close/i),
     ).toBeInTheDocument();

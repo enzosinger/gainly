@@ -2,6 +2,7 @@ import { Check, Pencil, Trash2, X } from "lucide-react";
 import { FormEvent, useId, useState } from "react";
 import { useGainlyStore } from "../../../state/gainly-store";
 import type { MuscleGroup } from "../../../types/domain";
+import { MUSCLE_GROUP_FILTER_OPTIONS, MUSCLE_GROUPS } from "../../../../lib/muscle-groups";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,8 +21,6 @@ import { Select } from "../../ui/select";
 import { useLanguage } from "../../../i18n/LanguageProvider";
 import { getMuscleGroupLabel } from "../../../i18n/copy";
 
-const muscleGroupOptions: Array<MuscleGroup | "all"> = ["all", "chest", "back", "shoulders", "legs", "biceps", "triceps"];
-const exerciseMuscleGroupOptions: MuscleGroup[] = ["chest", "back", "shoulders", "legs", "biceps", "triceps"];
 const textareaClassName =
   "mt-2 flex min-h-[6rem] w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--panel))] px-3 py-2 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 
@@ -172,7 +171,7 @@ export default function ExerciseLibraryList() {
             className="scrollbar-hide -mx-4 flex flex-nowrap overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0 md:pb-0"
           >
             <div className="flex gap-2">
-              {muscleGroupOptions.map((option) => {
+              {MUSCLE_GROUP_FILTER_OPTIONS.map((option) => {
                 const isActive = exerciseLibraryMuscleGroupFilter === option;
 
                 return (
@@ -218,7 +217,7 @@ export default function ExerciseLibraryList() {
                     onChange={(event) => setCreateMuscleGroup(event.target.value as MuscleGroup)}
                     className="mt-2"
                   >
-                    {exerciseMuscleGroupOptions.map((option) => (
+                    {MUSCLE_GROUPS.map((option) => (
                       <option key={option} value={option}>
                         {getMuscleGroupLabel(language, option)}
                       </option>
@@ -367,7 +366,7 @@ export default function ExerciseLibraryList() {
                             }
                             className="mt-2"
                           >
-                            {exerciseMuscleGroupOptions.map((option) => (
+                            {MUSCLE_GROUPS.map((option) => (
                               <option key={option} value={option}>
                                 {getMuscleGroupLabel(language, option)}
                               </option>

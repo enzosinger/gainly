@@ -1,3 +1,4 @@
+import { normalizeMuscleGroup } from "../../lib/muscle-groups";
 import type { MuscleGroup, TechniqueType } from "../types/domain";
 
 export type Language = "en" | "pt";
@@ -154,6 +155,15 @@ const translations = {
       routines: "Routines",
       exerciseLibrary: "Exercise library",
       weeklySets: "Weekly sets",
+      weeklyVolume: {
+        title: "Current week volume",
+        plannedSets: "Planned sets",
+        status: {
+          low: "Low volume",
+          moderate: "Moderate volume",
+          high: "High volume",
+        },
+      },
       language: "Language",
       gainlyAthlete: "Gainly athlete",
       signedIn: "Signed in",
@@ -229,7 +239,9 @@ const translations = {
       chest: "chest",
       back: "back",
       shoulders: "shoulders",
-      legs: "legs",
+      quads: "quads",
+      hamstrings: "hamstrings",
+      calves: "calves",
       biceps: "biceps",
       triceps: "triceps",
     },
@@ -389,6 +401,15 @@ const translations = {
       routines: "Rotinas",
       exerciseLibrary: "Biblioteca de exercícios",
       weeklySets: "Séries semanais",
+      weeklyVolume: {
+        title: "Volume da semana atual",
+        plannedSets: "Séries planejadas",
+        status: {
+          low: "Volume baixo",
+          moderate: "Volume moderado",
+          high: "Volume alto",
+        },
+      },
       language: "Idioma",
       gainlyAthlete: "Atleta Gainly",
       signedIn: "Conectado",
@@ -464,7 +485,9 @@ const translations = {
       chest: "peito",
       back: "costas",
       shoulders: "ombros",
-      legs: "pernas",
+      quads: "quadríceps",
+      hamstrings: "isquiotibiais",
+      calves: "panturrilhas",
       biceps: "bíceps",
       triceps: "tríceps",
     },
@@ -520,7 +543,11 @@ export function getInitialLanguage() {
 }
 
 export function getMuscleGroupLabel(language: Language, muscleGroup: MuscleGroup | "all") {
-  return translations[language].muscleGroups[muscleGroup];
+  if (muscleGroup === "all") {
+    return translations[language].muscleGroups.all;
+  }
+
+  return translations[language].muscleGroups[normalizeMuscleGroup(muscleGroup)];
 }
 
 export function getTechniqueLabel(language: Language, technique: TechniqueType) {

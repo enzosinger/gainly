@@ -1,10 +1,6 @@
-export type MuscleGroup =
-  | "chest"
-  | "back"
-  | "shoulders"
-  | "legs"
-  | "biceps"
-  | "triceps";
+import type { MuscleGroup } from "../../lib/muscle-groups";
+
+export type { MuscleGroup };
 
 export type TechniqueType = "normal" | "backoff" | "cluster" | "superset";
 

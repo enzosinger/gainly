@@ -5,19 +5,16 @@ import { Switch } from "../components/ui/switch";
 import { useTheme } from "../components/ui/theme-provider";
 import { useGainlyStore } from "../state/gainly-store";
 import { cn } from "../lib/utils";
+import { buildPlannedWeeklyVolume } from "../lib/profile-weekly-volume";
 import { useLanguage } from "../i18n/LanguageProvider";
 import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
+import WeeklyMuscleVolumeSection from "../components/organisms/profile/WeeklyMuscleVolumeSection";
 
 export default function ProfilePage() {
   const { viewer, routines, exercises, signOut } = useGainlyStore();
   const { theme, setTheme } = useTheme();
   const { copy } = useLanguage();
-
-  const weeklySets = routines.reduce(
-    (total, routine) =>
-      total + routine.exercises.reduce((exerciseTotal, item) => exerciseTotal + item.sets.length, 0),
-    0,
-  );
+  const plannedWeeklyVolume = buildPlannedWeeklyVolume(routines, exercises);
 
   return (
     <section className="space-y-6 md:space-y-8">
@@ -86,7 +83,7 @@ export default function ProfilePage() {
         ) : null}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         <Card>
           <CardHeader className="pb-3">
             <p className="eyebrow">{copy.profile.routines}</p>
@@ -103,15 +100,9 @@ export default function ProfilePage() {
             <p className="text-3xl font-semibold">{exercises.length}</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <p className="eyebrow">{copy.profile.weeklySets}</p>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-semibold">{weeklySets}</p>
-          </CardContent>
-        </Card>
       </div>
+
+      <WeeklyMuscleVolumeSection entries={plannedWeeklyVolume} />
     </section>
   );
 }

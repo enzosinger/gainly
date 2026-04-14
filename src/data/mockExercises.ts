@@ -19,7 +19,7 @@ export const mockExercises: Exercise[] = [
   {
     id: "ex-barbell-back-squat",
     name: "Barbell Back Squat",
-    muscleGroup: "legs",
+    muscleGroup: "quads",
   },
   {
     id: "ex-incline-dumbbell-curl",
