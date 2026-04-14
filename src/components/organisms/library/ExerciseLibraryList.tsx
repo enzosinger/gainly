@@ -1,4 +1,4 @@
-import { Check, Pencil, Trash2, X } from "lucide-react";
+import { Check, Pencil, Plus, Trash2, X } from "lucide-react";
 import { FormEvent, useId, useState } from "react";
 import { useGainlyStore } from "../../../state/gainly-store";
 import type { MuscleGroup } from "../../../types/domain";
@@ -157,12 +157,14 @@ export default function ExerciseLibraryList() {
             <Button
               type="button"
               variant="outline"
-              size="sm"
+              size="icon"
+              className="rounded-full"
               aria-controls={createFormId}
               aria-expanded={createOpen}
+              aria-label={createOpen ? copy.exercises.cancelAction : copy.exercises.toggleCreate}
               onClick={toggleCreateForm}
             >
-              {createOpen ? copy.exercises.cancelAction : copy.exercises.toggleCreate}
+              {createOpen ? <X className="size-4" /> : <Plus className="size-4" />}
             </Button>
           </div>
           <div

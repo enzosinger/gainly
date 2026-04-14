@@ -1,3 +1,4 @@
+import { Dumbbell, LayoutGrid, ListChecks, User } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { cn } from "../../lib/utils";
 import { useLanguage } from "../../i18n/LanguageProvider";
@@ -5,7 +6,7 @@ import { useLanguage } from "../../i18n/LanguageProvider";
 const desktopNavLinkClasses =
   "rounded-md px-4 py-3 text-sm font-medium transition";
 const mobileNavLinkClasses =
-  "rounded-md px-1 py-2 text-center text-[10.5px] uppercase tracking-[0.08em] transition";
+  "flex items-center justify-center rounded-md px-1 py-3 text-center transition";
 const activeNavLinkClasses = "bg-[hsl(var(--strong))] text-[hsl(var(--strong-foreground))]";
 const inactiveDesktopNavLinkClasses =
   "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--panel-inset))] hover:text-[hsl(var(--foreground))]";
@@ -14,10 +15,10 @@ const inactiveMobileNavLinkClasses = "text-[hsl(var(--muted-foreground))]";
 export default function AppShell() {
   const { copy } = useLanguage();
   const links = [
-    { to: "/", label: copy.shell.nav.dashboard },
-    { to: "/routines", label: copy.shell.nav.routines },
-    { to: "/exercises", label: copy.shell.nav.exercises },
-    { to: "/profile", label: copy.shell.nav.profile },
+    { to: "/", label: copy.shell.nav.dashboard, icon: LayoutGrid },
+    { to: "/routines", label: copy.shell.nav.routines, icon: ListChecks },
+    { to: "/exercises", label: copy.shell.nav.exercises, icon: Dumbbell },
+    { to: "/profile", label: copy.shell.nav.profile, icon: User },
   ];
 
   return (
@@ -57,6 +58,7 @@ export default function AppShell() {
               <NavLink
                 key={link.to}
                 to={link.to}
+                aria-label={link.label}
                 className={({ isActive }) =>
                   cn(
                     mobileNavLinkClasses,
@@ -64,7 +66,7 @@ export default function AppShell() {
                   )
                 }
               >
-                {link.label}
+                <link.icon aria-hidden="true" className="h-5 w-5" strokeWidth={1.9} />
               </NavLink>
             ))}
           </div>

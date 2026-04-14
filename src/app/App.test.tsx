@@ -168,6 +168,10 @@ describe("App shell", () => {
     expect(desktopAside.closest("aside")).toHaveClass("app-shell-sidebar");
     expect(mobileNavigation).toHaveClass("app-shell-mobile-nav");
     expect(mainRegion).toHaveClass("app-shell-main");
+    expect(within(mobileNavigation).getByRole("link", { name: /dashboard/i })).toBeInTheDocument();
+    expect(within(mobileNavigation).getByRole("link", { name: /routines/i })).toBeInTheDocument();
+    expect(within(mobileNavigation).getByRole("link", { name: /exercises/i })).toBeInTheDocument();
+    expect(within(mobileNavigation).getByRole("link", { name: /profile/i })).toBeInTheDocument();
     expect(screen.getByText(/weekly review/i)).toBeInTheDocument();
   });
 });

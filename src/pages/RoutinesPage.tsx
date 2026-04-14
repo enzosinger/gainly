@@ -1,5 +1,5 @@
 import { FormEvent, useId, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import RoutineWeekCard from "../components/molecules/RoutineWeekCard";
 import {
@@ -118,12 +118,14 @@ export default function RoutinesPage() {
           <Button
             type="button"
             variant="outline"
-            size="sm"
+            size="icon"
+            className="rounded-full"
             aria-controls={createFormId}
             aria-expanded={createOpen}
+            aria-label={createOpen ? copy.routines.cancel : copy.routines.toggleCreate}
             onClick={() => setCreateOpen((current) => !current)}
           >
-            {createOpen ? copy.routines.cancel : copy.routines.toggleCreate}
+            {createOpen ? <X className="size-4" /> : <Plus className="size-4" />}
           </Button>
         </div>
 
@@ -168,13 +170,17 @@ export default function RoutinesPage() {
         ) : (
           <div className="grid gap-4 md:gap-5 xl:grid-cols-2">
             {routines.map((routine) => (
-              <div key={routine.id} className="relative">
-                <div className="absolute right-3 top-3 z-10">
+              <RoutineWeekCard
+                key={routine.id}
+                routine={routine}
+                editHref={`/routines/${routine.id}`}
+                showStatus={false}
+                headerAction={
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className="h-10 w-10 rounded-full"
                     aria-label={copy.routines.deleteRoutineButton(routine.name)}
                     disabled={deletingRoutineId === routine.id}
                     onClick={() => {
@@ -183,9 +189,8 @@ export default function RoutinesPage() {
                   >
                     <Trash2 className="size-4" />
                   </Button>
-                </div>
-                <RoutineWeekCard routine={routine} editHref={`/routines/${routine.id}`} showStatus={false} />
-              </div>
+                }
+              />
             ))}
           </div>
         )}
