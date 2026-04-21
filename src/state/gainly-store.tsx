@@ -172,17 +172,9 @@ function normalizeRepRangeBound(value?: number) {
 }
 
 function normalizeRepRange(min?: number, max?: number) {
-  const normalizedMin = normalizeRepRangeBound(min);
-  const normalizedMax = normalizeRepRangeBound(max);
-
   return {
-    min: normalizedMin,
-    max:
-      normalizedMin !== undefined &&
-      normalizedMax !== undefined &&
-      normalizedMax < normalizedMin
-        ? normalizedMin
-        : normalizedMax,
+    min: normalizeRepRangeBound(min),
+    max: normalizeRepRangeBound(max),
   };
 }
 

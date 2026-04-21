@@ -177,7 +177,6 @@ function RepRangeFields({ item, onUpdate }: {
           value={item.repRangeMin ?? ""}
           onChange={(event) => onUpdate({ min: parseValue(event.target.value), max: item.repRangeMax })}
           aria-label={copy.builder.repRangeMin}
-          placeholder="5"
           className="h-10 w-14 rounded-xl px-2 py-0 text-center text-xs"
         />
         <span className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">-</span>
@@ -188,7 +187,6 @@ function RepRangeFields({ item, onUpdate }: {
           value={item.repRangeMax ?? ""}
           onChange={(event) => onUpdate({ min: item.repRangeMin, max: parseValue(event.target.value) })}
           aria-label={copy.builder.repRangeMax}
-          placeholder="8"
           className="h-10 w-14 rounded-xl px-2 py-0 text-center text-xs"
         />
       </div>

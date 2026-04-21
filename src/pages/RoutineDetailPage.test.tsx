@@ -240,6 +240,29 @@ describe("RoutineDetailPage", () => {
     expect(maxInput).toHaveValue(9);
   });
 
+  it("lets the user clear and replace the max rep range without auto-filling a default", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/routines/routine-upper-a"]}>
+        <GainlyStoreProvider>
+          <Routes>
+            <Route path="/routines/:routineId" element={<RoutineDetailPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
+    );
+
+    const maxInput = screen.getAllByRole("spinbutton", { name: /maximum reps/i })[0];
+
+    await user.click(maxInput);
+    await user.keyboard("{Control>}a{/Control}{Backspace}");
+    expect(maxInput).toHaveValue(null);
+
+    await user.type(maxInput, "12");
+    expect(maxInput).toHaveValue(12);
+  });
+
   it("switches the routine editor with the routine selector", async () => {
     const user = userEvent.setup();
 
