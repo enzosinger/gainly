@@ -54,6 +54,11 @@ type GainlyStoreValue = {
   signOut: () => Promise<void>;
 };
 
+type RepRangeInput = {
+  min?: number;
+  max?: number;
+};
+
 const GainlyStoreContext = createContext<GainlyStoreValue | null>(null);
 
 function normalizeExerciseDescription(description?: string) {
@@ -404,7 +409,7 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
           }),
         );
       },
-      updateRoutineExerciseRepRange: (routineId: string, routineExerciseId: string, repRange) => {
+      updateRoutineExerciseRepRange: (routineId: string, routineExerciseId: string, repRange: RepRangeInput) => {
         const normalizedRange = normalizeRepRange(repRange.min, repRange.max);
 
         setRoutines((current) =>
@@ -685,7 +690,7 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
           pairExerciseId: pairExerciseId as Id<"exercises">,
         });
       },
-      updateRoutineExerciseRepRange: (routineId: string, routineExerciseId: string, repRange) => {
+      updateRoutineExerciseRepRange: (routineId: string, routineExerciseId: string, repRange: RepRangeInput) => {
         const normalizedRange = normalizeRepRange(repRange.min, repRange.max);
 
         void updateRepRangeMutation({
