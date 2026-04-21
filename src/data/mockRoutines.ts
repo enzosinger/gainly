@@ -10,6 +10,8 @@ export const mockRoutines: Routine[] = [
       {
         id: "routine-upper-a-bench",
         exerciseId: "ex-barbell-bench-press",
+        repRangeMin: 5,
+        repRangeMax: 8,
         sets: [
           { id: "set-upper-a-bench-1", technique: "normal", weightKg: 80, reps: 6 },
           { id: "set-upper-a-bench-2", technique: "backoff", reps: 8, backoffPercent: 10 },
@@ -31,6 +33,8 @@ export const mockRoutines: Routine[] = [
       {
         id: "routine-lower-a-squat",
         exerciseId: "ex-barbell-back-squat",
+        repRangeMin: 4,
+        repRangeMax: 6,
         sets: [
           { id: "set-lower-a-squat-1", technique: "normal", weightKg: 110, reps: 5 },
           { id: "set-lower-a-squat-2", technique: "cluster", clusterBlocks: 3, clusterRepRange: "2-3" },

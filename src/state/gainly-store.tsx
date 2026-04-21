@@ -38,6 +38,11 @@ type GainlyStoreValue = {
     technique: Exclude<TechniqueType, "normal" | "superset">,
   ) => void;
   addSupersetToRoutine: (routineId: string, exerciseId: string, pairExerciseId: string) => void;
+  updateRoutineExerciseRepRange: (
+    routineId: string,
+    routineExerciseId: string,
+    repRange: { min?: number; max?: number },
+  ) => void;
   updateRoutineExerciseWarmupSets: (routineId: string, routineExerciseId: string, count: number) => void;
   updateRoutineExerciseFeederSets: (routineId: string, routineExerciseId: string, count: number) => void;
   createExercise: (input: { name: string; muscleGroup: MuscleGroup; description?: string }) => Promise<Exercise>;
@@ -151,6 +156,29 @@ function filterExercisesByMuscleGroup(exercises: Exercise[], muscleGroup: Muscle
   }
 
   return exercises.filter((exercise) => exercise.muscleGroup === muscleGroup);
+}
+
+function normalizeRepRangeBound(value?: number) {
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    return undefined;
+  }
+
+  return value > 0 ? value : undefined;
+}
+
+function normalizeRepRange(min?: number, max?: number) {
+  const normalizedMin = normalizeRepRangeBound(min);
+  const normalizedMax = normalizeRepRangeBound(max);
+
+  return {
+    min: normalizedMin,
+    max:
+      normalizedMin !== undefined &&
+      normalizedMax !== undefined &&
+      normalizedMax < normalizedMin
+        ? normalizedMin
+        : normalizedMax,
+  };
 }
 
 function buildNextSetForRoutineExercise(routineExercise: RoutineExercise) {
@@ -376,6 +404,23 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
           }),
         );
       },
+      updateRoutineExerciseRepRange: (routineId: string, routineExerciseId: string, repRange) => {
+        const normalizedRange = normalizeRepRange(repRange.min, repRange.max);
+
+        setRoutines((current) =>
+          current.map((routine) => {
+            if (routine.id !== routineId) return routine;
+            return {
+              ...routine,
+              exercises: routine.exercises.map((ex) =>
+                ex.id === routineExerciseId
+                  ? { ...ex, repRangeMin: normalizedRange.min, repRangeMax: normalizedRange.max }
+                  : ex,
+              ),
+            };
+          }),
+        );
+      },
       updateRoutineExerciseWarmupSets: (routineId: string, routineExerciseId: string, count: number) => {
         setRoutines((current) =>
           current.map((routine) => {
@@ -533,6 +578,7 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
   const addTechniqueToRoutineExerciseMutation = useMutation(api.routines.addTechnique);
   const addSupersetToRoutineMutation = useMutation(api.routines.addSuperset);
   const removeSetFromRoutineExerciseMutation = useMutation(api.routines.removeSet);
+  const updateRepRangeMutation = useMutation(api.routines.updateRepRange);
   const updateWarmupSetsMutation = useMutation(api.routines.updateWarmupSets);
   const updateFeederSetsMutation = useMutation(api.routines.updateFeederSets);
   const { signOut } = useAuthActions();
@@ -639,6 +685,16 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
           pairExerciseId: pairExerciseId as Id<"exercises">,
         });
       },
+      updateRoutineExerciseRepRange: (routineId: string, routineExerciseId: string, repRange) => {
+        const normalizedRange = normalizeRepRange(repRange.min, repRange.max);
+
+        void updateRepRangeMutation({
+          routineId: routineId as Id<"routines">,
+          routineExerciseId,
+          repRangeMin: normalizedRange.min ?? null,
+          repRangeMax: normalizedRange.max ?? null,
+        });
+      },
       updateRoutineExerciseWarmupSets: (routineId: string, routineExerciseId: string, count: number) => {
         void updateWarmupSetsMutation({
           routineId: routineId as Id<"routines">,
@@ -709,6 +765,7 @@ export function ConvexGainlyStoreProvider({ children }: { children: React.ReactN
       routines,
       setExerciseLibraryMuscleGroupFilter,
       signOut,
+      updateRepRangeMutation,
       viewer,
       updateExerciseMutation,
       updateWarmupSetsMutation,

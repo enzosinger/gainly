@@ -50,6 +50,8 @@ export type WorkoutSessionExercise = {
   exerciseId: string;
   position: number;
   sets: WorkoutSessionSet[];
+  repRangeMin?: number;
+  repRangeMax?: number;
   warmupSets?: number;
   feederSets?: number;
 };
@@ -68,6 +70,8 @@ export type RoutineExercise = {
   id: string;
   exerciseId: string;
   sets: SetEntry[];
+  repRangeMin?: number;
+  repRangeMax?: number;
   warmupSets?: number;
   feederSets?: number;
 };

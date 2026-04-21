@@ -42,6 +42,8 @@ function buildRoutineExercises(
     .map((exerciseRow): RoutineExerciseStructure => ({
       id: exerciseRow.publicId,
       exerciseId: exerciseRow.exerciseId,
+      repRangeMin: exerciseRow.repRangeMin,
+      repRangeMax: exerciseRow.repRangeMax,
       warmupSets: exerciseRow.warmupSets,
       feederSets: exerciseRow.feederSets,
       sets: (setsByExercisePublicId.get(exerciseRow.publicId) ?? [])
@@ -92,6 +94,8 @@ export async function writeRoutineStructure(
       publicId: exercise.id,
       exerciseId: exercise.exerciseId,
       position,
+      repRangeMin: exercise.repRangeMin,
+      repRangeMax: exercise.repRangeMax,
       warmupSets: exercise.warmupSets,
       feederSets: exercise.feederSets,
       createdAt: now,
@@ -135,6 +139,19 @@ function buildRoutineSetPublicId(routineExerciseId: string, nextIndex: number) {
 
 async function refreshRoutine(ctx: MutationCtx, routine: Doc<"routines">) {
   return await hydrateRoutine(ctx, routine);
+}
+
+async function findRoutineExerciseRow(
+  ctx: MutationCtx,
+  routine: Doc<"routines">,
+  routineExerciseId: string,
+) {
+  return await ctx.db
+    .query("routineExercises")
+    .withIndex("by_user_routine_publicId", (q) =>
+      q.eq("userId", routine.userId).eq("routineId", routine._id).eq("publicId", routineExerciseId),
+    )
+    .unique();
 }
 
 export async function addRoutineExercise(
@@ -359,12 +376,7 @@ export async function updateRoutineWarmupSets(
   warmupSets: number,
 ) {
   const now = Date.now();
-  const targetExercise = await ctx.db
-    .query("routineExercises")
-    .withIndex("by_user_routine_publicId", (q) =>
-      q.eq("userId", routine.userId).eq("routineId", routine._id).eq("publicId", routineExerciseId),
-    )
-    .unique();
+  const targetExercise = await findRoutineExerciseRow(ctx, routine, routineExerciseId);
 
   if (!targetExercise) {
     throw new Error("Routine exercise not found.");
@@ -389,12 +401,7 @@ export async function updateRoutineFeederSets(
   feederSets: number,
 ) {
   const now = Date.now();
-  const targetExercise = await ctx.db
-    .query("routineExercises")
-    .withIndex("by_user_routine_publicId", (q) =>
-      q.eq("userId", routine.userId).eq("routineId", routine._id).eq("publicId", routineExerciseId),
-    )
-    .unique();
+  const targetExercise = await findRoutineExerciseRow(ctx, routine, routineExerciseId);
 
   if (!targetExercise) {
     throw new Error("Routine exercise not found.");
@@ -402,6 +409,33 @@ export async function updateRoutineFeederSets(
 
   await ctx.db.patch(targetExercise._id, {
     feederSets,
+    updatedAt: now,
+  });
+
+  await ctx.db.patch(routine._id, {
+    updatedAt: now,
+  });
+
+  return await refreshRoutine(ctx, { ...routine, updatedAt: now });
+}
+
+export async function updateRoutineRepRange(
+  ctx: MutationCtx,
+  routine: Doc<"routines">,
+  routineExerciseId: string,
+  repRangeMin?: number,
+  repRangeMax?: number,
+) {
+  const now = Date.now();
+  const targetExercise = await findRoutineExerciseRow(ctx, routine, routineExerciseId);
+
+  if (!targetExercise) {
+    throw new Error("Routine exercise not found.");
+  }
+
+  await ctx.db.patch(targetExercise._id, {
+    repRangeMin,
+    repRangeMax,
     updatedAt: now,
   });
 

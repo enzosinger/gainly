@@ -18,6 +18,7 @@ export default function RoutineDetailPage() {
     removeSetFromRoutineExercise,
     removeExerciseFromRoutine,
     addTechniqueToRoutineExercise,
+    updateRoutineExerciseRepRange,
     updateRoutineExerciseWarmupSets,
     updateRoutineExerciseFeederSets,
   } = useGainlyStore();
@@ -135,6 +136,9 @@ export default function RoutineDetailPage() {
                 onRemove={(routineExerciseId) => removeExerciseFromRoutine(routine.id, routineExerciseId)}
                 onSelectTechnique={(routineExerciseId, technique) =>
                   addTechniqueToRoutineExercise(routine.id, routineExerciseId, technique)
+                }
+                onUpdateRepRange={(routineExerciseId, repRange) =>
+                  updateRoutineExerciseRepRange(routine.id, routineExerciseId, repRange)
                 }
                 onUpdateWS={(routineExerciseId, count) =>
                   updateRoutineExerciseWarmupSets(routine.id, routineExerciseId, count)

@@ -56,7 +56,7 @@ describe("ProfilePage", () => {
         level: 3,
       }).map((heading) => heading.textContent),
     ).toEqual(["chest", "back", "shoulders", "quads", "hamstrings", "calves", "biceps", "triceps"]);
-    expect(screen.getAllByText("Low volume")).toHaveLength(8);
+    expect(screen.getAllByText("Low")).toHaveLength(8);
     expect(screen.queryByText("Weekly sets")).not.toBeInTheDocument();
   });
 });

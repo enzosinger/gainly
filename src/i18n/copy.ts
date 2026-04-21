@@ -202,6 +202,9 @@ const translations = {
     },
     builder: {
       exerciseIndex: (index: number) => `Exercise ${index}`,
+      repRange: "Rep range",
+      repRangeMin: "Minimum reps",
+      repRangeMax: "Maximum reps",
       warmupSets: "WU",
       feederSets: "FS",
       addSet: "Add set",
@@ -448,6 +451,9 @@ const translations = {
     },
     builder: {
       exerciseIndex: (index: number) => `Exercício ${index}`,
+      repRange: "Faixa de reps",
+      repRangeMin: "Repetições mínimas",
+      repRangeMax: "Repetições máximas",
       warmupSets: "AQ",
       feederSets: "FS",
       addSet: "Adicionar série",

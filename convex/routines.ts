@@ -12,6 +12,7 @@ import {
   removeRoutineExercise,
   removeRoutineSet,
   updateRoutineFeederSets,
+  updateRoutineRepRange,
   updateRoutineWarmupSets,
   writeRoutineStructure,
 } from "./routineStructure";
@@ -252,5 +253,26 @@ export const updateFeederSets = mutation({
     const userId = await requireCurrentUserId(ctx);
     const routine = await requireRoutine(ctx, userId, args.routineId);
     return await updateRoutineFeederSets(ctx, routine, args.routineExerciseId, args.feederSets);
+  },
+});
+
+export const updateRepRange = mutation({
+  args: {
+    routineId: v.id("routines"),
+    routineExerciseId: v.string(),
+    repRangeMin: v.optional(v.union(v.number(), v.null())),
+    repRangeMax: v.optional(v.union(v.number(), v.null())),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireCurrentUserId(ctx);
+    const routine = await requireRoutine(ctx, userId, args.routineId);
+
+    return await updateRoutineRepRange(
+      ctx,
+      routine,
+      args.routineExerciseId,
+      args.repRangeMin ?? undefined,
+      args.repRangeMax ?? undefined,
+    );
   },
 });

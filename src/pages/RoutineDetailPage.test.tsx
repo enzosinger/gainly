@@ -31,6 +31,7 @@ describe("RoutineDetailPage", () => {
       removeExerciseFromRoutine: vi.fn(),
       addTechniqueToRoutineExercise: vi.fn(),
       addSupersetToRoutine: vi.fn(),
+      updateRoutineExerciseRepRange: vi.fn(),
       updateRoutineExerciseWarmupSets: vi.fn(),
       updateRoutineExerciseFeederSets: vi.fn(),
       createExercise: vi.fn(),
@@ -212,6 +213,31 @@ describe("RoutineDetailPage", () => {
     await user.click(screen.getAllByRole("button", { name: /add set/i })[1]);
 
     expect(screen.getByText(/set 2 · superset/i)).toBeInTheDocument();
+  });
+
+  it("updates exercise rep range in the routine builder", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/routines/routine-upper-a"]}>
+        <GainlyStoreProvider>
+          <Routes>
+            <Route path="/routines/:routineId" element={<RoutineDetailPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
+    );
+
+    const minInput = screen.getAllByRole("spinbutton", { name: /minimum reps/i })[0];
+    const maxInput = screen.getAllByRole("spinbutton", { name: /maximum reps/i })[0];
+
+    await user.clear(minInput);
+    await user.type(minInput, "6");
+    await user.clear(maxInput);
+    await user.type(maxInput, "9");
+
+    expect(minInput).toHaveValue(6);
+    expect(maxInput).toHaveValue(9);
   });
 
   it("switches the routine editor with the routine selector", async () => {

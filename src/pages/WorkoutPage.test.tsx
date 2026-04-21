@@ -29,6 +29,10 @@ const activeSession = {
       routineExerciseId: "routine-upper-a-bench",
       exerciseId: "ex-barbell-bench-press",
       position: 0,
+      repRangeMin: 5,
+      repRangeMax: 8,
+      warmupSets: 1,
+      feederSets: 1,
       sets: [
         {
           id: "session-set-bench-1",
@@ -51,6 +55,8 @@ const activeSession = {
       routineExerciseId: "routine-upper-a-row",
       exerciseId: "ex-seated-cable-row",
       position: 1,
+      warmupSets: 0,
+      feederSets: 0,
       sets: [
         {
           id: "session-set-row-1",
@@ -79,6 +85,10 @@ const currentWeekHistory = {
         routineExerciseId: "routine-upper-a-bench",
         exerciseId: "ex-barbell-bench-press",
         position: 0,
+        repRangeMin: 5,
+        repRangeMax: 8,
+        warmupSets: 1,
+        feederSets: 1,
         sets: [
           {
             id: "current-week-set-bench-1",
@@ -110,6 +120,10 @@ const previousWeekHistory = {
         routineExerciseId: "routine-upper-a-bench",
         exerciseId: "ex-barbell-bench-press",
         position: 0,
+        repRangeMin: 5,
+        repRangeMax: 8,
+        warmupSets: 1,
+        feederSets: 1,
         sets: [
           {
             id: "previous-week-set-bench-1",
@@ -138,6 +152,8 @@ const activeSupersetSession = {
       routineExerciseId: "routine-upper-b-shoulder-press",
       exerciseId: "ex-dumbbell-shoulder-press",
       position: 0,
+      warmupSets: 0,
+      feederSets: 0,
       sets: [
         {
           id: "session-set-shoulder-press-1",
@@ -152,6 +168,8 @@ const activeSupersetSession = {
       routineExerciseId: "routine-upper-b-arms",
       exerciseId: "ex-incline-dumbbell-curl",
       position: 1,
+      warmupSets: 0,
+      feederSets: 0,
       sets: [
         {
           id: "session-set-arms-1",
@@ -269,6 +287,7 @@ describe("WorkoutPage", () => {
       removeExerciseFromRoutine: vi.fn(),
       addTechniqueToRoutineExercise: vi.fn(),
       addSupersetToRoutine: vi.fn(),
+      updateRoutineExerciseRepRange: vi.fn(),
       updateRoutineExerciseWarmupSets: vi.fn(),
       updateRoutineExerciseFeederSets: vi.fn(),
       createExercise: vi.fn(),
@@ -317,6 +336,7 @@ describe("WorkoutPage", () => {
     const previousPerformanceNode = within(benchAccordion as HTMLElement).getByText(/no previous workout yet/i);
 
     expect(descriptionNode.compareDocumentPosition(previousPerformanceNode) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(benchAccordion as HTMLElement).getByText(/rep range: 5-8 · wu: 1 · fs: 1/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /previous week/i }));
 

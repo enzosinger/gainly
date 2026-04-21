@@ -32,6 +32,7 @@ describe("RoutinesPage", () => {
       removeExerciseFromRoutine: vi.fn(),
       addTechniqueToRoutineExercise: vi.fn(),
       addSupersetToRoutine: vi.fn(),
+      updateRoutineExerciseRepRange: vi.fn(),
       updateRoutineExerciseWarmupSets: vi.fn(),
       updateRoutineExerciseFeederSets: vi.fn(),
       createExercise: vi.fn(),

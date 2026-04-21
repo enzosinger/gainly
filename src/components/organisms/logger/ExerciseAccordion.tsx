@@ -40,6 +40,19 @@ export default function ExerciseAccordion({
   const { expandedExerciseId, setExpandedExerciseId } = useGainlyStore();
   const { copy, language } = useLanguage();
   const expanded = expandedExerciseId === item.id;
+  const repRangeMin = currentExercise.repRangeMin ?? item.repRangeMin;
+  const repRangeMax = currentExercise.repRangeMax ?? item.repRangeMax;
+  const repRangeText =
+    repRangeMin !== undefined && repRangeMax !== undefined
+      ? `${repRangeMin}-${repRangeMax}`
+      : null;
+  const exerciseMeta = [
+    repRangeText ? `${copy.builder.repRange}: ${repRangeText}` : null,
+    `${copy.builder.warmupSets}: ${currentExercise.warmupSets ?? 0}`,
+    `${copy.builder.feederSets}: ${currentExercise.feederSets ?? 0}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <section className="panel-card">
@@ -71,9 +84,7 @@ export default function ExerciseAccordion({
             <p className="text-sm leading-6 text-[hsl(var(--muted-foreground))]">{description.trim()}</p>
           ) : null}
           <div className="panel-inset px-3 py-2">
-            <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">
-              {copy.builder.warmupSets}: {currentExercise.warmupSets ?? 0} · {copy.builder.feederSets}: {currentExercise.feederSets ?? 0}
-            </p>
+            <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">{exerciseMeta}</p>
           </div>
           {/* TechniqueBadgeRow was here, removed as redundant */}
           {currentExercise.sets.map((set, index) => {

@@ -60,6 +60,8 @@ function buildSessionExercise(
     exerciseId: routineExercise.exerciseId,
     position: index,
     sets: routineExercise.sets.map((set, setIndex) => buildSessionSet(routineExercise.id, set, setIndex)),
+    repRangeMin: routineExercise.repRangeMin,
+    repRangeMax: routineExercise.repRangeMax,
     warmupSets: routineExercise.warmupSets,
     feederSets: routineExercise.feederSets,
   };
@@ -107,6 +109,8 @@ export function syncSessionWithRoutine(
         ...existingSessionEx,
         position: index,
         sets: syncedSets,
+        repRangeMin: routineExercise.repRangeMin,
+        repRangeMax: routineExercise.repRangeMax,
         warmupSets: routineExercise.warmupSets,
         feederSets: routineExercise.feederSets,
       };

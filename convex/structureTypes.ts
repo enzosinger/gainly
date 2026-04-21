@@ -16,6 +16,8 @@ export type RoutineExerciseStructure = {
   id: string;
   exerciseId: Id<"exercises">;
   sets: RoutineExerciseSetStructure[];
+  repRangeMin?: number;
+  repRangeMax?: number;
   warmupSets?: number;
   feederSets?: number;
 };
@@ -44,6 +46,8 @@ export type WorkoutSessionExerciseStructure = {
   exerciseId: Id<"exercises">;
   position: number;
   sets: WorkoutSessionSetStructure[];
+  repRangeMin?: number;
+  repRangeMax?: number;
   warmupSets?: number;
   feederSets?: number;
 };

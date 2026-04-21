@@ -11,6 +11,8 @@ describe("syncSessionWithRoutine", () => {
         routineExerciseId: "routine-exercise-1",
         exerciseId: "ex-primary" as Id<"exercises">,
         position: 0,
+        repRangeMin: 5,
+        repRangeMax: 8,
         warmupSets: 0,
         feederSets: 0,
         sets: [
@@ -33,6 +35,8 @@ describe("syncSessionWithRoutine", () => {
         {
           id: "routine-exercise-1",
           exerciseId: "ex-primary" as Id<"exercises">,
+          repRangeMin: 6,
+          repRangeMax: 9,
           sets: [
             {
               id: "set-1",
@@ -53,6 +57,10 @@ describe("syncSessionWithRoutine", () => {
       reps: 1,
       pairWeightKg: 100,
       pairReps: 2,
+    });
+    expect(syncedExercises[0]).toMatchObject({
+      repRangeMin: 6,
+      repRangeMax: 9,
     });
   });
 });

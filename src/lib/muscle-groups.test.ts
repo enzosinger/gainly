@@ -26,7 +26,7 @@ describe("muscle groups", () => {
     expect(getMuscleGroupLabel("en", "hamstrings")).toBe("hamstrings");
     expect(getMuscleGroupLabel("en", "calves")).toBe("calves");
     expect(getMuscleGroupLabel("pt", "quads")).toBe("quadríceps");
-    expect(getMuscleGroupLabel("pt", "hamstrings")).toBe("isquiotibiais");
+    expect(getMuscleGroupLabel("pt", "hamstrings")).toBe("Posterior de coxa");
     expect(getMuscleGroupLabel("pt", "calves")).toBe("panturrilhas");
   });
 });
