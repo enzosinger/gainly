@@ -59,7 +59,7 @@ export default function RoutineWeekCard({
                 {deltaPercent.toFixed(1)}%
               </span>
             ) : (
-              <span className="mt-2 text-lg text-[hsl(var(--muted-foreground))]">{copy.routines.noHistory}</span>
+              <span className="mt-2 text-3xl font-semibold text-[hsl(var(--foreground))]">-%</span>
             )}
           </div>
 

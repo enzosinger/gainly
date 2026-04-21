@@ -20,6 +20,7 @@ import type * as routines from "../routines.js";
 import type * as seed from "../seed.js";
 import type * as structureTypes from "../structureTypes.js";
 import type * as validators from "../validators.js";
+import type * as workoutSessionFallbacks from "../workoutSessionFallbacks.js";
 import type * as workoutSessionStructure from "../workoutSessionStructure.js";
 import type * as workouts from "../workouts.js";
 
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   seed: typeof seed;
   structureTypes: typeof structureTypes;
   validators: typeof validators;
+  workoutSessionFallbacks: typeof workoutSessionFallbacks;
   workoutSessionStructure: typeof workoutSessionStructure;
   workouts: typeof workouts;
 }>;

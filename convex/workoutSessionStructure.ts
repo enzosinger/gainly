@@ -8,6 +8,7 @@ import type {
   WorkoutSessionSetStructure,
   WorkoutSessionStructure,
 } from "./structureTypes";
+import { getWorkoutSessionFallbackPatches } from "./workoutSessionFallbacks";
 
 function createSessionEntityId(prefix: string, parts: string[]) {
   return `${prefix}-${parts.join("-")}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -82,6 +83,31 @@ async function listWorkoutSessionStructure(ctx: QueryCtx | MutationCtx, session:
   const exerciseRows = await listWorkoutSessionExerciseRows(ctx, session.userId, session._id);
   const setRows = await listWorkoutSessionSetRows(ctx, session.userId, session._id);
   return buildWorkoutSessionExercises(exerciseRows, setRows);
+}
+
+async function findPreviousCompletedSession(
+  ctx: MutationCtx,
+  session: Doc<"workoutSessions">,
+) {
+  for await (const candidate of ctx.db
+    .query("workoutSessions")
+    .withIndex("by_user_routine_status_weekStart", (q) =>
+      q.eq("userId", session.userId).eq("routineId", session.routineId).eq("status", "completed"),
+    )
+    .order("desc")) {
+    if (session.weekStart !== undefined && candidate.weekStart !== undefined) {
+      if (candidate.weekStart < session.weekStart) {
+        return candidate;
+      }
+      continue;
+    }
+
+    if (candidate.startedAt < session.startedAt) {
+      return candidate;
+    }
+  }
+
+  return null;
 }
 
 export async function hydrateWorkoutSession(
@@ -357,6 +383,35 @@ export async function completeWorkoutSession(
   }
 
   const now = Date.now();
+  const previousCompletedSession = await findPreviousCompletedSession(ctx, session);
+
+  if (previousCompletedSession) {
+    const [currentExercises, previousExercises, currentSetRows] = await Promise.all([
+      listWorkoutSessionStructure(ctx, session),
+      listWorkoutSessionStructure(ctx, previousCompletedSession),
+      listWorkoutSessionSetRows(ctx, session.userId, session._id),
+    ]);
+    const currentSetRowsByPublicId = new Map(currentSetRows.map((row) => [row.publicId, row]));
+    const fallbackPatches = getWorkoutSessionFallbackPatches(currentExercises, previousExercises);
+
+    await Promise.all(
+      fallbackPatches.map(async (patch) => {
+        const setRow = currentSetRowsByPublicId.get(patch.setId);
+        if (!setRow) {
+          return;
+        }
+
+        await ctx.db.patch(setRow._id, {
+          weightKg: patch.weightKg !== undefined ? patch.weightKg : setRow.weightKg,
+          reps: patch.reps !== undefined ? patch.reps : setRow.reps,
+          pairWeightKg: patch.pairWeightKg !== undefined ? patch.pairWeightKg : setRow.pairWeightKg,
+          pairReps: patch.pairReps !== undefined ? patch.pairReps : setRow.pairReps,
+          updatedAt: now,
+        });
+      }),
+    );
+  }
+
   await ctx.db.patch(session._id, {
     status: "completed",
     completedAt: now,
