@@ -1,13 +1,16 @@
 import { ChevronDown } from "lucide-react";
 import { useGainlyStore } from "../../../state/gainly-store";
-import type { RoutineExercise, WorkoutSessionExercise } from "../../../types/domain";
+import type { MuscleGroup, RoutineExercise, WorkoutSessionExercise } from "../../../types/domain";
 import SetRow from "../../molecules/SetRow";
 import { useLanguage } from "../../../i18n/LanguageProvider";
+import { Badge } from "../../ui/badge";
+import { getMuscleGroupLabel } from "../../../i18n/copy";
 
 type ExerciseAccordionProps = {
   item: RoutineExercise;
   name: string;
   description?: string | null;
+  muscleGroup?: MuscleGroup;
   currentExercise: WorkoutSessionExercise;
   previousExercise?: WorkoutSessionExercise | null;
   pairExerciseNamesById: Record<string, string>;
@@ -28,13 +31,14 @@ export default function ExerciseAccordion({
   item,
   name,
   description,
+  muscleGroup,
   currentExercise,
   previousExercise,
   pairExerciseNamesById,
   onCommitSet,
 }: ExerciseAccordionProps) {
   const { expandedExerciseId, setExpandedExerciseId } = useGainlyStore();
-  const { copy } = useLanguage();
+  const { copy, language } = useLanguage();
   const expanded = expandedExerciseId === item.id;
 
   return (
@@ -42,17 +46,24 @@ export default function ExerciseAccordion({
       <button
         type="button"
         onClick={() => setExpandedExerciseId(expanded ? null : item.id)}
-        className="flex w-full items-center justify-between px-4 py-4 text-left text-[hsl(var(--foreground))]"
+        className="flex w-full items-center gap-3 px-4 py-4 text-left text-[hsl(var(--foreground))]"
         aria-expanded={expanded}
       >
-        <span className="text-base font-semibold">{name}</span>
-        <ChevronDown
-          className={
-            expanded
-              ? "size-5 rotate-180 text-[hsl(var(--muted-foreground))]"
-              : "size-5 text-[hsl(var(--muted-foreground))]"
-          }
-        />
+        <span className="min-w-0 flex-1 truncate text-base font-semibold">{name}</span>
+        <div className="flex shrink-0 items-center gap-3">
+          {muscleGroup ? (
+            <Badge variant="outline" className="capitalize">
+              {getMuscleGroupLabel(language, muscleGroup)}
+            </Badge>
+          ) : null}
+          <ChevronDown
+            className={
+              expanded
+                ? "size-5 rotate-180 text-[hsl(var(--muted-foreground))]"
+                : "size-5 text-[hsl(var(--muted-foreground))]"
+            }
+          />
+        </div>
       </button>
       {expanded ? (
         <div className="space-y-3 border-t border-[hsl(var(--border))] px-4 py-4">

@@ -179,6 +179,7 @@ export default function WorkoutPage() {
       </header>
       <div className="space-y-3">
         {workoutRoutine.exercises.map((item) => {
+          const exercise = exercisesById.get(item.exerciseId);
           const currentExercise = currentExerciseByRoutineExerciseId.get(item.id);
           const previousExercise = previousExerciseByRoutineExerciseId.get(item.id);
 
@@ -191,7 +192,8 @@ export default function WorkoutPage() {
               key={item.id}
               item={item}
               name={getWorkoutExerciseName(item)}
-              description={exercisesById.get(item.exerciseId)?.description}
+              muscleGroup={exercise?.muscleGroup}
+              description={exercise?.description}
               currentExercise={currentExercise}
               previousExercise={previousExercise}
               pairExerciseNamesById={exerciseNamesById}

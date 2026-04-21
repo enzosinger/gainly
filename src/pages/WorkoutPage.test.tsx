@@ -305,7 +305,7 @@ describe("WorkoutPage", () => {
 
     expect(screen.getByText(currentWeekWindow.label)).toBeInTheDocument();
 
-    const benchButton = screen.getByRole("button", { name: /barbell bench press/i });
+    const benchButton = screen.getByRole("button", { name: /barbell bench press.*chest/i });
     await user.click(benchButton);
 
     const benchAccordion = benchButton.closest("section");
