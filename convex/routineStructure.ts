@@ -6,6 +6,21 @@ import type {
   RoutineStructure,
 } from "./structureTypes";
 
+type RoutineExerciseSetRowForRemoval = Pick<Doc<"routineExerciseSets">, "_id" | "position" | "publicId">;
+
+export function splitRoutineExerciseSetRowsForRemoval(
+  setRows: Array<RoutineExerciseSetRowForRemoval>,
+  setId: string,
+) {
+  const targetSetRows = setRows.filter((setRow) => setRow.publicId === setId);
+  const remainingSetRows = setRows
+    .filter((setRow) => setRow.publicId !== setId)
+    .slice()
+    .sort((left, right) => left.position - right.position);
+
+  return { targetSetRows, remainingSetRows };
+}
+
 async function listRoutineExerciseRows(ctx: QueryCtx | MutationCtx, userId: Id<"users">, routineId: Id<"routines">) {
   return await ctx.db
     .query("routineExercises")
@@ -334,27 +349,20 @@ export async function removeRoutineSet(
     throw new Error("Routine exercise not found.");
   }
 
-  const targetSet = await ctx.db
-    .query("routineExerciseSets")
-    .withIndex("by_user_routineExercise_publicId", (q) =>
-      q.eq("userId", routine.userId).eq("routineExercisePublicId", routineExerciseId).eq("publicId", setId),
-    )
-    .unique();
+  const setRows = await listRoutineExerciseSetRows(ctx, routine.userId, routine._id);
+  const { targetSetRows, remainingSetRows } = splitRoutineExerciseSetRowsForRemoval(
+    setRows.filter((setRow) => setRow.routineExercisePublicId === routineExerciseId),
+    setId,
+  );
 
-  if (!targetSet) {
+  if (targetSetRows.length === 0) {
     throw new Error("Routine set not found.");
   }
 
-  await ctx.db.delete(targetSet._id);
-  const remainingSets = await ctx.db
-    .query("routineExerciseSets")
-    .withIndex("by_user_routineExercise_position", (q) =>
-      q.eq("userId", routine.userId).eq("routineExercisePublicId", routineExerciseId),
-    )
-    .collect();
+  await Promise.all(targetSetRows.map((setRow) => ctx.db.delete(setRow._id)));
 
   await Promise.all(
-    remainingSets.map((setRow, position) =>
+    remainingSetRows.map((setRow, position) =>
       ctx.db.patch(setRow._id, {
         position,
         updatedAt: now,
