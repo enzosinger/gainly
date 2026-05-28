@@ -28,6 +28,10 @@ export function buildPlannedWeeklyVolume(routines: Routine[], exercises: Exercis
   );
 
   for (const routine of routines) {
+    if (routine.isActive === false) {
+      continue;
+    }
+
     for (const routineExercise of routine.exercises) {
       const exercise = exerciseById.get(routineExercise.exerciseId);
 

@@ -64,11 +64,13 @@ export default defineSchema({
     name: v.string(),
     completed: v.boolean(),
     deltaPercent: v.number(),
+    isActive: v.optional(v.boolean()),
     position: v.number(),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_user", ["userId"])
+    .index("by_user_name", ["userId", "name"])
     .index("by_user_position", ["userId", "position"]),
   workoutSessions: defineTable({
     userId: v.id("users"),

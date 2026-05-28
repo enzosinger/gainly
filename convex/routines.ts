@@ -3,6 +3,8 @@ import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
 import { requireCurrentUserId, requireExercise, requireRoutine } from "./lib";
+import { buildRoutinePositionUpdates } from "./routineOrdering";
+import { getNextRoutinePosition } from "./routinePositions";
 import {
   addRoutineExercise,
   addRoutineSet,
@@ -30,11 +32,7 @@ export const create = mutation({
       throw new Error("Routine name is required.");
     }
 
-    const routines = await ctx.db
-      .query("routines")
-      .withIndex("by_user_position", (q) => q.eq("userId", userId))
-      .collect();
-    const position = routines.reduce((maxPosition, routine) => Math.max(maxPosition, routine.position), -1) + 1;
+    const position = await getNextRoutinePosition(ctx, userId);
     const now = Date.now();
 
     const routineId = await ctx.db.insert("routines", {
@@ -42,6 +40,7 @@ export const create = mutation({
       name,
       completed: false,
       deltaPercent: 0,
+      isActive: true,
       position,
       createdAt: now,
       updatedAt: now,
@@ -80,18 +79,14 @@ export const reorder = mutation({
       .query("routines")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
-    const routineById = new Map(routines.map((routine) => [routine._id, routine]));
+    const positionUpdates = buildRoutinePositionUpdates(routines, args.routineIds);
+    const now = Date.now();
 
     await Promise.all(
-      args.routineIds.map(async (routineId, index) => {
-        const routine = routineById.get(routineId);
-        if (!routine) {
-          throw new Error("Routine not found.");
-        }
-
-        await ctx.db.patch(routineId, {
-          position: index,
-          updatedAt: Date.now(),
+      positionUpdates.map(async (update) => {
+        await ctx.db.patch(update.routineId, {
+          position: update.position,
+          updatedAt: now,
         });
       }),
     );

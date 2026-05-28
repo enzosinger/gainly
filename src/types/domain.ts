@@ -81,6 +81,7 @@ export type Routine = {
   name: string;
   completed: boolean;
   deltaPercent: number;
+  isActive?: boolean;
   hasProgressHistory?: boolean;
   exercises: RoutineExercise[];
   updatedAt?: number;

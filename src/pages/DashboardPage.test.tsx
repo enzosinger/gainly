@@ -7,6 +7,7 @@ import DashboardPage from "./DashboardPage";
 import { GainlyStoreProvider } from "../state/gainly-store";
 import * as gainlyStore from "../state/gainly-store";
 import { getWeekWindow, shiftWeekWindowStart } from "../lib/week";
+import { mockRoutines } from "../data/mockRoutines";
 
 const mockUseQuery = vi.fn();
 
@@ -102,6 +103,103 @@ describe("DashboardPage", () => {
     );
   });
 
+  it("hides inactive routines from the weekly rotation", () => {
+    vi.spyOn(gainlyStore, "useGainlyStore").mockReturnValue({
+      viewer: null,
+      isLoading: false,
+      exercises: [],
+      exerciseLibraryExercises: [],
+      exerciseLibraryMuscleGroupFilter: "all",
+      setExerciseLibraryMuscleGroupFilter: vi.fn(),
+      routines: mockRoutines.map((routine) =>
+        routine.id === "routine-upper-a" ? { ...routine, isActive: false } : routine,
+      ),
+      expandedExerciseId: null,
+      setExpandedExerciseId: vi.fn(),
+      createRoutine: vi.fn(),
+      duplicateRoutine: vi.fn(),
+      renameRoutine: vi.fn(),
+      setRoutineActive: vi.fn(),
+      deleteRoutine: vi.fn(),
+      reorderRoutines: vi.fn(),
+      addExerciseToRoutine: vi.fn(),
+      addSetToRoutineExercise: vi.fn(),
+      removeSetFromRoutineExercise: vi.fn(),
+      removeExerciseFromRoutine: vi.fn(),
+      addTechniqueToRoutineExercise: vi.fn(),
+      addSupersetToRoutine: vi.fn(),
+      updateRoutineExerciseRepRange: vi.fn(),
+      updateRoutineExerciseWarmupSets: vi.fn(),
+      updateRoutineExerciseFeederSets: vi.fn(),
+      createExercise: vi.fn(),
+      updateExercise: vi.fn(),
+      deleteExercise: vi.fn(),
+      signOut: vi.fn(),
+    });
+
+    render(
+      <MemoryRouter>
+        <DashboardPage />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByRole("heading", { name: /^push$/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^pull$/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^legs$/i })).toBeInTheDocument();
+  });
+
+  it("sends full routine order when active routines are reordered around an inactive slot", async () => {
+    const user = userEvent.setup();
+    const reorderRoutines = vi.fn();
+
+    vi.spyOn(gainlyStore, "useGainlyStore").mockReturnValue({
+      viewer: null,
+      isLoading: false,
+      exercises: [],
+      exerciseLibraryExercises: [],
+      exerciseLibraryMuscleGroupFilter: "all",
+      setExerciseLibraryMuscleGroupFilter: vi.fn(),
+      routines: mockRoutines.map((routine) =>
+        routine.id === "routine-lower-a" ? { ...routine, isActive: false } : routine,
+      ),
+      expandedExerciseId: null,
+      setExpandedExerciseId: vi.fn(),
+      createRoutine: vi.fn(),
+      duplicateRoutine: vi.fn(),
+      renameRoutine: vi.fn(),
+      setRoutineActive: vi.fn(),
+      deleteRoutine: vi.fn(),
+      reorderRoutines,
+      addExerciseToRoutine: vi.fn(),
+      addSetToRoutineExercise: vi.fn(),
+      removeSetFromRoutineExercise: vi.fn(),
+      removeExerciseFromRoutine: vi.fn(),
+      addTechniqueToRoutineExercise: vi.fn(),
+      addSupersetToRoutine: vi.fn(),
+      updateRoutineExerciseRepRange: vi.fn(),
+      updateRoutineExerciseWarmupSets: vi.fn(),
+      updateRoutineExerciseFeederSets: vi.fn(),
+      createExercise: vi.fn(),
+      updateExercise: vi.fn(),
+      deleteExercise: vi.fn(),
+      signOut: vi.fn(),
+    });
+
+    render(
+      <MemoryRouter>
+        <DashboardPage />
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole("button", { name: /trigger reorder/i }));
+
+    expect(reorderRoutines).toHaveBeenCalledWith([
+      "routine-upper-b",
+      "routine-lower-a",
+      "routine-upper-a",
+    ]);
+  });
+
   it("reorders routines and moves between weeks with the same strip", async () => {
     const user = userEvent.setup();
 
@@ -145,6 +243,9 @@ describe("DashboardPage", () => {
       expandedExerciseId: null,
       setExpandedExerciseId: vi.fn(),
       createRoutine: vi.fn(),
+      duplicateRoutine: vi.fn(),
+      renameRoutine: vi.fn(),
+      setRoutineActive: vi.fn(),
       deleteRoutine: vi.fn(),
       reorderRoutines: vi.fn(),
       addExerciseToRoutine: vi.fn(),
@@ -185,6 +286,9 @@ describe("DashboardPage", () => {
       expandedExerciseId: null,
       setExpandedExerciseId: vi.fn(),
       createRoutine: vi.fn(),
+      duplicateRoutine: vi.fn(),
+      renameRoutine: vi.fn(),
+      setRoutineActive: vi.fn(),
       deleteRoutine: vi.fn(),
       reorderRoutines: vi.fn(),
       addExerciseToRoutine: vi.fn(),

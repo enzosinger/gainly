@@ -24,6 +24,9 @@ describe("RoutinesPage", () => {
       expandedExerciseId: null,
       setExpandedExerciseId: vi.fn(),
       createRoutine: vi.fn(),
+      duplicateRoutine: vi.fn(),
+      renameRoutine: vi.fn(),
+      setRoutineActive: vi.fn(),
       deleteRoutine: vi.fn(),
       reorderRoutines: vi.fn(),
       addExerciseToRoutine: vi.fn(),
@@ -146,6 +149,93 @@ describe("RoutinesPage", () => {
     expect(screen.queryByRole("heading", { name: /^push$/i })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /^pull$/i })).toBeInTheDocument();
     expect(screen.getByText(/2 routines available/i)).toBeInTheDocument();
+  });
+
+  it("duplicates a routine from the index without replacing the original", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/routines"]}>
+        <GainlyStoreProvider>
+          <Routes>
+            <Route path="/routines" element={<RoutinesPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole("button", { name: /duplicate push routine/i }));
+
+    expect(screen.getByRole("heading", { name: /^push$/i })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: /routine name/i })).toHaveValue("Push copy");
+    expect(screen.getByText(/4 routines available/i)).toBeInTheDocument();
+  });
+
+  it("renames a routine from the title pencil action", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/routines"]}>
+        <GainlyStoreProvider>
+          <Routes>
+            <Route path="/routines" element={<RoutinesPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole("button", { name: /edit push routine name/i }));
+
+    const nameInput = screen.getByRole("textbox", { name: /routine name/i });
+    await user.clear(nameInput);
+    await user.type(nameInput, "Push Strength");
+    await user.click(screen.getByRole("button", { name: /save push routine name/i }));
+
+    expect(screen.getByRole("heading", { name: /^push strength$/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /^push$/i })).not.toBeInTheDocument();
+  });
+
+  it("opens the copied routine name editor after duplicating", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/routines"]}>
+        <GainlyStoreProvider>
+          <Routes>
+            <Route path="/routines" element={<RoutinesPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole("button", { name: /duplicate push routine/i }));
+
+    const nameInput = screen.getByRole("textbox", { name: /routine name/i });
+    expect(nameInput).toHaveValue("Push copy");
+    expect(nameInput).toHaveFocus();
+    expect(screen.getByRole("button", { name: /save push copy routine name/i })).toBeInTheDocument();
+  });
+
+  it("marks routines inactive and active from the index", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/routines"]}>
+        <GainlyStoreProvider>
+          <Routes>
+            <Route path="/routines" element={<RoutinesPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole("button", { name: /deactivate push routine/i }));
+
+    expect(screen.getByText(/inactive/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /activate push routine/i }));
+
+    expect(screen.queryByText(/inactive/i)).not.toBeInTheDocument();
   });
 
   it("does not delete a routine when the confirmation is cancelled", async () => {

@@ -56,6 +56,26 @@ describe("buildPlannedWeeklyVolume", () => {
     ]);
   });
 
+  it("excludes inactive routines from planned weekly volume", () => {
+    const exercises: Exercise[] = [{ id: "ex-chest", name: "Chest Press", muscleGroup: "chest" }];
+    const routines: Routine[] = [
+      {
+        id: "routine-1",
+        name: "Push",
+        completed: false,
+        deltaPercent: 0,
+        isActive: false,
+        exercises: [{ id: "routine-1-chest", exerciseId: "ex-chest", sets: [buildSet("set-1")] }],
+      },
+    ];
+
+    expect(buildPlannedWeeklyVolume(routines, exercises)[0]).toEqual({
+      muscleGroup: "chest",
+      plannedSets: 0,
+      status: "low",
+    });
+  });
+
   it("reclassifies legacy legs exercises to quads without changing the routine template", () => {
     const exercises: Exercise[] = [{ id: "ex-squat", name: "Squat", muscleGroup: "legs" }];
     const routines: Routine[] = [

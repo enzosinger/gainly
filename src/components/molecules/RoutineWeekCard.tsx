@@ -14,6 +14,7 @@ type RoutineWeekCardProps = {
   summary?: RoutineWeekSummary;
   showStatus?: boolean;
   headerAction?: ReactNode;
+  titleContent?: ReactNode;
 };
 
 export default function RoutineWeekCard({
@@ -23,6 +24,7 @@ export default function RoutineWeekCard({
   summary,
   showStatus = true,
   headerAction,
+  titleContent,
 }: RoutineWeekCardProps) {
   const { copy } = useLanguage();
   const completed = summary?.completed ?? routine.completed;
@@ -42,7 +44,7 @@ export default function RoutineWeekCard({
       <CardContent className="p-5 md:p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 space-y-2">
-            <CardTitle className="text-2xl leading-tight md:text-[2rem]">{routine.name}</CardTitle>
+            {titleContent ?? <CardTitle className="text-2xl leading-tight md:text-[2rem]">{routine.name}</CardTitle>}
           </div>
           <div className="flex items-center gap-2">
             {headerAction}

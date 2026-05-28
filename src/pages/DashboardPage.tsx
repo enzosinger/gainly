@@ -13,6 +13,7 @@ import { useLanguage } from "../i18n/LanguageProvider";
 
 export default function DashboardPage() {
   const { routines, isLoading } = useGainlyStore();
+  const activeRoutines = useMemo(() => routines.filter((routine) => routine.isActive !== false), [routines]);
   const { copy, locale } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const currentWeekStart = getMondayWeekStart(Date.now());
@@ -84,12 +85,16 @@ export default function DashboardPage() {
         }}
         canGoNext={weekWindow.start < currentWeekStart}
       />
-      {routines.length === 0 ? (
+      {activeRoutines.length === 0 ? (
         <Card>
           <CardContent className="space-y-4 p-6">
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-[hsl(var(--foreground))]">{copy.dashboard.emptyTitle}</h2>
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">{copy.dashboard.emptyBody}</p>
+              <h2 className="text-lg font-semibold text-[hsl(var(--foreground))]">
+                {routines.length === 0 ? copy.dashboard.emptyTitle : copy.dashboard.inactiveTitle}
+              </h2>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                {routines.length === 0 ? copy.dashboard.emptyBody : copy.dashboard.inactiveBody}
+              </p>
             </div>
             <Link to="/routines" className="inline-flex">
               <Button variant="outline">{copy.dashboard.emptyAction}</Button>
