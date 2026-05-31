@@ -32,10 +32,14 @@ function copySetForDuplicate(set: SetEntry): SetEntry {
   return {
     id: set.id,
     technique: set.technique,
+    weightKg: set.weightKg,
+    reps: set.reps,
     backoffPercent: set.backoffPercent,
     clusterBlocks: set.clusterBlocks,
     clusterRepRange: set.clusterRepRange,
     pairExerciseId: set.pairExerciseId,
+    pairWeightKg: set.pairWeightKg,
+    pairReps: set.pairReps,
   };
 }
 

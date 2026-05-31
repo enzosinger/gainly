@@ -4,6 +4,8 @@ import type { TechniqueType } from "../src/types/domain";
 export type RoutineExerciseSetStructure = {
   id: string;
   technique: TechniqueType;
+  weightKg?: number;
+  reps?: number;
   backoffPercent?: number;
   clusterBlocks?: number;
   clusterRepRange?: string;

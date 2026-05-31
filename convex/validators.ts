@@ -70,6 +70,8 @@ export const routineExerciseSetRowValidator = v.object({
   publicId: v.string(),
   position: v.number(),
   technique: techniqueTypeValidator,
+  weightKg: v.optional(v.number()),
+  reps: v.optional(v.number()),
   backoffPercent: v.optional(v.number()),
   clusterBlocks: v.optional(v.number()),
   clusterRepRange: v.optional(v.string()),

@@ -68,6 +68,8 @@ function buildRoutineExercises(
           (setRow): RoutineExerciseSetStructure => ({
             id: setRow.publicId,
             technique: setRow.technique,
+            weightKg: setRow.weightKg,
+            reps: setRow.reps,
             backoffPercent: setRow.backoffPercent,
             clusterBlocks: setRow.clusterBlocks,
             clusterRepRange: setRow.clusterRepRange,
@@ -125,6 +127,8 @@ export async function writeRoutineStructure(
         publicId: set.id,
         position: setPosition,
         technique: set.technique,
+        weightKg: set.weightKg,
+        reps: set.reps,
         backoffPercent: set.backoffPercent,
         clusterBlocks: set.clusterBlocks,
         clusterRepRange: set.clusterRepRange,

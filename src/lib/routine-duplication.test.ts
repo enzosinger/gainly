@@ -3,7 +3,7 @@ import { duplicateRoutineDraft } from "./routine-duplication";
 import { mockRoutines } from "../data/mockRoutines";
 
 describe("duplicateRoutineDraft", () => {
-  it("copies exercises and set count without previous logged weights", () => {
+  it("copies exercises, set count, and existing set values without progress history", () => {
     vi.spyOn(Date, "now").mockReturnValue(123);
 
     const duplicate = duplicateRoutineDraft(mockRoutines, "routine-upper-a");
@@ -16,8 +16,7 @@ describe("duplicateRoutineDraft", () => {
     expect(duplicate.exercises).toHaveLength(2);
     expect(duplicate.exercises[0].exerciseId).toBe("ex-barbell-bench-press");
     expect(duplicate.exercises[0].sets).toHaveLength(2);
-    expect(duplicate.exercises[0].sets[0]).not.toHaveProperty("weightKg");
-    expect(duplicate.exercises[0].sets[0]).not.toHaveProperty("reps");
+    expect(duplicate.exercises[0].sets[0]).toMatchObject({ weightKg: 80, reps: 6 });
   });
 
   it("uses a unique copy name when routine was already duplicated", () => {

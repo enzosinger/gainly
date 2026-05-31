@@ -41,6 +41,8 @@ function buildSessionSet(
     id: buildSessionEntityId("session-set", [routineExerciseId, String(index + 1)]),
     templateSetId: set.id,
     technique: set.technique,
+    weightKg: set.weightKg,
+    reps: set.reps,
     backoffPercent: set.backoffPercent,
     clusterBlocks: set.clusterBlocks,
     clusterRepRange: set.clusterRepRange,
@@ -74,6 +76,8 @@ function syncSessionSetWithRoutineSet(
   return {
     ...existingSessionSet,
     technique: routineSet.technique,
+    weightKg: existingSessionSet.weightKg ?? routineSet.weightKg,
+    reps: existingSessionSet.reps ?? routineSet.reps,
     backoffPercent: routineSet.backoffPercent,
     clusterBlocks: routineSet.clusterBlocks,
     clusterRepRange: routineSet.clusterRepRange,

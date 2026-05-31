@@ -63,4 +63,22 @@ describe("syncSessionWithRoutine", () => {
       repRangeMax: 9,
     });
   });
+
+  it("uses routine set values when a new session set is created", () => {
+    const syncedExercises = syncSessionWithRoutine([], {
+      exercises: [
+        {
+          id: "routine-exercise-1",
+          exerciseId: "ex-primary" as Id<"exercises">,
+          sets: [{ id: "set-1", technique: "normal" as const, weightKg: 82.5, reps: 6 }],
+        },
+      ],
+    });
+
+    expect(syncedExercises[0]?.sets[0]).toMatchObject({
+      templateSetId: "set-1",
+      weightKg: 82.5,
+      reps: 6,
+    });
+  });
 });

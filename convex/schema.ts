@@ -47,6 +47,8 @@ export default defineSchema({
     publicId: routineExerciseSetRowValidator.fields.publicId,
     position: routineExerciseSetRowValidator.fields.position,
     technique: routineExerciseSetRowValidator.fields.technique,
+    weightKg: routineExerciseSetRowValidator.fields.weightKg,
+    reps: routineExerciseSetRowValidator.fields.reps,
     backoffPercent: routineExerciseSetRowValidator.fields.backoffPercent,
     clusterBlocks: routineExerciseSetRowValidator.fields.clusterBlocks,
     clusterRepRange: routineExerciseSetRowValidator.fields.clusterRepRange,

@@ -1,7 +1,9 @@
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
+import { copyExercisesForDuplicateWithBaseline } from "./routineDuplicationBaselines";
 import { getNextRoutinePosition } from "./routinePositions";
-import type { RoutineExerciseSetStructure, RoutineExerciseStructure } from "./structureTypes";
+import type { RoutineExerciseStructure } from "./structureTypes";
+import { hydrateWorkoutSession } from "./workoutSessionStructure";
 
 const COPY_NAME_ATTEMPT_LIMIT = 100;
 
@@ -33,27 +35,16 @@ async function buildDuplicateName(ctx: MutationCtx, sourceRoutine: Doc<"routines
   return `${fallbackName} ${sourceRoutine._id}`;
 }
 
-function copySetForDuplicate(set: RoutineExerciseSetStructure): RoutineExerciseSetStructure {
-  return {
-    id: set.id,
-    technique: set.technique,
-    backoffPercent: set.backoffPercent,
-    clusterBlocks: set.clusterBlocks,
-    clusterRepRange: set.clusterRepRange,
-    pairExerciseId: set.pairExerciseId,
-  };
-}
+async function latestCompletedSessionForDuplicate(ctx: MutationCtx, sourceRoutine: Doc<"routines">) {
+  const session = await ctx.db
+    .query("workoutSessions")
+    .withIndex("by_user_routine_status_weekStart", (q) =>
+      q.eq("userId", sourceRoutine.userId).eq("routineId", sourceRoutine._id).eq("status", "completed"),
+    )
+    .order("desc")
+    .first();
 
-function copyExerciseForDuplicate(exercise: RoutineExerciseStructure): RoutineExerciseStructure {
-  return {
-    id: exercise.id,
-    exerciseId: exercise.exerciseId,
-    sets: exercise.sets.map(copySetForDuplicate),
-    repRangeMin: exercise.repRangeMin,
-    repRangeMax: exercise.repRangeMax,
-    warmupSets: exercise.warmupSets,
-    feederSets: exercise.feederSets,
-  };
+  return session ? await hydrateWorkoutSession(ctx, session) : null;
 }
 
 export async function duplicateRoutineWithoutHistory(
@@ -61,6 +52,7 @@ export async function duplicateRoutineWithoutHistory(
   sourceRoutine: Doc<"routines"> & { exercises: RoutineExerciseStructure[] },
 ) {
   const position = await getNextRoutinePosition(ctx, sourceRoutine.userId);
+  const latestSession = await latestCompletedSessionForDuplicate(ctx, sourceRoutine);
   const now = Date.now();
 
   return {
@@ -68,6 +60,6 @@ export async function duplicateRoutineWithoutHistory(
     position,
     createdAt: now,
     updatedAt: now,
-    exercises: sourceRoutine.exercises.map(copyExerciseForDuplicate),
+    exercises: copyExercisesForDuplicateWithBaseline(sourceRoutine.exercises, latestSession?.exercises),
   };
 }
