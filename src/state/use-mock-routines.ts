@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { mockRoutines } from "../data/mockRoutines";
 import { duplicateRoutineDraft } from "../lib/routine-duplication";
+import { orderRoutineExercisesByIds } from "../lib/routine-exercise-ordering";
 import { orderRoutinesByIds } from "../lib/routine-ordering";
 import type { Exercise, Routine, RoutineCreationInput, RoutineExercise, TechniqueType } from "../types/domain";
 import type { RepRangeInput } from "./gainly-store-types";
@@ -57,6 +58,13 @@ export function useMockRoutines(exercises: Exercise[]) {
     },
     reorderRoutines: (nextIds: string[]) => {
       setRoutines((current) => orderRoutinesByIds(current, nextIds));
+    },
+    reorderRoutineExercises: (routineId: string, nextExerciseIds: string[]) => {
+      setRoutines((current) =>
+        current.map((routine) =>
+          routine.id === routineId ? orderRoutineExercisesByIds(routine, nextExerciseIds) : routine,
+        ),
+      );
     },
     addExerciseToRoutine: (routineId: string, exerciseId: string) => {
       setRoutines((current) =>

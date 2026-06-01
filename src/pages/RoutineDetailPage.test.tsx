@@ -1,10 +1,40 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, vi } from "vitest";
+import type { ReactNode } from "react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import RoutineDetailPage from "./RoutineDetailPage";
 import { GainlyStoreProvider } from "../state/gainly-store";
 import * as gainlyStore from "../state/gainly-store";
+
+vi.mock("@dnd-kit/core", async () => {
+  const actual = await vi.importActual<typeof import("@dnd-kit/core")>("@dnd-kit/core");
+  return {
+    ...actual,
+    DndContext: ({
+      children,
+      onDragEnd,
+    }: {
+      children: ReactNode;
+      onDragEnd?: (event: { active: { id: string }; over: { id: string } | null }) => void;
+    }) => (
+      <div>
+        {children}
+        <button
+          type="button"
+          onClick={() =>
+            onDragEnd?.({
+              active: { id: "routine-upper-a-row" },
+              over: { id: "routine-upper-a-bench" },
+            })
+          }
+        >
+          Trigger exercise reorder
+        </button>
+      </div>
+    ),
+  };
+});
 
 describe("RoutineDetailPage", () => {
   afterEach(() => {
@@ -28,6 +58,7 @@ describe("RoutineDetailPage", () => {
       setRoutineActive: vi.fn(),
       deleteRoutine: vi.fn(),
       reorderRoutines: vi.fn(),
+      reorderRoutineExercises: vi.fn(),
       addExerciseToRoutine: vi.fn(),
       addSetToRoutineExercise: vi.fn(),
       removeSetFromRoutineExercise: vi.fn(),
@@ -264,6 +295,38 @@ describe("RoutineDetailPage", () => {
 
     await user.type(maxInput, "12");
     expect(maxInput).toHaveValue(12);
+  });
+
+  it("reorders routine exercises from the builder drag surface", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/routines/routine-upper-a"]}>
+        <GainlyStoreProvider>
+          <Routes>
+            <Route path="/routines/:routineId" element={<RoutineDetailPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
+    );
+
+    const getExerciseHeadingText = () =>
+      screen
+        .getAllByRole("heading", { level: 3 })
+        .map((heading) => heading.textContent)
+        .filter((text) => text === "Barbell Bench Press" || text === "Seated Cable Row");
+
+    expect(getExerciseHeadingText()).toEqual([
+      "Barbell Bench Press",
+      "Seated Cable Row",
+    ]);
+
+    await user.click(screen.getByRole("button", { name: /trigger exercise reorder/i }));
+
+    expect(getExerciseHeadingText()).toEqual([
+      "Seated Cable Row",
+      "Barbell Bench Press",
+    ]);
   });
 
   it("switches the routine editor with the routine selector", async () => {

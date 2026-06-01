@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ExercisePicker from "../components/organisms/routine-builder/ExercisePicker";
-import RoutineExerciseEditor from "../components/organisms/routine-builder/RoutineExerciseEditor";
+import RoutineExerciseList from "../components/organisms/routine-builder/RoutineExerciseList";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Select } from "../components/ui/select";
@@ -17,6 +17,7 @@ export default function RoutineDetailPage() {
     addSetToRoutineExercise,
     removeSetFromRoutineExercise,
     removeExerciseFromRoutine,
+    reorderRoutineExercises,
     addTechniqueToRoutineExercise,
     updateRoutineExerciseRepRange,
     updateRoutineExerciseWarmupSets,
@@ -111,44 +112,22 @@ export default function RoutineDetailPage() {
               <CardContent className="p-6 text-sm text-[hsl(var(--muted-foreground))]">{copy.routineDetail.emptyState}</CardContent>
             </Card>
           ) : null}
-          {routine.exercises.map((item, index) => {
-            const exercise = exercisesById.get(item.exerciseId);
-            const pairExerciseId = item.sets.find((set) => {
-              return set.technique === "superset" && Boolean(set.pairExerciseId);
-            })?.pairExerciseId;
-            const pairExerciseName = pairExerciseId ? exercisesById.get(pairExerciseId)?.name : undefined;
-
-            if (!exercise) {
-              return null;
+          <RoutineExerciseList
+            routine={routine}
+            exercisesById={exercisesById}
+            onReorder={reorderRoutineExercises}
+            onAddSet={(routineExerciseId) => addSetToRoutineExercise(routine.id, routineExerciseId)}
+            onRemoveSet={(routineExerciseId, setId) => removeSetFromRoutineExercise(routine.id, routineExerciseId, setId)}
+            onRemove={(routineExerciseId) => removeExerciseFromRoutine(routine.id, routineExerciseId)}
+            onSelectTechnique={(routineExerciseId, technique) =>
+              addTechniqueToRoutineExercise(routine.id, routineExerciseId, technique)
             }
-
-            return (
-              <RoutineExerciseEditor
-                key={item.id}
-                index={index}
-                exercise={exercise}
-                pairExerciseName={pairExerciseName}
-                item={item}
-                onAddSet={(routineExerciseId) => addSetToRoutineExercise(routine.id, routineExerciseId)}
-                onRemoveSet={(routineExerciseId, setId) =>
-                  removeSetFromRoutineExercise(routine.id, routineExerciseId, setId)
-                }
-                onRemove={(routineExerciseId) => removeExerciseFromRoutine(routine.id, routineExerciseId)}
-                onSelectTechnique={(routineExerciseId, technique) =>
-                  addTechniqueToRoutineExercise(routine.id, routineExerciseId, technique)
-                }
-                onUpdateRepRange={(routineExerciseId, repRange) =>
-                  updateRoutineExerciseRepRange(routine.id, routineExerciseId, repRange)
-                }
-                onUpdateWS={(routineExerciseId, count) =>
-                  updateRoutineExerciseWarmupSets(routine.id, routineExerciseId, count)
-                }
-                onUpdateFS={(routineExerciseId, count) =>
-                  updateRoutineExerciseFeederSets(routine.id, routineExerciseId, count)
-                }
-              />
-            );
-          })}
+            onUpdateRepRange={(routineExerciseId, repRange) =>
+              updateRoutineExerciseRepRange(routine.id, routineExerciseId, repRange)
+            }
+            onUpdateWS={(routineExerciseId, count) => updateRoutineExerciseWarmupSets(routine.id, routineExerciseId, count)}
+            onUpdateFS={(routineExerciseId, count) => updateRoutineExerciseFeederSets(routine.id, routineExerciseId, count)}
+          />
         </div>
       </div>
     </section>

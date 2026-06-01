@@ -27,6 +27,7 @@ export type GainlyStoreValue = {
   setRoutineActive: (routineId: string, isActive: boolean) => Promise<void>;
   deleteRoutine: (routineId: string) => Promise<void>;
   reorderRoutines: (nextIds: string[]) => void;
+  reorderRoutineExercises: (routineId: string, nextExerciseIds: string[]) => void;
   addExerciseToRoutine: (routineId: string, exerciseId: string) => void;
   addSetToRoutineExercise: (routineId: string, routineExerciseId: string) => void;
   removeSetFromRoutineExercise: (routineId: string, routineExerciseId: string, setId: string) => void;

@@ -17,6 +17,8 @@ import type * as migrations from "../migrations.js";
 import type * as routineActions from "../routineActions.js";
 import type * as routineDuplication from "../routineDuplication.js";
 import type * as routineDuplicationBaselines from "../routineDuplicationBaselines.js";
+import type * as routineExerciseActions from "../routineExerciseActions.js";
+import type * as routineExerciseOrdering from "../routineExerciseOrdering.js";
 import type * as routineOrdering from "../routineOrdering.js";
 import type * as routinePositions from "../routinePositions.js";
 import type * as routineStructure from "../routineStructure.js";
@@ -45,6 +47,8 @@ declare const fullApi: ApiFromModules<{
   routineActions: typeof routineActions;
   routineDuplication: typeof routineDuplication;
   routineDuplicationBaselines: typeof routineDuplicationBaselines;
+  routineExerciseActions: typeof routineExerciseActions;
+  routineExerciseOrdering: typeof routineExerciseOrdering;
   routineOrdering: typeof routineOrdering;
   routinePositions: typeof routinePositions;
   routineStructure: typeof routineStructure;

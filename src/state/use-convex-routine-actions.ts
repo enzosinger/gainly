@@ -14,6 +14,7 @@ export function useConvexRoutineActions() {
   const setRoutineActiveMutation = useMutation(api.routineActions.setActive);
   const deleteRoutineMutation = useMutation(api.routines.remove);
   const reorderRoutinesMutation = useMutation(api.routines.reorder);
+  const reorderRoutineExercisesMutation = useMutation(api.routineExerciseActions.reorder);
   const addExerciseToRoutineMutation = useMutation(api.routines.addExercise);
   const addSetToRoutineExerciseMutation = useMutation(api.routines.addSet);
   const removeExerciseFromRoutineMutation = useMutation(api.routines.removeExercise);
@@ -49,6 +50,12 @@ export function useConvexRoutineActions() {
       },
       reorderRoutines: (nextIds: string[]) => {
         void reorderRoutinesMutation({ routineIds: nextIds as Id<"routines">[] });
+      },
+      reorderRoutineExercises: (routineId: string, nextExerciseIds: string[]) => {
+        void reorderRoutineExercisesMutation({
+          routineId: routineId as Id<"routines">,
+          routineExerciseIds: nextExerciseIds,
+        });
       },
       addExerciseToRoutine: (routineId: string, exerciseId: string) => {
         void addExerciseToRoutineMutation({
@@ -106,6 +113,7 @@ export function useConvexRoutineActions() {
       removeExerciseFromRoutineMutation,
       removeSetFromRoutineExerciseMutation,
       renameRoutineMutation,
+      reorderRoutineExercisesMutation,
       reorderRoutinesMutation,
       setRoutineActiveMutation,
       updateFeederSetsMutation,

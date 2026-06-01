@@ -29,6 +29,7 @@ describe("RoutinesPage", () => {
       setRoutineActive: vi.fn(),
       deleteRoutine: vi.fn(),
       reorderRoutines: vi.fn(),
+      reorderRoutineExercises: vi.fn(),
       addExerciseToRoutine: vi.fn(),
       addSetToRoutineExercise: vi.fn(),
       removeSetFromRoutineExercise: vi.fn(),

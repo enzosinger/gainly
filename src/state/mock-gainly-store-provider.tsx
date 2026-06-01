@@ -25,6 +25,7 @@ export function GainlyStoreProvider({ children }: { children: React.ReactNode })
       setRoutineActive: routineStore.setRoutineActive,
       deleteRoutine: routineStore.deleteRoutine,
       reorderRoutines: routineStore.reorderRoutines,
+      reorderRoutineExercises: routineStore.reorderRoutineExercises,
       addExerciseToRoutine: routineStore.addExerciseToRoutine,
       addSetToRoutineExercise: routineStore.addSetToRoutineExercise,
       removeSetFromRoutineExercise: routineStore.removeSetFromRoutineExercise,
