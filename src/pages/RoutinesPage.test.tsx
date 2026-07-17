@@ -232,11 +232,12 @@ describe("RoutinesPage", () => {
 
     await user.click(screen.getByRole("button", { name: /deactivate push routine/i }));
 
-    expect(screen.getByText(/inactive/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^push$/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /activate push routine/i })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /activate push routine/i }));
 
-    expect(screen.queryByText(/inactive/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /deactivate push routine/i })).toBeInTheDocument();
   });
 
   it("does not delete a routine when the confirmation is cancelled", async () => {

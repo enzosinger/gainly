@@ -26,7 +26,7 @@ export default function RoutineCardActions({
   const isActive = routine.isActive !== false;
 
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2">
+    <div className="flex shrink-0 flex-nowrap items-center justify-end gap-2">
       {!isActive ? (
         <span className="rounded-full border border-[hsl(var(--border))] px-2 py-1 text-xs font-medium text-[hsl(var(--muted-foreground))]">
           {copy.routines.inactiveLabel}

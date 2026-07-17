@@ -5,6 +5,7 @@ import RoutineCardGrid from "../components/organisms/routines/RoutineCardGrid";
 import CreateRoutineCard from "../components/organisms/routines/CreateRoutineCard";
 import RoutineDeleteDialog from "../components/organisms/routines/RoutineDeleteDialog";
 import RoutinesLoadingState from "../components/organisms/routines/RoutinesLoadingState";
+import RoutinesStatusFilter, { type RoutineStatusFilterValue } from "../components/organisms/routines/RoutinesStatusFilter";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { useGainlyStore } from "../state/gainly-store";
@@ -23,6 +24,7 @@ export default function RoutinesPage() {
   const [deletingRoutineId, setDeletingRoutineId] = useState<string | null>(null);
   const [duplicatingRoutineId, setDuplicatingRoutineId] = useState<string | null>(null);
   const [togglingRoutineId, setTogglingRoutineId] = useState<string | null>(null);
+  const [routineFilter, setRoutineFilter] = useState<RoutineStatusFilterValue>("all");
   const createFormId = useId();
   const {
     editingRoutineId,
@@ -103,10 +105,12 @@ export default function RoutinesPage() {
   }
 
   const pendingDeleteRoutine = routines.find((routine) => routine.id === pendingDeleteRoutineId) ?? null;
+  const visibleRoutines =
+    routineFilter === "all"
+      ? routines
+      : routines.filter((routine) => (routineFilter === "active" ? routine.isActive !== false : routine.isActive === false));
 
-  if (isLoading) {
-    return <RoutinesLoadingState />;
-  }
+  if (isLoading) return <RoutinesLoadingState />;
 
   return (
     <section className="space-y-6 md:space-y-8">
@@ -117,6 +121,12 @@ export default function RoutinesPage() {
       </header>
 
       <div className="space-y-4">
+        <RoutinesStatusFilter
+          filter={routineFilter}
+          activeCount={routines.filter((routine) => routine.isActive !== false).length}
+          inactiveCount={routines.filter((routine) => routine.isActive === false).length}
+          onFilterChange={setRoutineFilter}
+        />
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm text-[hsl(var(--muted-foreground))]">{copy.routines.available(routines.length)}</p>
           <Button
@@ -147,13 +157,13 @@ export default function RoutinesPage() {
           />
         ) : null}
 
-        {routines.length === 0 ? (
+        {visibleRoutines.length === 0 ? (
           <Card>
-            <CardContent className="p-6 text-sm text-[hsl(var(--muted-foreground))]">{copy.routines.empty}</CardContent>
+            <CardContent className="p-6 text-sm text-[hsl(var(--muted-foreground))]">{routines.length === 0 ? copy.routines.empty : copy.routines.emptyByFilter}</CardContent>
           </Card>
         ) : (
           <RoutineCardGrid
-            routines={routines}
+            routines={visibleRoutines}
             editingRoutineId={editingRoutineId}
             editingName={editingName}
             savingRenameRoutineId={savingRenameRoutineId}

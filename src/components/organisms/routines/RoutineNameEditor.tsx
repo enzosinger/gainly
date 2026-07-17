@@ -72,8 +72,8 @@ export default function RoutineNameEditor({
   }
 
   return (
-    <div className="flex min-w-0 items-center gap-2">
-      <CardTitle className="truncate text-2xl leading-tight md:text-[2rem]">{routine.name}</CardTitle>
+    <div className="flex min-w-fit items-center gap-2">
+      <CardTitle className="whitespace-nowrap text-2xl leading-tight md:text-[2rem]">{routine.name}</CardTitle>
       <Button
         type="button"
         variant="ghost"

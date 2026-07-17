@@ -76,6 +76,14 @@ const translations = {
       createAction: "Create routine",
       close: "Close",
       empty: "No routines yet. Create one to start building.",
+      emptyByFilter: "No routines match this status.",
+      statusFilterLabel: "Routine status filter",
+      allFilter: "All",
+      activeFilter: "Active",
+      inactiveFilter: "Inactive",
+      allFilterAria: "All routines",
+      activeFilterAria: "Active routines",
+      inactiveFilterAria: "Inactive routines",
       deleteTitle: "Delete routine?",
       deleteDescription: (name?: string) =>
         name
@@ -335,6 +343,14 @@ const translations = {
       createAction: "Criar rotina",
       close: "Fechar",
       empty: "Ainda não há rotinas. Crie uma para começar.",
+      emptyByFilter: "Nenhuma rotina corresponde a este status.",
+      statusFilterLabel: "Filtro de status das rotinas",
+      allFilter: "Todas",
+      activeFilter: "Ativas",
+      inactiveFilter: "Inativas",
+      allFilterAria: "Todas as rotinas",
+      activeFilterAria: "Rotinas ativas",
+      inactiveFilterAria: "Rotinas inativas",
       deleteTitle: "Excluir rotina?",
       deleteDescription: (name?: string) =>
         name
