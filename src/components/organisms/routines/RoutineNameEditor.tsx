@@ -39,7 +39,7 @@ export default function RoutineNameEditor({
 
   if (isEditing) {
     return (
-      <form className="flex min-w-0 flex-1 items-center gap-2" onSubmit={(event) => onSubmit(event, routine)}>
+      <form className="pointer-events-auto flex min-w-0 flex-1 items-center gap-2" onSubmit={(event) => onSubmit(event, routine)}>
         <Input
           ref={inputRef}
           value={draftName}
@@ -72,18 +72,23 @@ export default function RoutineNameEditor({
   }
 
   return (
-    <div className="flex min-w-fit items-center gap-2">
-      <CardTitle className="whitespace-nowrap text-2xl leading-tight md:text-[2rem]">{routine.name}</CardTitle>
+    <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto sm:min-w-fit sm:flex-nowrap">
+      <CardTitle className="break-words text-2xl leading-tight sm:whitespace-nowrap md:text-[2rem]">{routine.name}</CardTitle>
       <Button
         type="button"
         variant="ghost"
         size="icon"
-        className="h-9 w-9 shrink-0 rounded-full"
+        className="pointer-events-auto h-9 w-9 shrink-0 rounded-full"
         aria-label={copy.routines.editRoutineNameButton(routine.name)}
         onClick={() => onBeginEdit(routine)}
       >
         <Pencil className="size-4" />
       </Button>
+      {routine.isActive === false ? (
+        <span className="ml-auto shrink-0 rounded-full border border-[hsl(var(--border))] px-2 py-1 text-xs font-medium text-[hsl(var(--muted-foreground))] sm:ml-0">
+          {copy.routines.inactiveLabel}
+        </span>
+      ) : null}
     </div>
   );
 }

@@ -43,7 +43,7 @@ export default function RoutineCardGrid({
         <RoutineWeekCard
           key={routine.id}
           routine={routine}
-          editHref={`/routines/${routine.id}`}
+          cardHref={`/routines/${routine.id}`}
           showStatus={false}
           titleContent={
             <RoutineNameEditor

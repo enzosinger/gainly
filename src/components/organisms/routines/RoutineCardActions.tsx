@@ -27,16 +27,11 @@ export default function RoutineCardActions({
 
   return (
     <div className="flex shrink-0 flex-nowrap items-center justify-end gap-2">
-      {!isActive ? (
-        <span className="rounded-full border border-[hsl(var(--border))] px-2 py-1 text-xs font-medium text-[hsl(var(--muted-foreground))]">
-          {copy.routines.inactiveLabel}
-        </span>
-      ) : null}
       <Button
         type="button"
         variant="ghost"
         size="icon"
-        className="h-10 w-10 rounded-full"
+        className="pointer-events-auto h-10 w-10 rounded-full"
         aria-label={copy.routines.duplicateRoutineButton(routine.name)}
         disabled={duplicatingRoutineId === routine.id}
         onClick={() => onDuplicate(routine.id)}
@@ -47,7 +42,7 @@ export default function RoutineCardActions({
         type="button"
         variant="ghost"
         size="icon"
-        className="h-10 w-10 rounded-full"
+        className="pointer-events-auto h-10 w-10 rounded-full"
         aria-label={
           isActive
             ? copy.routines.deactivateRoutineButton(routine.name)
@@ -62,7 +57,7 @@ export default function RoutineCardActions({
         type="button"
         variant="ghost"
         size="icon"
-        className="h-10 w-10 rounded-full"
+        className="pointer-events-auto h-10 w-10 rounded-full"
         aria-label={copy.routines.deleteRoutineButton(routine.name)}
         disabled={deletingRoutineId === routine.id}
         onClick={() => onDelete(routine.id)}
