@@ -22,11 +22,11 @@ describe("muscle groups", () => {
   });
 
   it("labels the new lower-body groups in both languages", () => {
-    expect(getMuscleGroupLabel("en", "quads")).toBe("quads");
-    expect(getMuscleGroupLabel("en", "hamstrings")).toBe("hamstrings");
-    expect(getMuscleGroupLabel("en", "calves")).toBe("calves");
-    expect(getMuscleGroupLabel("pt", "quads")).toBe("quadríceps");
+    expect(getMuscleGroupLabel("en", "quads")).toBe("Quads");
+    expect(getMuscleGroupLabel("en", "hamstrings")).toBe("Hamstrings");
+    expect(getMuscleGroupLabel("en", "calves")).toBe("Calves");
+    expect(getMuscleGroupLabel("pt", "quads")).toBe("Quadríceps");
     expect(getMuscleGroupLabel("pt", "hamstrings")).toBe("Posterior de coxa");
-    expect(getMuscleGroupLabel("pt", "calves")).toBe("panturrilhas");
+    expect(getMuscleGroupLabel("pt", "calves")).toBe("Panturrilhas");
   });
 });

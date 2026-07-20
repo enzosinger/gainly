@@ -8,8 +8,8 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { useGainlyStore } from "../../../state/gainly-store";
 import { orderRoutinesByActiveIds } from "../../../lib/routine-ordering";
-import RoutineWeekCard from "../../molecules/RoutineWeekCard";
 import type { Routine, RoutineWeekSummary } from "../../../types/domain";
+import WeeklyRoutineRow from "./WeeklyRoutineRow";
 
 type SortableRoutineCardProps = {
   routine: Routine;
@@ -29,7 +29,7 @@ function SortableRoutineCard({ routine, weekStart, summary }: SortableRoutineCar
       {...attributes}
       {...listeners}
     >
-      <RoutineWeekCard routine={routine} summary={summary} workoutHref={`/workout/${routine.id}?weekStart=${weekStart}`} />
+      <WeeklyRoutineRow routine={routine} summary={summary} weekStart={weekStart} />
     </div>
   );
 }
@@ -56,7 +56,7 @@ export default function WeeklyRoutineList({ summariesByRoutineId, weekStart }: W
       }}
     >
       <SortableContext items={activeRoutines.map((routine) => routine.id)} strategy={verticalListSortingStrategy}>
-        <div className="grid gap-4 md:gap-5">
+        <div className="grid gap-3 md:gap-4">
           {activeRoutines.map((routine) => (
             <SortableRoutineCard key={routine.id} routine={routine} weekStart={weekStart} summary={summariesByRoutineId?.get(routine.id)} />
           ))}

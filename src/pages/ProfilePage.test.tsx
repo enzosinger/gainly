@@ -55,7 +55,7 @@ describe("ProfilePage", () => {
       screen.getAllByRole("heading", {
         level: 3,
       }).map((heading) => heading.textContent),
-    ).toEqual(["chest", "back", "shoulders", "quads", "hamstrings", "calves", "biceps", "triceps"]);
+    ).toEqual(["Chest", "Back", "Shoulders", "Quads", "Hamstrings", "Calves", "Biceps", "Triceps"]);
     expect(screen.getAllByText("Low")).toHaveLength(8);
     expect(screen.queryByText("Weekly sets")).not.toBeInTheDocument();
   });

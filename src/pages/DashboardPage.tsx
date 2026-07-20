@@ -5,14 +5,17 @@ import { api } from "../../convex/_generated/api";
 import { getMondayWeekStart, getWeekWindow, shiftWeekWindowStart } from "../lib/week";
 import WeekStrip from "../components/organisms/dashboard/WeekStrip";
 import WeeklyRoutineList from "../components/organisms/dashboard/WeeklyRoutineList";
+import WeeklyInsightsPanel from "../components/organisms/dashboard/WeeklyInsightsPanel";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Skeleton } from "../components/ui/skeleton";
 import { useGainlyStore } from "../state/gainly-store";
 import { useLanguage } from "../i18n/LanguageProvider";
+import { buildDashboardWeekStats } from "../lib/dashboard-week";
+import { buildPlannedWeeklyVolume } from "../lib/profile-weekly-volume";
 
 export default function DashboardPage() {
-  const { routines, isLoading } = useGainlyStore();
+  const { routines, exercises, isLoading } = useGainlyStore();
   const activeRoutines = useMemo(() => routines.filter((routine) => routine.isActive !== false), [routines]);
   const { copy, locale } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -30,17 +33,58 @@ export default function DashboardPage() {
     () => new Map((weeklySummaries ?? []).map((summary) => [summary.routineId, summary])),
     [weeklySummaries],
   );
+  const weekStats = useMemo(
+    () => buildDashboardWeekStats(activeRoutines, summariesByRoutineId),
+    [activeRoutines, summariesByRoutineId],
+  );
+  const plannedVolume = useMemo(() => buildPlannedWeeklyVolume(activeRoutines, exercises), [activeRoutines, exercises]);
 
   if (isLoading || weeklySummaries === undefined) {
     return (
-      <section className="space-y-6 md:space-y-8" aria-busy="true">
-        <header className="space-y-3">
+      <section className="mx-auto max-w-[1180px] space-y-5 md:space-y-6" aria-busy="true">
+        <header className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
+          <div className="space-y-3">
+            <p className="eyebrow">{copy.dashboard.eyebrow}</p>
+            <h1 className="screen-title">{copy.dashboard.title}</h1>
+          </div>
+          <WeekStrip
+            weekLabel={weekWindow.label}
+            onPreviousWeek={() => {
+              setSearchParams({ weekStart: String(shiftWeekWindowStart(weekWindow.start, -1)) });
+            }}
+            onNextWeek={() => {
+              setSearchParams({ weekStart: String(shiftWeekWindowStart(weekWindow.start, 1)) });
+            }}
+            canGoNext={weekWindow.start < currentWeekStart}
+          />
+        </header>
+        <Card role="status" aria-label={copy.app.loading}>
+          <CardContent className="space-y-4 p-6">
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+              <div className="space-y-3">
+                <Skeleton className="h-24 w-full rounded-2xl" />
+                <Skeleton className="h-24 w-full rounded-2xl" />
+                <Skeleton className="h-24 w-full rounded-2xl" />
+              </div>
+              <Skeleton className="h-64 w-full rounded-2xl" />
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+    );
+  }
+
+  return (
+    <section className="mx-auto max-w-[1180px] space-y-5 md:space-y-6">
+      <header className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
+        <div className="space-y-3">
           <p className="eyebrow">{copy.dashboard.eyebrow}</p>
           <h1 className="screen-title">{copy.dashboard.title}</h1>
-          <p className="max-w-2xl text-sm text-[hsl(var(--muted-foreground))] md:text-base">
-            {copy.dashboard.description}
-          </p>
-        </header>
+        </div>
         <WeekStrip
           weekLabel={weekWindow.label}
           onPreviousWeek={() => {
@@ -51,40 +95,7 @@ export default function DashboardPage() {
           }}
           canGoNext={weekWindow.start < currentWeekStart}
         />
-        <Card role="status" aria-label={copy.app.loading}>
-          <CardContent className="space-y-4 p-6">
-            <div className="space-y-2">
-              <Skeleton className="h-5 w-40" />
-              <Skeleton className="h-4 w-64" />
-            </div>
-            <div className="space-y-3">
-              <Skeleton className="h-28 w-full rounded-2xl" />
-              <Skeleton className="h-28 w-full rounded-2xl" />
-              <Skeleton className="h-28 w-full rounded-2xl" />
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-    );
-  }
-
-  return (
-    <section className="space-y-6 md:space-y-8">
-      <header className="space-y-3">
-        <p className="eyebrow">{copy.dashboard.eyebrow}</p>
-        <h1 className="screen-title">{copy.dashboard.title}</h1>
-        <p className="max-w-2xl text-sm text-[hsl(var(--muted-foreground))] md:text-base">{copy.dashboard.description}</p>
       </header>
-      <WeekStrip
-        weekLabel={weekWindow.label}
-        onPreviousWeek={() => {
-          setSearchParams({ weekStart: String(shiftWeekWindowStart(weekWindow.start, -1)) });
-        }}
-        onNextWeek={() => {
-          setSearchParams({ weekStart: String(shiftWeekWindowStart(weekWindow.start, 1)) });
-        }}
-        canGoNext={weekWindow.start < currentWeekStart}
-      />
       {activeRoutines.length === 0 ? (
         <Card>
           <CardContent className="space-y-4 p-6">
@@ -102,7 +113,14 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       ) : (
-        <WeeklyRoutineList summariesByRoutineId={summariesByRoutineId} weekStart={weekWindow.start} />
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+          <WeeklyRoutineList summariesByRoutineId={summariesByRoutineId} weekStart={weekWindow.start} />
+          <WeeklyInsightsPanel
+            routineCount={activeRoutines.length}
+            stats={weekStats}
+            plannedVolume={plannedVolume}
+          />
+        </div>
       )}
     </section>
   );
