@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { Input } from "../ui/input";
 import type { WorkoutSessionSet } from "../../types/domain";
 import { useLanguage } from "../../i18n/LanguageProvider";
 import { getTechniqueLabel } from "../../i18n/copy";
+import { MovementFields, SetNumberField, TechniqueNote } from "./SetRowFields";
 
 type SetRowProps = {
   set: WorkoutSessionSet;
   index: number;
   previousSet?: WorkoutSessionSet;
+  primaryExerciseName: string;
   pairExerciseName?: string;
   onCommit: (input: {
     weightKg: number | null;
@@ -24,38 +25,17 @@ type DraftValues = {
   pairReps: string;
 };
 
-function formatWeight(value?: number) {
-  return value ? `${value} kg` : "--";
-}
+type DraftKey = keyof DraftValues;
 
-function formatReps(set: { reps?: number }) {
-  if (set.reps) return `${set.reps} reps`;
-  return "--";
-}
-
-function formatReference(
-  set: WorkoutSessionSet | undefined,
-  copy?: { builder: { noPreviousWorkout: string; lastWorkout: (summary: string) => string } },
-) {
-  if (!set) {
-    return copy?.builder.noPreviousWorkout ?? "No previous workout yet.";
-  }
-
-  const parts = [formatWeight(set.weightKg), formatReps(set)];
-
-  if (set.pairWeightKg || set.pairReps) {
-    parts.push(`pair ${formatWeight(set.pairWeightKg)}${set.pairReps ? ` x ${set.pairReps}` : ""}`);
-  }
-
-  const summary = parts.join(" · ");
-  return copy?.builder.lastWorkout(summary) ?? `Last workout: ${summary}`;
+function formatPerformance(weightKg?: number, reps?: number) {
+  const parts = [];
+  if (weightKg) parts.push(`${weightKg} kg`);
+  if (reps) parts.push(`${reps} reps`);
+  return parts.length > 0 ? parts.join(" · ") : null;
 }
 
 function parseValue(value: string) {
-  if (!value.trim()) {
-    return null;
-  }
-
+  if (!value.trim()) return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 }
@@ -78,16 +58,23 @@ function toPayload(draft: DraftValues, currentSet?: WorkoutSessionSet) {
   };
 }
 
-export default function SetRow({ set, index, previousSet, pairExerciseName, onCommit }: SetRowProps) {
+export default function SetRow({ set, index, previousSet, primaryExerciseName, pairExerciseName, onCommit }: SetRowProps) {
   const { copy, language } = useLanguage();
   const initialDraft = buildDraft(set);
   const [draft, setDraft] = useState<DraftValues>(initialDraft);
   const draftRef = useRef<DraftValues>(initialDraft);
+  const technique = getTechniqueLabel(language, set.technique);
+  const isSuperset = set.technique === "superset" && Boolean(pairExerciseName);
 
-  function applyDraftPatch(patch: Partial<DraftValues>) {
-    const nextDraft = { ...draftRef.current, ...patch };
+  function updateDraft(key: DraftKey, value: string) {
+    const nextDraft = { ...draftRef.current, [key]: value };
     draftRef.current = nextDraft;
     setDraft(nextDraft);
+  }
+
+  function previousText(weightKg?: number, reps?: number) {
+    const summary = formatPerformance(weightKg, reps);
+    return summary ? copy.builder.previousWorkout(summary) : "--";
   }
 
   useEffect(() => {
@@ -100,8 +87,6 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
     const timer = setTimeout(() => {
       const payload = toPayload(draft, set);
       const originalPayload = toPayload(buildDraft(set));
-
-      // Only commit if the values have actually changed from the current set data
       if (
         payload.weightKg !== originalPayload.weightKg ||
         payload.reps !== originalPayload.reps ||
@@ -113,129 +98,69 @@ export default function SetRow({ set, index, previousSet, pairExerciseName, onCo
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [draft, onCommit, set, previousSet]);
+  }, [draft, onCommit, set]);
+
+  const previous = previousText(previousSet?.weightKg, previousSet?.reps);
+  const showTechnique = set.technique !== "normal";
 
   return (
-    <div className="panel-inset space-y-3 p-3 text-sm text-[hsl(var(--foreground))]">
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-[hsl(var(--muted-foreground))]">{copy.builder.setIndex(index + 1)}</div>
-        <div className="text-xs uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]">
-          {getTechniqueLabel(language, set.technique)}
+    <div className="py-3 text-sm text-[hsl(var(--foreground))]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-1 items-baseline gap-2">
+          <p className="shrink-0 font-medium text-[hsl(var(--muted-foreground))]">{copy.builder.setIndex(index + 1)}</p>
+          {!isSuperset ? (
+            <p className="truncate text-xs text-[hsl(var(--muted-foreground))]">{previous}</p>
+          ) : null}
         </div>
+        {showTechnique ? (
+          <p className="text-xs uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]">{technique}</p>
+        ) : null}
       </div>
-      <p className="text-xs text-[hsl(var(--muted-foreground))]">{formatReference(previousSet, copy)}</p>
-      <div className="grid grid-cols-2 gap-3">
-        <label className="space-y-1">
-          <span className="block text-xs uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]">{copy.builder.weight}</span>
-          <Input
-            type="number"
-            step="0.5"
-            min="0"
-            inputMode="decimal"
+
+      {isSuperset ? (
+        <div className="mt-2 space-y-2 sm:mt-3 sm:space-y-3">
+          <MovementFields
+            name={primaryExerciseName}
+            previous={previousText(previousSet?.weightKg, previousSet?.reps)}
+            weightValue={draft.weightKg}
+            repsValue={draft.reps}
+            weightPlaceholder={previousSet?.weightKg ? `${previousSet.weightKg}` : "kg"}
+            repsPlaceholder={previousSet?.reps ? `${previousSet.reps}` : "reps"}
+            onWeightChange={(value) => updateDraft("weightKg", value)}
+            onRepsChange={(value) => updateDraft("reps", value)}
+          />
+          <MovementFields
+            name={pairExerciseName ?? ""}
+            previous={previousText(previousSet?.pairWeightKg, previousSet?.pairReps)}
+            weightValue={draft.pairWeightKg}
+            repsValue={draft.pairReps}
+            weightPlaceholder={previousSet?.pairWeightKg ? `${previousSet.pairWeightKg}` : "kg"}
+            repsPlaceholder={previousSet?.pairReps ? `${previousSet.pairReps}` : "reps"}
+            onWeightChange={(value) => updateDraft("pairWeightKg", value)}
+            onRepsChange={(value) => updateDraft("pairReps", value)}
+          />
+        </div>
+      ) : (
+        <div className="mt-2 grid grid-cols-2 gap-2 sm:mt-3 sm:grid-cols-2">
+          <SetNumberField
+            label={copy.builder.weight}
             value={draft.weightKg}
             placeholder={previousSet?.weightKg ? `${previousSet.weightKg}` : "kg"}
-            onChange={(event) => {
-              const { value } = event.currentTarget;
-              applyDraftPatch({ weightKg: value });
-            }}
-            onBlur={(event) => {
-              applyDraftPatch({ weightKg: event.currentTarget.value });
-            }}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.currentTarget.blur();
-              }
-            }}
+            step="0.5"
+            inputMode="decimal"
+            onChange={(value) => updateDraft("weightKg", value)}
           />
-        </label>
-        <label className="space-y-1">
-          <span className="block text-xs uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]">{copy.builder.reps}</span>
-          <Input
-            type="number"
-            step="1"
-            min="0"
-            inputMode="numeric"
+          <SetNumberField
+            label={copy.builder.reps}
             value={draft.reps}
             placeholder={previousSet?.reps ? `${previousSet.reps}` : "reps"}
-            onChange={(event) => {
-              const { value } = event.currentTarget;
-              applyDraftPatch({ reps: value });
-            }}
-            onBlur={(event) => {
-              applyDraftPatch({ reps: event.currentTarget.value });
-            }}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.currentTarget.blur();
-              }
-            }}
+            step="1"
+            inputMode="numeric"
+            onChange={(value) => updateDraft("reps", value)}
           />
-        </label>
-      </div>
-      {set.technique === "backoff" && set.backoffPercent ? (
-        <p className="text-xs text-[hsl(var(--muted-foreground))]">{copy.builder.backoff(set.backoffPercent)}</p>
-      ) : null}
-      {set.technique === "cluster" && set.clusterBlocks ? (
-        <p className="text-xs text-[hsl(var(--muted-foreground))]">
-          {copy.builder.cluster(set.clusterBlocks, set.clusterRepRange)}
-        </p>
-      ) : null}
-      {set.technique === "superset" && pairExerciseName ? (
-        <div className="space-y-2">
-          <div className="grid grid-cols-2 gap-3">
-            <label className="space-y-1">
-              <span className="block text-xs uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]">
-                {copy.builder.pairWeight}
-              </span>
-              <Input
-                type="number"
-                step="0.5"
-                min="0"
-                inputMode="decimal"
-                value={draft.pairWeightKg}
-                placeholder={previousSet?.pairWeightKg ? `${previousSet.pairWeightKg}` : "kg"}
-                onChange={(event) => {
-                  const { value } = event.currentTarget;
-                  applyDraftPatch({ pairWeightKg: value });
-                }}
-                onBlur={(event) => {
-                  applyDraftPatch({ pairWeightKg: event.currentTarget.value });
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.currentTarget.blur();
-                  }
-                }}
-              />
-            </label>
-            <label className="space-y-1">
-              <span className="block text-xs uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]">
-                {copy.builder.pairReps}
-              </span>
-              <Input
-                type="number"
-                step="1"
-                min="0"
-                inputMode="numeric"
-                value={draft.pairReps}
-                placeholder={previousSet?.pairReps ? `${previousSet.pairReps}` : "reps"}
-                onChange={(event) => {
-                  const { value } = event.currentTarget;
-                  applyDraftPatch({ pairReps: value });
-                }}
-                onBlur={(event) => {
-                  applyDraftPatch({ pairReps: event.currentTarget.value });
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.currentTarget.blur();
-                  }
-                }}
-              />
-            </label>
-          </div>
         </div>
-      ) : null}
+      )}
+      <TechniqueNote set={set} />
     </div>
   );
 }

@@ -4,16 +4,15 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import WeekStrip from "../components/organisms/dashboard/WeekStrip";
-import ExerciseAccordion from "../components/organisms/logger/ExerciseAccordion";
-import { Button } from "../components/ui/button";
-import { Card, CardContent } from "../components/ui/card";
-import { Skeleton } from "../components/ui/skeleton";
+import { WorkoutEmptyState, WorkoutLoadingState, WorkoutRestoringState } from "../components/organisms/logger/WorkoutPageStates";
+import WorkoutSessionLog from "../components/organisms/logger/WorkoutSessionLog";
 import { useGainlyStore } from "../state/gainly-store";
+import { buildWorkoutExerciseEntries } from "../lib/workout-logger";
 import { getMondayWeekStart, getWeekWindow, shiftWeekWindowStart } from "../lib/week";
 import { useLanguage } from "../i18n/LanguageProvider";
 
 export default function WorkoutPage() {
-  const { routines, exercises, isLoading } = useGainlyStore();
+  const { routines, exercises, expandedExerciseId, isLoading, setExpandedExerciseId } = useGainlyStore();
   const { copy, locale } = useLanguage();
   const { routineId } = useParams();
   const navigate = useNavigate();
@@ -22,15 +21,12 @@ export default function WorkoutPage() {
   const updateWorkoutSet = useMutation(api.workouts.updateWorkoutSet);
   const completeSession = useMutation(api.workouts.completeSession);
   const [workflowMessage, setWorkflowMessage] = useState<string | null>(null);
-
   const workoutRoutine = routines.find((routine) => routine.id === routineId) ?? routines[0];
   const selectedRoutineId = (routineId ?? workoutRoutine?.id) as Id<"routines"> | undefined;
   const currentWeekStart = getMondayWeekStart(Date.now());
   const requestedWeekStart = searchParams.get("weekStart");
   const parsedWeekStart = requestedWeekStart ? Number(requestedWeekStart) : NaN;
-  const selectedWeekStart = Number.isFinite(parsedWeekStart)
-    ? getMondayWeekStart(parsedWeekStart)
-    : currentWeekStart;
+  const selectedWeekStart = Number.isFinite(parsedWeekStart) ? getMondayWeekStart(parsedWeekStart) : currentWeekStart;
   const weekWindow = getWeekWindow(selectedWeekStart, locale);
   const activeSession = useQuery(
     api.workouts.sessionForRoutineWeek,
@@ -38,9 +34,7 @@ export default function WorkoutPage() {
   );
   const weekHistory = useQuery(
     api.workouts.previousHistoryForRoutine,
-    selectedRoutineId
-      ? { routineId: selectedRoutineId, weekStart: weekWindow.start }
-      : "skip",
+    selectedRoutineId ? { routineId: selectedRoutineId, weekStart: weekWindow.start } : "skip",
   );
   const requestedRoutineIdRef = useRef<string | null>(null);
   const weekNavigation = (
@@ -55,20 +49,15 @@ export default function WorkoutPage() {
       canGoNext={weekWindow.start < currentWeekStart}
     />
   );
-
   const routineUpdatedAt = workoutRoutine?.updatedAt;
-
   useEffect(() => {
     if (!selectedRoutineId || activeSession === undefined) {
       return;
     }
-
     const syncKey = `${selectedRoutineId}-${routineUpdatedAt}`;
-
     if (requestedRoutineIdRef.current === syncKey) {
       return;
     }
-
     requestedRoutineIdRef.current = syncKey;
     void ensureSessionForRoutineWeek({ routineId: selectedRoutineId, weekStart: weekWindow.start }).catch(() => {
       requestedRoutineIdRef.current = null;
@@ -84,21 +73,6 @@ export default function WorkoutPage() {
     () => Object.fromEntries(exercises.map((exercise) => [exercise.id, exercise.name])),
     [exercises],
   );
-  function getWorkoutExerciseName(item: (typeof workoutRoutine.exercises)[number]) {
-    const primaryExerciseName = exercisesById.get(item.exerciseId)?.name ?? copy.exercises.exerciseEyebrow;
-    const pairExerciseId = item.sets.find((set) => set.technique === "superset" && set.pairExerciseId)?.pairExerciseId;
-
-    if (!pairExerciseId) {
-      return primaryExerciseName;
-    }
-
-    const pairExerciseName = exerciseNamesById[pairExerciseId];
-    if (!pairExerciseName) {
-      return primaryExerciseName;
-    }
-
-    return `${primaryExerciseName} + ${pairExerciseName}`;
-  }
   const currentExerciseByRoutineExerciseId = useMemo(
     () =>
       new Map(
@@ -117,56 +91,58 @@ export default function WorkoutPage() {
       ),
     [weekHistory],
   );
+  const workoutExercises = useMemo(() => {
+    return buildWorkoutExerciseEntries({
+      routine: workoutRoutine,
+      exercisesById,
+      exerciseNamesById,
+      currentExerciseByRoutineExerciseId,
+      previousExerciseByRoutineExerciseId,
+      fallbackExerciseName: copy.exercises.exerciseEyebrow,
+    });
+  }, [
+    copy.exercises.exerciseEyebrow,
+    currentExerciseByRoutineExerciseId,
+    exerciseNamesById,
+    exercisesById,
+    previousExerciseByRoutineExerciseId,
+    workoutRoutine,
+  ]);
+  const selectedWorkoutExercise =
+    workoutExercises.find((exercise) => exercise.item.id === expandedExerciseId) ?? workoutExercises[0] ?? null;
+
+  useEffect(() => {
+    if (!selectedWorkoutExercise || selectedWorkoutExercise.item.id === expandedExerciseId) {
+      return;
+    }
+
+    setExpandedExerciseId(selectedWorkoutExercise.item.id);
+  }, [expandedExerciseId, selectedWorkoutExercise, setExpandedExerciseId]);
 
   if (isLoading) {
     return (
-      <section className="space-y-6 md:space-y-8" aria-busy="true">
-        {weekNavigation}
-        <header className="space-y-2">
-          <h1 className="screen-title">{copy.workout.title}</h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">{copy.workout.description}</p>
-        </header>
-        <Card role="status" aria-label={copy.app.loading}>
-          <CardContent className="space-y-4 p-6">
-            <div className="space-y-2">
-              <Skeleton className="h-5 w-56" />
-              <Skeleton className="h-4 w-72" />
-            </div>
-            <div className="space-y-3">
-              <Skeleton className="h-36 w-full rounded-2xl" />
-              <Skeleton className="h-36 w-full rounded-2xl" />
-              <Skeleton className="h-36 w-full rounded-2xl" />
-            </div>
-          </CardContent>
-        </Card>
-      </section>
+      <WorkoutLoadingState
+        weekNavigation={weekNavigation}
+        title={copy.workout.title}
+        description={copy.workout.description}
+        loadingLabel={copy.app.loading}
+      />
     );
   }
 
   if (!workoutRoutine) {
-    return (
-      <section className="space-y-4">
-        <h1 className="screen-title">{copy.workout.title}</h1>
-        <p className="mt-4 text-sm text-[hsl(var(--muted-foreground))]">{copy.workout.noWorkout}</p>
-      </section>
-    );
+    return <WorkoutEmptyState title={copy.workout.title} body={copy.workout.noWorkout} />;
   }
 
   if (!activeSession && selectedRoutineId) {
     return (
-      <section className="space-y-4">
-        {weekNavigation}
-        <header className="space-y-2">
-          <h1 className="screen-title">{copy.workout.routineWorkout(workoutRoutine.name)}</h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">{copy.workout.restoringDescription}</p>
-        </header>
-        {workflowMessage ? (
-          <div className="panel-inset border border-[hsl(var(--border))] px-4 py-3 text-sm text-[hsl(var(--foreground))]">
-            {workflowMessage}
-          </div>
-        ) : null}
-        <div className="panel-card px-4 py-6 text-sm text-[hsl(var(--muted-foreground))]">{copy.workout.restoringBody}</div>
-      </section>
+      <WorkoutRestoringState
+        weekNavigation={weekNavigation}
+        title={copy.workout.routineWorkout(workoutRoutine.name)}
+        description={copy.workout.restoringDescription}
+        body={copy.workout.restoringBody}
+        workflowMessage={workflowMessage}
+      />
     );
   }
 
@@ -177,71 +153,42 @@ export default function WorkoutPage() {
         <h1 className="screen-title">{copy.workout.routineWorkout(workoutRoutine.name)}</h1>
         <p className="text-sm text-[hsl(var(--muted-foreground))]">{copy.workout.description}</p>
       </header>
-      <div className="space-y-3">
-        {workoutRoutine.exercises.map((item) => {
-          const exercise = exercisesById.get(item.exerciseId);
-          const currentExercise = currentExerciseByRoutineExerciseId.get(item.id);
-          const previousExercise = previousExerciseByRoutineExerciseId.get(item.id);
-
-          if (!currentExercise) {
-            return null;
+      <WorkoutSessionLog
+        workoutExercises={workoutExercises}
+        selectedWorkoutExercise={selectedWorkoutExercise}
+        selectedId={selectedWorkoutExercise?.item.id}
+        pairExerciseNamesById={exerciseNamesById}
+        sessionStatusText={activeSession?.status === "completed" ? copy.workout.completed : copy.workout.activeSession}
+        completeLabel={copy.workout.completeSession}
+        workflowMessage={workflowMessage}
+        onSelectExercise={setExpandedExerciseId}
+        onCommitSet={(setId, input) => {
+          void updateWorkoutSet({
+            sessionId: activeSession!._id,
+            setId,
+            weightKg: input.weightKg,
+            reps: input.reps,
+            pairWeightKg: input.pairWeightKg,
+            pairReps: input.pairReps,
+          }).catch(() => {
+            setWorkflowMessage(copy.workout.saveError);
+          });
+        }}
+        onComplete={() => {
+          if (!activeSession) {
+            return;
           }
 
-          return (
-            <ExerciseAccordion
-              key={item.id}
-              item={item}
-              name={getWorkoutExerciseName(item)}
-              muscleGroup={exercise?.muscleGroup}
-              description={exercise?.description}
-              currentExercise={currentExercise}
-              previousExercise={previousExercise}
-              pairExerciseNamesById={exerciseNamesById}
-              onCommitSet={(setId, input) => {
-                void updateWorkoutSet({
-                  sessionId: activeSession!._id,
-                  setId,
-                  weightKg: input.weightKg,
-                  reps: input.reps,
-                  pairWeightKg: input.pairWeightKg,
-                  pairReps: input.pairReps,
-                }).catch(() => {
-                  setWorkflowMessage(copy.workout.saveError);
-                });
-              }}
-            />
-          );
-        })}
-      </div>
-      {workflowMessage ? (
-        <div className="panel-inset border border-[hsl(var(--border))] px-4 py-3 text-sm text-[hsl(var(--foreground))]">
-          {workflowMessage}
-        </div>
-      ) : null}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">
-          {activeSession?.status === "completed" ? copy.workout.completed : copy.workout.activeSession}
-        </p>
-        <Button
-          className="sm:w-auto"
-          onClick={() => {
-            if (!activeSession) {
-              return;
-            }
-
-            setWorkflowMessage(null);
-            void completeSession({ sessionId: activeSession._id })
-              .then(() => {
-                navigate("/");
-              })
-              .catch(() => {
-                setWorkflowMessage(copy.workout.completeError);
-              });
-          }}
-        >
-          {copy.workout.completeSession}
-        </Button>
-      </div>
+          setWorkflowMessage(null);
+          void completeSession({ sessionId: activeSession._id })
+            .then(() => {
+              navigate("/");
+            })
+            .catch(() => {
+              setWorkflowMessage(copy.workout.completeError);
+            });
+        }}
+      />
     </section>
   );
 }
