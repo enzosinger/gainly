@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useEffect } from "react";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -237,6 +237,10 @@ function SeedWorkoutExerciseDescription() {
 }
 
 describe("WorkoutPage", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.spyOn(Date, "now").mockReturnValue(now);
@@ -328,7 +332,7 @@ describe("WorkoutPage", () => {
 
     expect(screen.getByText(currentWeekWindow.label)).toBeInTheDocument();
 
-    const benchButton = screen.getByRole("button", { name: /barbell bench press.*chest/i });
+    const benchButton = screen.getByRole("button", { name: /open barbell bench press/i });
     await user.click(benchButton);
 
     const benchAccordion = benchButton.closest("section");
@@ -337,7 +341,7 @@ describe("WorkoutPage", () => {
     const descriptionNode = await screen.findByText(
       /pause on the chest before driving the bar up/i,
     );
-    const previousPerformanceNode = within(benchAccordion as HTMLElement).getByText(/no previous workout yet/i);
+    const previousPerformanceNode = within(benchAccordion as HTMLElement).getByText(/previous 80 kg · 6 reps/i);
 
     expect(descriptionNode.compareDocumentPosition(previousPerformanceNode) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(within(benchAccordion as HTMLElement).getByText(/rep range: 5-8 · wu: 1 · fs: 1/i)).toBeInTheDocument();
@@ -345,7 +349,7 @@ describe("WorkoutPage", () => {
     await user.click(screen.getByRole("button", { name: /previous week/i }));
 
     expect(screen.getByText(previousWeekWindow.label)).toBeInTheDocument();
-    expect(screen.getAllByText(/no previous workout yet/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/previous 75 kg · 5 reps/i)).toBeInTheDocument();
 
     const weightInputs = screen.getAllByRole("spinbutton");
     const firstWeightInput = weightInputs[0];
@@ -370,6 +374,35 @@ describe("WorkoutPage", () => {
 
     expect(mockCompleteSession).toHaveBeenCalledWith({
       sessionId: "session-routine-upper-a",
+    });
+  });
+
+  it("saves pending set edits immediately when selecting another exercise", () => {
+    vi.useFakeTimers();
+
+    render(
+      <MemoryRouter initialEntries={["/workout/routine-upper-a"]}>
+        <GainlyStoreProvider>
+          <SeedWorkoutExerciseDescription />
+          <Routes>
+            <Route path="/workout/:routineId" element={<WorkoutPage />} />
+          </Routes>
+        </GainlyStoreProvider>
+      </MemoryRouter>,
+    );
+
+    const weightInput = screen.getAllByRole("spinbutton")[0];
+    fireEvent.change(weightInput, { target: { value: "90" } });
+
+    fireEvent.click(screen.getByRole("button", { name: /seated cable row/i }));
+
+    expect(mockUpdateWorkoutSet).toHaveBeenCalledWith({
+      sessionId: "session-routine-upper-a",
+      setId: "session-set-bench-1",
+      weightKg: 90,
+      reps: 6,
+      pairWeightKg: null,
+      pairReps: null,
     });
   });
 

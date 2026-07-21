@@ -58,18 +58,56 @@ function toPayload(draft: DraftValues, currentSet?: WorkoutSessionSet) {
   };
 }
 
+function payloadChanged(draft: DraftValues, set: WorkoutSessionSet) {
+  const payload = toPayload(draft, set);
+  const originalPayload = toPayload(buildDraft(set));
+
+  return (
+    payload.weightKg !== originalPayload.weightKg ||
+    payload.reps !== originalPayload.reps ||
+    payload.pairWeightKg !== originalPayload.pairWeightKg ||
+    payload.pairReps !== originalPayload.pairReps
+  );
+}
+
+function payloadSignature(input: ReturnType<typeof toPayload>) {
+  return `${input.weightKg ?? ""}|${input.reps ?? ""}|${input.pairWeightKg ?? ""}|${input.pairReps ?? ""}`;
+}
+
 export default function SetRow({ set, index, previousSet, primaryExerciseName, pairExerciseName, onCommit }: SetRowProps) {
   const { copy, language } = useLanguage();
   const initialDraft = buildDraft(set);
   const [draft, setDraft] = useState<DraftValues>(initialDraft);
   const draftRef = useRef<DraftValues>(initialDraft);
+  const setRef = useRef(set);
+  const onCommitRef = useRef(onCommit);
+  const lastCommittedSignatureRef = useRef<string | null>(null);
   const technique = getTechniqueLabel(language, set.technique);
   const isSuperset = set.technique === "superset" && Boolean(pairExerciseName);
+  setRef.current = set;
+  onCommitRef.current = onCommit;
 
   function updateDraft(key: DraftKey, value: string) {
     const nextDraft = { ...draftRef.current, [key]: value };
     draftRef.current = nextDraft;
     setDraft(nextDraft);
+  }
+
+  function commitDraftIfChanged() {
+    const currentSet = setRef.current;
+    const currentDraft = draftRef.current;
+    if (!payloadChanged(currentDraft, currentSet)) {
+      return;
+    }
+
+    const payload = toPayload(currentDraft, currentSet);
+    const signature = payloadSignature(payload);
+    if (signature === lastCommittedSignatureRef.current) {
+      return;
+    }
+
+    lastCommittedSignatureRef.current = signature;
+    onCommitRef.current(payload);
   }
 
   function previousText(weightKg?: number, reps?: number) {
@@ -85,20 +123,15 @@ export default function SetRow({ set, index, previousSet, primaryExerciseName, p
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const payload = toPayload(draft, set);
-      const originalPayload = toPayload(buildDraft(set));
-      if (
-        payload.weightKg !== originalPayload.weightKg ||
-        payload.reps !== originalPayload.reps ||
-        payload.pairWeightKg !== originalPayload.pairWeightKg ||
-        payload.pairReps !== originalPayload.pairReps
-      ) {
-        onCommit(payload);
-      }
+      commitDraftIfChanged();
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [draft, onCommit, set]);
+  }, [draft]);
+
+  useEffect(() => () => {
+    commitDraftIfChanged();
+  }, []);
 
   const previous = previousText(previousSet?.weightKg, previousSet?.reps);
   const showTechnique = set.technique !== "normal";
