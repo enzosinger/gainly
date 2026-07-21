@@ -49,7 +49,7 @@ export default function RoutineWeekCard({
     <Card
       className={
         cardHref
-          ? "relative cursor-pointer overflow-hidden transition-colors hover:bg-[hsl(var(--panel-inset))] focus-within:ring-2 focus-within:ring-[hsl(var(--ring))] focus-within:ring-offset-2"
+          ? "relative cursor-pointer overflow-hidden transition-colors hover:bg-[hsl(var(--panel-inset))]"
           : "overflow-hidden"
       }
     >
@@ -61,11 +61,11 @@ export default function RoutineWeekCard({
         />
       ) : null}
       <CardContent className={cardHref ? "pointer-events-none relative z-10 p-5 md:p-6" : "p-5 md:p-6"}>
-        <div className="flex flex-col items-start gap-3 sm:flex-row sm:justify-between sm:gap-4">
-          <div className="w-full min-w-0 space-y-2 sm:w-auto">
+        <div className="flex items-start justify-between gap-3 sm:gap-4">
+          <div className="min-w-0 flex-1 space-y-2">
             {titleContent ?? <CardTitle className="text-2xl leading-tight md:text-[2rem]">{routine.name}</CardTitle>}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center justify-end gap-2">
             {headerAction}
             {showStatus ? <StatusGlyph completed={completed} /> : null}
           </div>

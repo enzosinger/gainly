@@ -8,6 +8,11 @@ import { GainlyStoreProvider } from "../state/gainly-store";
 import * as gainlyStore from "../state/gainly-store";
 
 describe("RoutinesPage", () => {
+  async function openFirstRoutineActions(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getAllByRole("button", { name: /more actions/i })[0]);
+    return screen.getByRole("menu");
+  }
+
   afterEach(() => {
     vi.restoreAllMocks();
   });
@@ -140,7 +145,8 @@ describe("RoutinesPage", () => {
 
     expect(screen.getByRole("heading", { name: /^push$/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /delete push routine/i }));
+    const menu = await openFirstRoutineActions(user);
+    await user.click(within(menu).getByRole("menuitem", { name: /^delete$/i }));
     const dialog = screen.getByRole("alertdialog");
 
     expect(within(dialog).getByRole("heading", { name: /delete routine/i })).toBeInTheDocument();
@@ -165,7 +171,8 @@ describe("RoutinesPage", () => {
       </MemoryRouter>,
     );
 
-    await user.click(screen.getByRole("button", { name: /duplicate push routine/i }));
+    const menu = await openFirstRoutineActions(user);
+    await user.click(within(menu).getByRole("menuitem", { name: /^duplicate$/i }));
 
     expect(screen.getByRole("heading", { name: /^push$/i })).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: /routine name/i })).toHaveValue("Push copy");
@@ -209,7 +216,8 @@ describe("RoutinesPage", () => {
       </MemoryRouter>,
     );
 
-    await user.click(screen.getByRole("button", { name: /duplicate push routine/i }));
+    const menu = await openFirstRoutineActions(user);
+    await user.click(within(menu).getByRole("menuitem", { name: /^duplicate$/i }));
 
     const nameInput = screen.getByRole("textbox", { name: /routine name/i });
     expect(nameInput).toHaveValue("Push copy");
@@ -230,14 +238,17 @@ describe("RoutinesPage", () => {
       </MemoryRouter>,
     );
 
-    await user.click(screen.getByRole("button", { name: /deactivate push routine/i }));
+    let menu = await openFirstRoutineActions(user);
+    await user.click(within(menu).getByRole("menuitem", { name: /^deactivate$/i }));
 
     expect(screen.getByRole("heading", { name: /^push$/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /activate push routine/i })).toBeInTheDocument();
+    menu = await openFirstRoutineActions(user);
+    expect(within(menu).getByRole("menuitem", { name: /^activate$/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /activate push routine/i }));
+    await user.click(within(menu).getByRole("menuitem", { name: /^activate$/i }));
 
-    expect(screen.getByRole("button", { name: /deactivate push routine/i })).toBeInTheDocument();
+    menu = await openFirstRoutineActions(user);
+    expect(within(menu).getByRole("menuitem", { name: /^deactivate$/i })).toBeInTheDocument();
   });
 
   it("does not delete a routine when the confirmation is cancelled", async () => {
@@ -253,7 +264,8 @@ describe("RoutinesPage", () => {
       </MemoryRouter>,
     );
 
-    await user.click(screen.getByRole("button", { name: /delete push routine/i }));
+    const menu = await openFirstRoutineActions(user);
+    await user.click(within(menu).getByRole("menuitem", { name: /^delete$/i }));
     const dialog = screen.getByRole("alertdialog");
     await user.click(within(dialog).getByRole("button", { name: /^cancel$/i }));
 

@@ -1,4 +1,5 @@
-import { Copy, PauseCircle, PlayCircle, Trash2 } from "lucide-react";
+import { Ellipsis } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "../../ui/button";
 import { useLanguage } from "../../../i18n/LanguageProvider";
 import type { Routine } from "../../../types/domain";
@@ -23,47 +24,84 @@ export default function RoutineCardActions({
   onDelete,
 }: RoutineCardActionsProps) {
   const { copy } = useLanguage();
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const isActive = routine.isActive !== false;
 
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [open]);
+
   return (
-    <div className="flex shrink-0 flex-nowrap items-center justify-end gap-2">
+    <div ref={menuRef} className="pointer-events-auto relative">
       <Button
         type="button"
         variant="ghost"
         size="icon"
-        className="pointer-events-auto h-10 w-10 rounded-full"
-        aria-label={copy.routines.duplicateRoutineButton(routine.name)}
-        disabled={duplicatingRoutineId === routine.id}
-        onClick={() => onDuplicate(routine.id)}
+        className="h-10 w-10 rounded-full"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={copy.routines.routineActionsButton}
+        onClick={() => setOpen((current) => !current)}
       >
-        <Copy className="size-4" />
+        <Ellipsis className="size-4" />
       </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="pointer-events-auto h-10 w-10 rounded-full"
-        aria-label={
-          isActive
-            ? copy.routines.deactivateRoutineButton(routine.name)
-            : copy.routines.activateRoutineButton(routine.name)
-        }
-        disabled={togglingRoutineId === routine.id}
-        onClick={() => onToggleActive(routine.id, !isActive)}
-      >
-        {isActive ? <PauseCircle className="size-4" /> : <PlayCircle className="size-4" />}
-      </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="pointer-events-auto h-10 w-10 rounded-full"
-        aria-label={copy.routines.deleteRoutineButton(routine.name)}
-        disabled={deletingRoutineId === routine.id}
-        onClick={() => onDelete(routine.id)}
-      >
-        <Trash2 className="size-4" />
-      </Button>
+      {open ? (
+        <div
+          role="menu"
+          className="panel-card absolute right-0 z-20 mt-2 w-fit min-w-28 max-w-[calc(100vw-2rem)] space-y-1 rounded-2xl p-2"
+        >
+          <button
+            type="button"
+            role="menuitem"
+            className="block w-full whitespace-nowrap rounded-xl px-3 py-2 text-left text-sm text-[hsl(var(--foreground))] transition-colors hover:bg-[hsl(var(--panel-inset))] disabled:pointer-events-none disabled:opacity-50"
+            disabled={duplicatingRoutineId === routine.id}
+            onClick={() => {
+              onDuplicate(routine.id);
+              setOpen(false);
+            }}
+          >
+            {copy.routines.duplicateRoutineButton}
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className="block w-full whitespace-nowrap rounded-xl px-3 py-2 text-left text-sm text-[hsl(var(--foreground))] transition-colors hover:bg-[hsl(var(--panel-inset))] disabled:pointer-events-none disabled:opacity-50"
+            disabled={togglingRoutineId === routine.id}
+            onClick={() => {
+              onToggleActive(routine.id, !isActive);
+              setOpen(false);
+            }}
+          >
+            {isActive
+              ? copy.routines.deactivateRoutineButton
+              : copy.routines.activateRoutineButton}
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className="block w-full whitespace-nowrap rounded-xl px-3 py-2 text-left text-sm text-[hsl(var(--foreground))] transition-colors hover:bg-[hsl(var(--panel-inset))] disabled:pointer-events-none disabled:opacity-50"
+            disabled={deletingRoutineId === routine.id}
+            onClick={() => {
+              onDelete(routine.id);
+              setOpen(false);
+            }}
+          >
+            {copy.routines.deleteRoutineButton}
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

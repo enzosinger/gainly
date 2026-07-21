@@ -72,20 +72,22 @@ export default function RoutineNameEditor({
   }
 
   return (
-    <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto sm:min-w-fit sm:flex-nowrap">
-      <CardTitle className="break-words text-2xl leading-tight sm:whitespace-nowrap md:text-[2rem]">{routine.name}</CardTitle>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="pointer-events-auto h-9 w-9 shrink-0 rounded-full"
-        aria-label={copy.routines.editRoutineNameButton(routine.name)}
-        onClick={() => onBeginEdit(routine)}
-      >
-        <Pencil className="size-4" />
-      </Button>
+    <div className="flex w-full min-w-0 flex-col items-start gap-2 sm:w-auto sm:min-w-fit sm:flex-row sm:items-center sm:flex-nowrap">
+      <div className="flex max-w-full min-w-0 items-center gap-2">
+        <CardTitle className="break-words text-2xl leading-tight sm:whitespace-nowrap md:text-[2rem]">{routine.name}</CardTitle>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="pointer-events-auto h-9 w-9 shrink-0 rounded-full"
+          aria-label={copy.routines.editRoutineNameButton(routine.name)}
+          onClick={() => onBeginEdit(routine)}
+        >
+          <Pencil className="size-4" />
+        </Button>
+      </div>
       {routine.isActive === false ? (
-        <span className="ml-auto shrink-0 rounded-full border border-[hsl(var(--border))] px-2 py-1 text-xs font-medium text-[hsl(var(--muted-foreground))] sm:ml-0">
+        <span className="shrink-0 rounded-full border border-[hsl(var(--border))] px-2 py-1 text-xs font-medium text-[hsl(var(--muted-foreground))]">
           {copy.routines.inactiveLabel}
         </span>
       ) : null}
