@@ -1,4 +1,5 @@
 import { normalizeMuscleGroup } from "../../lib/muscle-groups";
+import { uniqueId } from "../lib/unique-id";
 import type { Exercise, MuscleGroup } from "../types/domain";
 
 export function normalizeExerciseDescription(description?: string) {
@@ -39,17 +40,10 @@ export function buildCreatedExercise(
   }
 
   const baseId = `ex-${trimmedName.toLowerCase().replace(/\s+/g, "-")}`;
-  const existingIds = new Set(currentExercises.map((exercise) => exercise.id));
-  let nextId = baseId;
-  let suffix = 2;
-
-  while (existingIds.has(nextId)) {
-    nextId = `${baseId}-${suffix}`;
-    suffix += 1;
-  }
+  const id = uniqueId(baseId, currentExercises.map((exercise) => exercise.id));
 
   return {
-    id: nextId,
+    id,
     name: trimmedName,
     muscleGroup: normalizeMuscleGroup(input.muscleGroup),
     description: normalizeExerciseDescription(input.description),

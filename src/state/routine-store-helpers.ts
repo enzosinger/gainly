@@ -1,20 +1,14 @@
+import { uniqueId } from "../lib/unique-id";
 import type { Exercise, Routine, RoutineCreationInput, RoutineExercise, TechniqueType } from "../types/domain";
 import type { RepRangeInput } from "./gainly-store-types";
 
 export function buildCreatedRoutine(currentRoutines: Routine[], input: RoutineCreationInput) {
   const trimmedName = input.name.trim();
   const baseId = `routine-${trimmedName.toLowerCase().replace(/\s+/g, "-")}`;
-  const existingIds = new Set(currentRoutines.map((routine) => routine.id));
-  let nextId = baseId;
-  let suffix = 2;
-
-  while (existingIds.has(nextId)) {
-    nextId = `${baseId}-${suffix}`;
-    suffix += 1;
-  }
+  const id = uniqueId(baseId, currentRoutines.map((routine) => routine.id));
 
   return {
-    id: nextId,
+    id,
     name: trimmedName,
     completed: false,
     deltaPercent: 0,
