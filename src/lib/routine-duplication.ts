@@ -1,31 +1,13 @@
 import type { Routine, RoutineExercise, SetEntry } from "../types/domain";
+import { uniqueId } from "./unique-id";
 
 function buildDuplicateName(sourceName: string, routines: Routine[]) {
-  const baseName = `${sourceName} copy`;
-  const existingNames = new Set(routines.map((routine) => routine.name));
-  let nextName = baseName;
-  let suffix = 2;
-
-  while (existingNames.has(nextName)) {
-    nextName = `${baseName} ${suffix}`;
-    suffix += 1;
-  }
-
-  return nextName;
+  return uniqueId(`${sourceName} copy`, routines.map((routine) => routine.name), " ");
 }
 
 function buildDuplicateId(name: string, routines: Routine[]) {
   const baseId = `routine-${name.toLowerCase().replace(/\s+/g, "-")}`;
-  const existingIds = new Set(routines.map((routine) => routine.id));
-  let nextId = baseId;
-  let suffix = 2;
-
-  while (existingIds.has(nextId)) {
-    nextId = `${baseId}-${suffix}`;
-    suffix += 1;
-  }
-
-  return nextId;
+  return uniqueId(baseId, routines.map((routine) => routine.id));
 }
 
 function copySetForDuplicate(set: SetEntry): SetEntry {
