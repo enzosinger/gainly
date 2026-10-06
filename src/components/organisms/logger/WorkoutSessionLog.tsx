@@ -1,14 +1,8 @@
+import type { WorkoutSetInput } from "../../../types/domain";
 import type { WorkoutExerciseEntry } from "../../../lib/workout-logger";
 import { Button } from "../../ui/button";
 import ExerciseLogPanel from "./ExerciseLogPanel";
 import WorkoutExerciseList from "./WorkoutExerciseList";
-
-type WorkoutSetInput = {
-  weightKg: number | null;
-  reps: number | null;
-  pairWeightKg: number | null;
-  pairReps: number | null;
-};
 
 type WorkoutSessionLogProps = {
   workoutExercises: WorkoutExerciseEntry[];
@@ -19,7 +13,7 @@ type WorkoutSessionLogProps = {
   completeLabel: string;
   workflowMessage?: string | null;
   onSelectExercise: (id: string) => void;
-  onCommitSet: (setId: string, input: WorkoutSetInput) => void;
+  onCommitSet: (setId: string, input: WorkoutSetInput) => Promise<void>;
   onComplete: () => void;
 };
 

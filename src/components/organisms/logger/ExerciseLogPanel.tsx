@@ -1,4 +1,4 @@
-import type { MuscleGroup, RoutineExercise, WorkoutSessionExercise } from "../../../types/domain";
+import type { MuscleGroup, RoutineExercise, WorkoutSessionExercise, WorkoutSetInput } from "../../../types/domain";
 import { getMuscleGroupLabel } from "../../../i18n/copy";
 import { useLanguage } from "../../../i18n/LanguageProvider";
 import SetRow from "../../molecules/SetRow";
@@ -13,15 +13,7 @@ type ExerciseLogPanelProps = {
   currentExercise: WorkoutSessionExercise;
   previousExercise?: WorkoutSessionExercise | null;
   pairExerciseNamesById: Record<string, string>;
-  onCommitSet: (
-    setId: string,
-    input: {
-      weightKg: number | null;
-      reps: number | null;
-      pairWeightKg: number | null;
-      pairReps: number | null;
-    },
-  ) => void;
+  onCommitSet: (setId: string, input: WorkoutSetInput) => Promise<void>;
 };
 
 export default function ExerciseLogPanel({

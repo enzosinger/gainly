@@ -162,16 +162,17 @@ export default function WorkoutPage() {
         completeLabel={copy.workout.completeSession}
         workflowMessage={workflowMessage}
         onSelectExercise={setExpandedExerciseId}
-        onCommitSet={(setId, input) => {
-          void updateWorkoutSet({
+        onCommitSet={async (setId, input) => {
+          await updateWorkoutSet({
             sessionId: activeSession!._id,
             setId,
             weightKg: input.weightKg,
             reps: input.reps,
             pairWeightKg: input.pairWeightKg,
             pairReps: input.pairReps,
-          }).catch(() => {
+          }).catch((error: unknown) => {
             setWorkflowMessage(copy.workout.saveError);
+            throw error;
           });
         }}
         onComplete={() => {
