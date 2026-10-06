@@ -4,13 +4,15 @@
 
 **Blocked by:** None
 
-**Status:** ready-for-agent
+**Status:** implemented; awaiting maintainer review. Live Convex acceptance remains unverified.
 
-- [ ] Lead with Gainly's concrete workout workflow and existing screenshots
-- [ ] Explain first-run setup, per-user data, and current limits without unsupported claims
-- [ ] Separate client, deployment, and authentication configuration
-- [ ] Link official authentication setup rather than exposing or inventing credentials
-- [ ] Use actual package scripts and verified repository paths
-- [ ] Retain Portuguese access without repeating every long feature list
+- [x] Lead with Gainly's concrete workout workflow and existing screenshots
+- [x] Explain first-run setup, per-user data, and current limits without unsupported claims
+- [x] Separate client, deployment, and authentication configuration
+- [x] Link official authentication setup rather than exposing or inventing credentials
+- [x] Use actual package scripts and verified repository paths
+- [x] Retain Portuguese access without repeating every long feature list
 
 Published task: https://github.com/enzosinger/gainly/issues/4
+
+Draft pull request: https://github.com/enzosinger/gainly/pull/5

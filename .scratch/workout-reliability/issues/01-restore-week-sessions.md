@@ -4,14 +4,14 @@
 
 **Blocked by:** None
 
-**Status:** ready-for-agent
+**Status:** implemented; awaiting maintainer review. Live Convex acceptance remains unverified.
 
-- [ ] Previous/next and Back/Forward navigation restore the selected routine/week
-- [ ] Unchanged routine/week/version renders do not duplicate restoration
-- [ ] A routine update synchronizes the current week again
-- [ ] A delayed failure from an abandoned selection neither shows an error nor resets current request state
-- [ ] A current request failure is visible, and leaving then returning allows a fresh attempt
-- [ ] Focused page regression checks fail on the baseline and pass after the fix
-- [ ] Full tests and build results are recorded without claiming real-service E2E
+- [x] Previous/next and Back/Forward navigation restore the selected routine/week
+- [x] Unchanged routine/week/version renders do not duplicate restoration
+- [x] A routine update synchronizes the current week again
+- [x] A delayed failure from an abandoned selection neither shows an error nor resets current request state
+- [x] A current request failure is visible, and leaving then returning allows a fresh attempt
+- [x] Focused page regression checks fail on the baseline and pass after the fix
+- [x] Full tests and build results are recorded without claiming real-service E2E
 
 Published task: https://github.com/enzosinger/gainly/issues/3

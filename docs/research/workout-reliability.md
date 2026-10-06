@@ -16,7 +16,7 @@ Restore a workout using its routine, selected week, and routine update version. 
 
 ## Verification seam
 
-The regression uses the actual workout page, week controls, session inputs, React StrictMode, and in-memory router history. Only the Convex query/mutation boundary is replaced. Mutation dispatch checks the actual registered function name. Assertions cover rendered week/session values as well as request identity and count.
+The regression uses the actual workout page, week controls, session inputs, React StrictMode, and in-memory router history. Convex queries and mutations are replaced, and routine/exercise state comes from the repository's mock store provider. This does not exercise the production Convex-backed store. Mutation dispatch checks the actual registered function name. Assertions cover rendered week/session values as well as request identity and count.
 
 Run the focused check with:
 
