@@ -44,6 +44,13 @@ export type WorkoutSessionSet = {
   pairReps?: number;
 };
 
+export type WorkoutSetInput = {
+  weightKg: number | null;
+  reps: number | null;
+  pairWeightKg: number | null;
+  pairReps: number | null;
+};
+
 export type WorkoutSessionExercise = {
   id: string;
   routineExerciseId: string;
