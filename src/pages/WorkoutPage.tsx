@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
@@ -10,6 +10,7 @@ import { useGainlyStore } from "../state/gainly-store";
 import { buildWorkoutExerciseEntries } from "../lib/workout-logger";
 import { getMondayWeekStart, getWeekWindow, shiftWeekWindowStart } from "../lib/week";
 import { useLanguage } from "../i18n/LanguageProvider";
+import { useWorkoutSessionRestoration } from "../hooks/use-workout-session-restoration";
 
 export default function WorkoutPage() {
   const { routines, exercises, expandedExerciseId, isLoading, setExpandedExerciseId } = useGainlyStore();
@@ -17,7 +18,6 @@ export default function WorkoutPage() {
   const { routineId } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const ensureSessionForRoutineWeek = useMutation(api.workouts.ensureSessionForRoutineWeek);
   const updateWorkoutSet = useMutation(api.workouts.updateWorkoutSet);
   const completeSession = useMutation(api.workouts.completeSession);
   const [workflowMessage, setWorkflowMessage] = useState<string | null>(null);
@@ -36,7 +36,6 @@ export default function WorkoutPage() {
     api.workouts.previousHistoryForRoutine,
     selectedRoutineId ? { routineId: selectedRoutineId, weekStart: weekWindow.start } : "skip",
   );
-  const requestedRoutineIdRef = useRef<string | null>(null);
   const weekNavigation = (
     <WeekStrip
       weekLabel={weekWindow.label}
@@ -49,21 +48,13 @@ export default function WorkoutPage() {
       canGoNext={weekWindow.start < currentWeekStart}
     />
   );
-  const routineUpdatedAt = workoutRoutine?.updatedAt;
-  useEffect(() => {
-    if (!selectedRoutineId || activeSession === undefined) {
-      return;
-    }
-    const syncKey = `${selectedRoutineId}-${routineUpdatedAt}`;
-    if (requestedRoutineIdRef.current === syncKey) {
-      return;
-    }
-    requestedRoutineIdRef.current = syncKey;
-    void ensureSessionForRoutineWeek({ routineId: selectedRoutineId, weekStart: weekWindow.start }).catch(() => {
-      requestedRoutineIdRef.current = null;
-      setWorkflowMessage(copy.workout.restoreError);
-    });
-  }, [activeSession, copy.workout.restoreError, ensureSessionForRoutineWeek, selectedRoutineId, routineUpdatedAt, weekWindow.start]);
+  const restorationFailed = useWorkoutSessionRestoration({
+    routineId: selectedRoutineId,
+    routineUpdatedAt: workoutRoutine?.updatedAt,
+    weekStart: weekWindow.start,
+    sessionLoaded: activeSession !== undefined,
+  });
+  const visibleMessage = workflowMessage ?? (restorationFailed ? copy.workout.restoreError : null);
 
   const exercisesById = useMemo(
     () => new Map(exercises.map((exercise) => [exercise.id, exercise])),
@@ -141,7 +132,7 @@ export default function WorkoutPage() {
         title={copy.workout.routineWorkout(workoutRoutine.name)}
         description={copy.workout.restoringDescription}
         body={copy.workout.restoringBody}
-        workflowMessage={workflowMessage}
+        workflowMessage={visibleMessage}
       />
     );
   }
@@ -160,7 +151,7 @@ export default function WorkoutPage() {
         pairExerciseNamesById={exerciseNamesById}
         sessionStatusText={activeSession?.status === "completed" ? copy.workout.completed : copy.workout.activeSession}
         completeLabel={copy.workout.completeSession}
-        workflowMessage={workflowMessage}
+        workflowMessage={visibleMessage}
         onSelectExercise={setExpandedExerciseId}
         onCommitSet={(setId, input) => {
           void updateWorkoutSet({
